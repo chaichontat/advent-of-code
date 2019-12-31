@@ -11,7 +11,7 @@ class Intcode:
     def __repr__(self):
         return f'Intcode({repr(self.code)})'
 
-    def process_intcode(self):
+    def process_intcode(self, ins=None):
         """
         ABCDE
          1002
@@ -23,6 +23,8 @@ class Intcode:
                                           omitted due to being a leading zero
         """
         i = 0
+        in_idx = 0
+        output = list()
         while i < len(self.code):
             instruction = f'{self.code[i]:05}'
             opcode = int(instruction[3:])
@@ -54,14 +56,18 @@ class Intcode:
                     i = in2 if in1 == 0 else i + 3
 
             elif opcode == 3:
-                x = input(f'Input at location {i}: ')
-                self.code[self.code[i + 1]] = x
-                i += 2
+                try:
+                    self.code[self.code[i + 1]] = ins[in_idx]
+                except IndexError:
+                    raise IndexError('Not enough input!')
+                else:
+                    in_idx += 1
+                    i += 2
             elif opcode == 4:
-                print(self.code[self.code[i + 1]])
+                output.append(self.code[self.code[i + 1]])
                 i += 2
             elif opcode == 99:
-                return self.code
+                return output if output else self.code
             else:
                 raise ValueError(opcode)
 
