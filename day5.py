@@ -76,4 +76,4 @@ if __name__ == '__main__':
     intcode = np.loadtxt('input_day5.txt', delimiter=",", dtype=np.int)
 
     o = Intcode(intcode)
-    o.process_intcode()
+    print(o.process_intcode([1, ]))
