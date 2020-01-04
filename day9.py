@@ -45,32 +45,32 @@ def processor_coroutine(code):
     while i < len(code):
         instruction = f'{code[i]:05}'
         modes, opcode = instruction[:3], int(instruction[3:])
-        in1, in2, out = [get_index(modes[2 - j], i + j + 1) for j in range(3)]
+        p1, p2, p3 = [get_index(modes[2 - j], i + j + 1) for j in range(3)]
 
         if opcode in [1, 2, 7, 8]:  # Three parameters
             if opcode == 1:
-                code[out] = code[in1] + code[in2]
+                code[p3] = code[p1] + code[p2]
             elif opcode == 2:
-                code[out] = code[in1] * code[in2]
+                code[p3] = code[p1] * code[p2]
             elif opcode == 7:
-                code[out] = 1 if code[in1] < code[in2] else 0
+                code[p3] = 1 if code[p1] < code[p2] else 0
             elif opcode == 8:
-                code[out] = 1 if code[in1] == code[in2] else 0
+                code[p3] = 1 if code[p1] == code[p2] else 0
             i += 4
 
         elif opcode in [5, 6]:  # Two parameters
             if opcode == 5:
-                i = code[in2] if code[in1] != 0 else i + 3
+                i = code[p2] if code[p1] != 0 else i + 3
             elif opcode == 6:
-                i = code[in2] if code[in1] == 0 else i + 3
+                i = code[p2] if code[p1] == 0 else i + 3
 
         elif opcode in [3, 4, 9]:  # One parameter
             if opcode == 3:
-                code[in1] = yield 'Need input!'
+                code[p1] = yield 'Need input!'
             elif opcode == 4:
-                yield code[in1]
+                yield code[p1]
             elif opcode == 9:
-                rel_base += code[in1]
+                rel_base += code[p1]
             i += 2
 
         elif opcode == 99:
