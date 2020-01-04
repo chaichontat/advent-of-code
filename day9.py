@@ -32,64 +32,45 @@ def processor_coroutine(code):
     i = 0
     rel_base = 0
 
-    def get_value(mode, param):  # Not for 'write' instructions.
+    def get_index(mode, idx):
         if mode == '0':  # Positional
-            return code[param]
+            return code[idx]
         elif mode == '1':  # Immediate
-            return param
+            return idx
         elif mode == '2':  # Relative
-            return code[rel_base + param]
+            return rel_base + code[idx]
         else:
             raise ValueError('Mode Unknown.')
 
-    def get_value_out(mode, param):  # 'Position' IS the index value.
-        if mode == '0':
-            return param
-        elif mode == '2':  # Relative
-            return rel_base + param
-        else:
-            raise ValueError('Out Mode Unknown.')
-
     while i < len(code):
         instruction = f'{code[i]:05}'
-        opcode = int(instruction[3:])
+        modes, opcode = instruction[:3], int(instruction[3:])
+        in1, in2, out = [get_index(modes[2 - j], i + j + 1) for j in range(3)]
 
         if opcode in [1, 2, 7, 8]:  # Three parameters
-            in1, in2 = [get_value(instruction[2 - j], code[i + j + 1]) for j in range(2)]
-            out = get_value_out(instruction[0], code[i + 3])
-
             if opcode == 1:
-                code[out] = in1 + in2
+                code[out] = code[in1] + code[in2]
             elif opcode == 2:
-                code[out] = in1 * in2
+                code[out] = code[in1] * code[in2]
             elif opcode == 7:
-                code[out] = 1 if in1 < in2 else 0
+                code[out] = 1 if code[in1] < code[in2] else 0
             elif opcode == 8:
-                code[out] = 1 if in1 == in2 else 0
-
+                code[out] = 1 if code[in1] == code[in2] else 0
             i += 4
 
-        elif opcode in [5, 6]:  # Two parameters, index
-            in1, in2 = [get_value(instruction[2 - j], code[i + j + 1]) for j in range(2)]
-
+        elif opcode in [5, 6]:  # Two parameters
             if opcode == 5:
-                i = in2 if in1 != 0 else i + 3
+                i = code[in2] if code[in1] != 0 else i + 3
             elif opcode == 6:
-                i = in2 if in1 == 0 else i + 3
+                i = code[in2] if code[in1] == 0 else i + 3
 
-        elif opcode in [3, 4, 9]:  # One parameter:
-            in1 = get_value(instruction[2], code[i + 1])
+        elif opcode in [3, 4, 9]:  # One parameter
             if opcode == 3:
-                out = get_value_out(instruction[0], code[i + 3])
-                try:
-                    x = yield 'Need input!'
-                    code[out] = x
-                except IndexError:
-                    raise IndexError('Not enough input!')
+                code[in1] = yield 'Need input!'
             elif opcode == 4:
-                yield in1
+                yield code[in1]
             elif opcode == 9:
-                rel_base += in1
+                rel_base += code[in1]
             i += 2
 
         elif opcode == 99:
@@ -110,3 +91,4 @@ if __name__ == '__main__':
     x = processor_coroutine(code)
     next(x)
     print(x.send(2))
+
