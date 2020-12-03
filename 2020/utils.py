@@ -3,7 +3,7 @@ from typing import List
 
 
 def load(path: str, parseint=False) -> List:
-    raw = Path(path).read_text().split()
+    raw = Path(path).read_text().split("\n")
     if parseint:
         return [int(x) for x in raw]
     return raw
