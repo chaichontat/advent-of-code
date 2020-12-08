@@ -1,8 +1,22 @@
-import numpy as np
+#%%
+from utils import load
+
+raw = load("input_day1.txt", parseint=True)
+
+#%% Part 1
 
 
 def calc_fuel_from_mass(mass):
-    return np.floor(mass / 3) - 2
+    """
+    Fuel required to launch a given module is based on its mass.
+    Specifically, to find the fuel required for a module, take its mass, divide by three, round down, and subtract 2.
+    """
+    return int(mass / 3) - 2
+
+
+print(sum([calc_fuel_from_mass(x) for x in raw]))
+
+#%% Part 2
 
 
 def calc_fuel_from_fuel(fuel):
@@ -12,21 +26,6 @@ def calc_fuel_from_fuel(fuel):
         return 0
 
 
-if __name__ == '__main__':
-    examples = {
-        12: 2,
-        14: 2,
-        1969: 654,
-        100756: 33583
-    }
+print(sum([calc_fuel_from_fuel(x) for x in raw]))
 
-    for m, f in examples.items():
-        assert calc_fuel_from_mass(m) == f
-
-    modules = np.loadtxt('input_day1.txt')
-
-    # Part 1
-    print(np.sum(calc_fuel_from_mass(modules)))
-
-    # Part 2
-    print(np.sum([calc_fuel_from_fuel(module) for module in modules]))
+# %%
