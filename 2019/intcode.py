@@ -1,7 +1,28 @@
-from collections import deque
-from math import prod
+from collections import deque, UserList
 from operator import eq, lt, add, mul
-from typing import Iterable, Optional
+from typing import Optional
+
+
+class LengtheningList(UserList):
+    """Double size when accessing indices beyond size."""
+
+    def lengthen(self):
+        self.data = self.data + [0] * len(self.data)
+
+    def __getitem__(self, item):
+        while True:
+            try:
+                return self.data[item]
+            except IndexError:
+                self.lengthen()
+
+    def __setitem__(self, key, value):
+        while True:
+            try:
+                self.data[key] = value
+                return
+            except IndexError:
+                self.lengthen()
 
 
 class IntCode:
@@ -13,18 +34,20 @@ class IntCode:
         5: 2,  # Jump-if-true
         6: 2,  # Jump-if-false
         7: 3,  # Less than
-        8: 3,  # Equals
+        8: 3,  # Equals,
+        9: 1,  # Relative jump
         99: 1,
     }
 
     def __init__(
         self, instructions: list[int], inputs: Optional[list] = None, pause_on_io=False
     ) -> None:
-        self.ins = instructions.copy()
+        self.ins = LengtheningList(instructions.copy())
         self.inputs = deque(inputs) if inputs is not None else None
         self.outputs = deque()
         self.curr_loc = 0
         self.pause_on_io = pause_on_io
+        self.rel_loc = 0
 
     def __repr__(self):
         return f"Intcode({repr(self.ins)})"
@@ -37,7 +60,7 @@ class IntCode:
 
             if cmd == 99:
                 return 0
-            elif cmd in [1, 2, 3, 4, 7, 8]:
+            elif cmd in [1, 2, 3, 4, 7, 8, 9]:
                 self.run_opcode(cmd, *params)
             elif cmd in [5, 6]:
                 self.run_jumper(cmd, *params)
@@ -53,19 +76,24 @@ class IntCode:
             self.ins[params[0]] = self.inputs.popleft()
         elif cmd == 4:
             self.outputs.append(params[0])
+        elif cmd == 9:
+            self.rel_loc += params[0]
         else:
             raise ValueError
         self.curr_loc += self.n_params[cmd] + 1
 
     def run_jumper(self, cmd, *params):
-        do_if_zero = True if cmd == 6 else False
-        if (params[0] == 0) == do_if_zero:
-            self.curr_loc = params[1]
+        if cmd in [5, 6]:
+            do_if_zero = True if cmd == 6 else False
+            if (params[0] == 0) == do_if_zero:
+                self.curr_loc = params[1]
+            else:
+                self.curr_loc += 3
         else:
-            self.curr_loc += 3
+            raise ValueError
 
     def get_params(self):
-        op = f"{self.ins[self.curr_loc]:04}"
+        op = f"{self.ins[self.curr_loc]:05}"
         params = self.ins[self.curr_loc + 1 : self.curr_loc + 1 + self.n_params[int(op[-2:])]]
         return op, *params
 
@@ -78,20 +106,27 @@ class IntCode:
 
         out = list()
         cmd = int(op[-2:])
-        if cmd == 3:
-            return cmd, *params
         if cmd == 99:
             return 99, *params
 
-        for mode, param in zip(reversed(op[:-2]), params[:2]):
-            if mode == "0":
-                proc = self.ins[param]
-            elif mode == "1":
-                proc = param
-            else:
-                raise ValueError
-            out.append(proc)
+        if cmd != 3:
+            for mode, param in zip(reversed(op[:-2]), params[:2]):
+                if mode == "0":
+                    proc = self.ins[param]
+                elif mode == "1":
+                    proc = param
+                elif mode == "2":
+                    proc = self.ins[self.rel_loc + param]
+                else:
+                    raise ValueError
+                out.append(proc)
 
-        if len(params) == 3:
-            out.append(params[2])  # Write.
+            if len(params) == 3:  # Write address.
+                write_addr = params[2] + self.rel_loc if op[0] == "2" else params[2]
+                out.append(write_addr)  # Write.
+
+        else:  # 3 is the only opcode that has write addr as the first param.
+            write_addr = params[0] + self.rel_loc if op[2] == "2" else params[0]
+            out.append(write_addr)
+
         return cmd, *out
