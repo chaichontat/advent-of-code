@@ -1,3 +1,4 @@
+#%%
 from pathlib import Path
 
 import numpy as np
@@ -5,8 +6,8 @@ import numpy as np
 
 def process(s: str):
     """ Convert raw data to an array of asteroid coordinates. """
-    s = s.replace('.', '0')
-    s = s.replace('#', '1')
+    s = s.replace(".", "0")
+    s = s.replace("#", "1")
     s = s.split()
     s = [list(t) for t in s]
     s = np.asarray(s, dtype=np.int)
@@ -21,7 +22,12 @@ def calc_polar(ori, target):
     coords = ori.copy()
     coords[:, 0] -= target[0]
     coords[:, 1] -= target[1]
-    return np.sqrt(coords[:, 0] ** 2 + coords[:, 1] ** 2), np.arctan2(coords[:, 1], coords[:, 0]), ori[:, 0], ori[:, 1]
+    return (
+        np.sqrt(coords[:, 0] ** 2 + coords[:, 1] ** 2),
+        np.arctan2(coords[:, 1], coords[:, 0]),
+        ori[:, 0],
+        ori[:, 1],
+    )
 
 
 def calc_num_asteroid(coords: np.ndarray, target: tuple):
@@ -56,8 +62,8 @@ def sort_for_scan(arr):
     return order
 
 
-if __name__ == '__main__':
-    loc = Path('input_day10.txt').read_text()
+if __name__ == "__main__":
+    loc = Path("input_day10.txt").read_text()
 
     # Part 1
     s = process(loc)
@@ -76,3 +82,5 @@ if __name__ == '__main__':
     polar = polar[sort_for_scan(polar), ...]
 
     print(polar[199, 2] * 100 + polar[199, 3])
+
+# %%

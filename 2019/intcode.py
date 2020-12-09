@@ -43,7 +43,7 @@ class IntCode:
         self, instructions: list[int], inputs: Optional[list] = None, pause_on_io=False
     ) -> None:
         self.ins = LengtheningList(instructions.copy())
-        self.inputs = deque(inputs) if inputs is not None else None
+        self.inputs = deque(inputs) if inputs is not None else deque()
         self.outputs = deque()
         self.curr_loc = 0
         self.pause_on_io = pause_on_io
@@ -55,15 +55,17 @@ class IntCode:
     def execute(self) -> int:
         while True:
             cmd, *params = self.parse_op(*self.get_params())
-            if self.pause_on_io and cmd == 3 and len(self.inputs) == 0:
-                return 1
 
             if cmd == 99:
                 return 0
-            elif cmd in [1, 2, 3, 4, 7, 8, 9]:
-                self.run_opcode(cmd, *params)
             elif cmd in [5, 6]:
                 self.run_jumper(cmd, *params)
+            elif cmd == 3:
+                if len(self.inputs) == 0:
+                    return 1
+                self.run_opcode(cmd, *params)
+            elif cmd in [1, 2, 4, 7, 8, 9]:
+                self.run_opcode(cmd, *params)
 
             if self.pause_on_io and cmd == 4:
                 return 2
@@ -73,7 +75,7 @@ class IntCode:
             f = {1: add, 2: mul, 7: lt, 8: eq}
             self.ins[params[2]] = f[cmd](*params[:2])
         elif cmd == 3:
-            self.ins[params[0]] = self.inputs.popleft()
+            self.ins[params[0]] = int(self.inputs.popleft())
         elif cmd == 4:
             self.outputs.append(params[0])
         elif cmd == 9:
