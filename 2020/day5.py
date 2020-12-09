@@ -1,8 +1,11 @@
 #%%
 from typing import Tuple
+
+import numpy as np
+
 from utils import load
 
-raw = load("day5.txt")[:-1]
+raw = load("day5.txt")
 
 # %%
 def binary(x: str, l: int, h: int, lowc: str, hic: str) -> int:
@@ -21,19 +24,21 @@ def process(x: str) -> Tuple[int, int]:
     return (binary(x[:7], 0, 127, "F", "B"), binary(x[-3:], 0, 7, "L", "R"))
 
 
-out = 0
-for seat in raw:
-    row, col = process(seat)
-    if (id_ := row * 8 + col) > out:
-        out = id_
+def test1():
+    out = 0
+    for seat in raw:
+        row, col = process(seat)
+        if (id_ := row * 8 + col) > out:
+            out = id_
+    assert out == 935
+    return out
 
-print(out)
+
 # %%
-import numpy as np
+def test2():
+    arr = np.zeros(test1() + 1)
+    for seat in raw:
+        row, col = process(seat)
+        arr[row * 8 + col] = 1
 
-arr = np.zeros(out + 1)
-for seat in raw:
-    row, col = process(seat)
-    arr[row * 8 + col] = 1
-
-np.where(arr == 0)
+    assert np.where(arr == 0)[0][-1] == 743

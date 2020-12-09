@@ -1,25 +1,28 @@
 #%%
 import re
+
 from utils import load
 
 raw = load("day4.txt", split="\n\n")
 
 # %%
-valid = list()
-for line in raw:
-    test = (
-        len(re.findall("[bie]yr", line)) == 3,
-        re.findall("hgt", line),
-        len(re.findall("[he]cl", line)) == 2,
-        re.findall("pid", line),
-    )
-    if all(test):
-        valid.append(line)
+def test1():
+    valid = list()
+    for line in raw:
+        test = (
+            len(re.findall("[bie]yr", line)) == 3,
+            re.findall("hgt", line),
+            len(re.findall("[he]cl", line)) == 2,
+            re.findall("pid", line),
+        )
+        if all(test):
+            valid.append(line)
 
-len(valid)
+    assert len(valid) == 190
+    return valid
+
+
 # %%
-
-
 def proc_hgt(x: str):
     if x.endswith("cm"):
         return 150 <= int(x[:-2]) <= 193
@@ -39,16 +42,17 @@ criteria = {
     "cid": lambda x: x,
 }
 
-valid2 = 0
-for line in valid:
-    fields = line.split()
-    ok = True
-    for field in fields:
-        k, v = field.split(":")
-        if not criteria[k](v):
-            ok = False
-            break
-    if ok:
-        valid2 += 1
 
-print(valid2)
+def test2():
+    valid2 = 0
+    for line in test1():
+        fields = line.split()
+        ok = True
+        for field in fields:
+            k, v = field.split(":")
+            if not criteria[k](v):
+                ok = False
+                break
+        if ok:
+            valid2 += 1
+    assert valid2 == 121

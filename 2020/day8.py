@@ -1,8 +1,9 @@
 #%%
+import copy
+
 from utils import load
 
-raw = load("day8.txt", split="\n")[:-1]
-
+raw = load("day8.txt", split="\n")
 proc = [[(u := x.split())[0], int(u[1])] for x in raw]
 # %%
 
@@ -35,11 +36,11 @@ def run(program, acc=0, curr=0):
     return acc, False
 
 
-print(run(proc))
-# %%
-import copy
+def test1():
+    assert run(proc)[0] == 1684
 
-passed = set()
+
+# %%
 
 
 def swap(test, loc):
@@ -51,29 +52,33 @@ def swap(test, loc):
         raise ValueError
 
 
-test = copy.deepcopy(proc)
-acc = 0
-curr = 0
-while True:
-    if curr in passed:
-        raise Exception
-    passed.add(curr)
+def test2():
+    passed = set()
+    test = copy.deepcopy(proc)
+    acc = 0
+    curr = 0
+    while True:
+        if curr in passed:
+            raise Exception
+        passed.add(curr)
 
-    # Change
-    if proc[curr][0] in ["jmp", "nop"]:
-        swap(test, curr)
-    else:
-        acc, curr = execute(proc, acc, curr)
-        continue
+        # Change
+        if proc[curr][0] in ["jmp", "nop"]:
+            swap(test, curr)
+        else:
+            acc, curr = execute(proc, acc, curr)
+            continue
 
-    # Test
-    out, ok = run(test, acc, curr)
-    if ok:
-        print(out)
-        break
-    else:
-        swap(test, curr)
-        acc, curr = execute(test, acc, curr)
+        # Test
+        out, ok = run(test, acc, curr)
+        if ok:
+            assert out == 2188
+            return
+        else:
+            swap(test, curr)
+            acc, curr = execute(test, acc, curr)
+
+
 # %%
 
 # %%

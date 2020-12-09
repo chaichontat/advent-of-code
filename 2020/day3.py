@@ -1,8 +1,9 @@
 #%%
 import numpy as np
+
 from utils import load
 
-raw = load("day3.txt")[:-1]
+raw = load("day3.txt")
 block = len(raw[0])
 # %%
 def get_tree(x, y):
@@ -21,6 +22,12 @@ def run(modx, mody):
 
 
 # %%
+def test1():
+    assert run(3, 1) == 265
 
-np.prod([run(i, 1) for i in range(1, 8, 2)]) * run(1, 2)
+
+def test2():
+    assert np.prod([run(i, 1) for i in range(1, 8, 2)]) * run(1, 2) == 3154761400
+
+
 # %%

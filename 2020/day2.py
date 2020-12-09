@@ -1,35 +1,40 @@
 # %%
-from utils import load
 from collections import Counter
+
+from utils import load
 
 raw = load("day2.txt")
 
 # %% Part 1
+def test1():
+    valid = 0
+    for x in raw:
+        num, char, pwd = x.split(" ")
 
-valid = 0
-for x in raw[:-1]:
-    num, char, pwd = x.split(" ")
+        num = [int(i) for i in num.split("-")]
+        char = char[0]
 
-    num = [int(i) for i in num.split("-")]
-    char = char[0]
+        if num[0] <= Counter(pwd)[char] <= num[1]:
+            valid += 1
 
-    if num[0] <= Counter(pwd)[char] <= num[1]:
-        valid += 1
+    assert valid == 447
 
-print(valid)
 
 # %% Part 2
 
-valid = 0
-for x in raw[:-1]:
-    num, char, pwd = x.split(" ")
 
-    num = [int(i) for i in num.split("-")]
-    char = char[0]
+def test2():
+    valid = 0
+    for x in raw:
+        num, char, pwd = x.split(" ")
 
-    if (pwd[num[0] - 1] == char) != (pwd[num[1] - 1] == char):  # XOR
-        valid += 1
+        num = [int(i) for i in num.split("-")]
+        char = char[0]
 
-print(valid)
+        if (pwd[num[0] - 1] == char) != (pwd[num[1] - 1] == char):  # XOR
+            valid += 1
+
+    assert valid == 249
+
 
 # %%
