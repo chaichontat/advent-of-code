@@ -1,22 +1,16 @@
-from pathlib import Path
-
+#%%
 import networkx as nx
+from utils import load
 
-g = nx.Graph()
+data = load("input_day6.txt")
 
-if __name__ == '__main__':
-    data = Path('input_day6.txt').read_text()
+G = nx.Graph()
+for edge in data:
+    G.add_edge(*edge.split(")"))
 
-    # Add nodes and edges.
-    nodes = set(data.replace(')', '\n').split())
-    g.add_nodes_from(nodes)
-    for edge in data.split():
-        g.add_edge(*edge.split(')'))
+#%% Part 1
+dist: dict = nx.shortest_path_length(G, "COM")
+print(sum(dist.values()))
 
-    dist: dict = nx.shortest_path_length(g, 'COM')
-
-    # Part 1
-    print(sum(dist.values()))
-
-    # Part 2
-    print(nx.shortest_path_length(g, source='YOU', target='SAN') - 2)
+#%% Part 2
+print(nx.shortest_path_length(G, source="YOU", target="SAN") - 2)

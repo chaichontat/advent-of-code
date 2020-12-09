@@ -1,28 +1,45 @@
+#%%
 from itertools import permutations
+from intcode import IntCode
+from utils import load
 
-import numpy as np
+raw = load("input_day7.txt", split=",", parseint=True)
 
-from day5 import Intcode
-
-
-class ACS(Intcode):
-    def __init__(self, code, n):
-        super().__init__(code)
-        self.acs = code.copy()
-        self.n = n
-
-    def get_thruster_output(self, phase):
-        assert len(phase) == self.n
-        x = 0
-        for p in phase:
-            self.code = self.acs.copy()
-            x = self.process_intcode([p, x])[0]
-        return x
+#%% Part 1
 
 
-if __name__ == '__main__':
-    acs_code = np.loadtxt('input_day7.txt', delimiter=",", dtype=np.int)
-    acs = ACS(acs_code, 5)
+def run_phase(seq):
+    input_ = 0
+    for phase in seq:
+        ic = IntCode(raw, [phase, input_])
+        ic.execute()
+        input_ = ic.outputs[0]
+    return input_
 
-    output_vals = [acs.get_thruster_output(p) for p in permutations(range(acs.n))]
-    print(max(output_vals))
+
+print(max([run_phase(seq) for seq in permutations(range(5))]))
+
+#%% Part 2
+# Return code 1 -> need input, 2 -> have output.
+
+
+def run_loop(seq):
+    n = len(seq)
+    buffer = 0
+    ics = [IntCode(raw, [seq[i]], pause_on_io=True) for i in range(n)]
+    [ic.execute() for ic in ics]
+    i = 0
+    while True:
+        ics[i % n].inputs.append(buffer)
+        rc = ics[i % n].execute()
+        if rc == 2:
+            buffer = ics[i % n].outputs.pop()
+        elif rc == 1:
+            raise ValueError
+        elif rc == 0:
+            return buffer
+        i += 1
+
+
+print(max([run_loop(seq) for seq in permutations(range(5, 10))]))
+# %%

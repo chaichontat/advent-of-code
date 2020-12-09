@@ -1,3 +1,4 @@
+from collections import deque
 from math import prod
 from operator import eq, lt, add, mul
 from typing import Iterable, Optional
@@ -16,34 +17,40 @@ class IntCode:
         99: 1,
     }
 
-    def __init__(self, instructions: list[int]) -> None:
+    def __init__(
+        self, instructions: list[int], inputs: Optional[list] = None, pause_on_io=False
+    ) -> None:
         self.ins = instructions.copy()
-        self.inputs: Optional[Iterable] = None
-        self.outputs = list()
+        self.inputs = deque(inputs) if inputs is not None else None
+        self.outputs = deque()
         self.curr_loc = 0
+        self.pause_on_io = pause_on_io
 
     def __repr__(self):
         return f"Intcode({repr(self.ins)})"
 
-    def execute(self, inputs: Optional[list] = None):
-        if inputs is not None:
-            self.inputs = iter(inputs)
-
+    def execute(self) -> int:
         while True:
             cmd, *params = self.parse_op(*self.get_params())
+            if self.pause_on_io and cmd == 3 and len(self.inputs) == 0:
+                return 1
+
             if cmd == 99:
-                return
+                return 0
             elif cmd in [1, 2, 3, 4, 7, 8]:
                 self.run_opcode(cmd, *params)
             elif cmd in [5, 6]:
                 self.run_jumper(cmd, *params)
+
+            if self.pause_on_io and cmd == 4:
+                return 2
 
     def run_opcode(self, cmd, *params):
         if cmd in [1, 2, 7, 8]:
             f = {1: add, 2: mul, 7: lt, 8: eq}
             self.ins[params[2]] = f[cmd](*params[:2])
         elif cmd == 3:
-            self.ins[params[0]] = next(self.inputs)
+            self.ins[params[0]] = self.inputs.popleft()
         elif cmd == 4:
             self.outputs.append(params[0])
         else:
