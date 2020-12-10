@@ -2,6 +2,8 @@ from pathlib import Path
 
 
 def load(path: str, **kwargs) -> list:
+    if not Path(path).is_absolute():
+        path = Path(__file__).parent / path
     return _load(Path(path).read_text(), **kwargs)
 
 

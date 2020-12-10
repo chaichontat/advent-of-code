@@ -24,4 +24,4 @@ install:
   - conda activate test-environment
 
 script:
-  - (cd 2020 && pytest)
+  - pytest
