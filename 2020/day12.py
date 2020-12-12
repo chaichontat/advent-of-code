@@ -3,7 +3,6 @@ from utils import load
 
 raw = load("day12.txt")
 
-cmds, amts = map(tuple, zip(*([x[0], int(x[1:])] for x in raw)))
 turns = {"L": 1j, "R": -1j}
 moves = {"N": 1j, "S": -1j, "E": 1, "W": -1}
 
@@ -11,7 +10,8 @@ moves = {"N": 1j, "S": -1j, "E": 1, "W": -1}
 def test1():
     pos = 0 + 0j
     heading = 1
-    for cmd, amt in zip(cmds, amts):
+    for cmds in raw:
+        cmd, amt = cmds[0], int(cmds[1:])
         if cmd == "F":
             pos += heading * amt
         else:
@@ -26,7 +26,8 @@ def test1():
 def test2():
     pos = 0 + 0j
     wp = 10 + 1j
-    for cmd, amt in zip(cmds, amts):
+    for cmds in raw:
+        cmd, amt = cmds[0], int(cmds[1:])
         if cmd == "F":
             pos += wp * amt
         else:
