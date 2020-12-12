@@ -1,5 +1,5 @@
-from collections import deque, UserList
-from operator import eq, lt, add, mul
+from collections import UserList, deque
+from operator import add, eq, lt, mul
 from typing import Optional
 
 
@@ -77,7 +77,7 @@ class IntCode:
         elif cmd == 3:
             self.ins[params[0]] = int(self.inputs.popleft())
         elif cmd == 4:
-            self.outputs.append(params[0])
+            self.outputs.append(int(params[0]))
         elif cmd == 9:
             self.rel_loc += params[0]
         else:

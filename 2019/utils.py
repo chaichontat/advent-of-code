@@ -8,7 +8,8 @@ def load(path: str, **kwargs) -> list:
 
 
 def _load(raw, parseint=False, split="\n"):
-    raw = raw.split(split)
+    if split is not None:
+        raw = raw.split(split)
     if not raw[-1]:
         raw = raw[:-1]
     if parseint:
