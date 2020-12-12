@@ -6,3 +6,4 @@ dependencies:
   - networkx
   - numpy
   - pytest
+  - scipy
