@@ -1,52 +1,33 @@
 #%%
-from operator import itemgetter
+import re
 from typing import Iterable
 
 import numpy as np
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import maximum_bipartite_matching
 
 from utils import load
 
-raw = load("day16.txt")
+dic, my, nearby = load("day16.txt", split="\n\n")
+#%%
+ranges = [tuple(map(int, re.findall("\d+", x))) for x in dic.split("\n")]
+my = np.fromstring(my.split("\n")[1], dtype=int, sep=",")
+nearby = np.array([list(map(int, x.split(","))) for x in nearby.split("\n")[1:-1]])
 
 #%%
-dic = dict()
-nearby = list()
-my = ()
-raws = iter(raw)
-
-for line in raws:
-    if not line:
-        continue
-
-    if "or" in line:
-        line = line.split(": ")
-        name = line[0]
-        vals = line[1].split(" ")
-        dic[name] = [[int(y) for y in x.split("-")] for x in itemgetter(0, 2)(vals)]
-        continue
-
-    if line == "your ticket:":
-        my = np.fromstring(next(raws), dtype=int, sep=",")
-        continue
-
-    if line == "nearby tickets:":
-        for x in raws:
-            nearby.append(list(map(int, x.split(","))))
-
-nearby = np.array(nearby)
-# %%
-def match(arr: np.ndarray, vals: Iterable[Iterable[int]]) -> np.ndarray:
+def match(arr: np.ndarray, val: Iterable[int], out=None) -> np.ndarray:
     """Check if each value in arr is between (val[0], val[1]) in vals."""
-    out = np.zeros_like(arr, dtype=bool)
-    for val in vals:
-        out += np.logical_and(val[0] <= arr, arr <= val[1])
+    if out is None:
+        out = np.zeros_like(arr, dtype=bool)
+    out += np.logical_and(val[0] <= arr, arr <= val[1])
+    out += np.logical_and(val[2] <= arr, arr <= val[3])
     return out
 
 
 # %%
 valid_arr = np.zeros_like(nearby, dtype=bool)
-for criterion, vals in dic.items():
-    valid_arr += match(nearby, vals)
+for vals in ranges:
+    match(nearby, vals, valid_arr)
 
 
 def test1():
@@ -54,34 +35,16 @@ def test1():
     assert np.sum(~valid_arr * nearby) == 22977
 
 
-# %%
+#%%
 def test2():
-    v_tics = nearby[np.where(np.sum(valid_arr, axis=1) == nearby.shape[1])[0]]  # Valid tickets.
+    v_tics = nearby[np.all(valid_arr, axis=1)]  # Valid tickets.
+    n_cols = len(ranges)
 
-    valid_c: list[list[int, list[int]]] = [  # Criterion: valid columns.
-        [
-            i,
-            list(np.where(np.sum(match(v_tics, vals), axis=0) == v_tics.shape[0])[0]),
-        ]
-        for i, vals in enumerate(dic.values())
-    ]
+    adj = np.zeros((n_cols, n_cols), dtype=bool)  # "Adjacency matrix"
+    for i, vals in enumerate(ranges):
+        adj[:, i] = np.all(match(v_tics, vals), axis=0)
 
-    # Get unique criterion: col pair. Then, remove said col from all other criteria.
-    matches: dict[int, int] = dict()
-    while valid_c:
-        valid_c = sorted(valid_c, key=lambda x: len(x[1]))
-        criterion, col = valid_c.pop(0)
-        assert len(col) == 1
-        col = col[0]
-        matches[criterion] = col
-        for t in valid_c:
-            try:
-                t[1].remove(col)
-            except ValueError:
-                pass
+    matches = maximum_bipartite_matching(csr_matrix(adj))
+    targets = [i for i, s in enumerate(dic.split("\n")) if s.startswith("departure")]
 
-    targets = [i for i, criterion in enumerate(dic.keys()) if criterion.startswith("departure")]
-    assert np.prod(my[list(map(matches.get, targets))]) == 998358379943
-
-
-# %%
+    assert np.prod(my[matches[targets]]) == 998358379943
