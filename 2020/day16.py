@@ -12,7 +12,7 @@ dic, my, nearby = load("day16.txt", split="\n\n")
 #%%
 ranges = [tuple(map(int, re.findall("\d+", x))) for x in dic.split("\n")]
 my = np.fromstring(my.split("\n")[1], dtype=int, sep=",")
-nearby = np.array([list(map(int, x.split(","))) for x in nearby.split("\n")[1:-1]])
+nearby = np.array([list(map(int, x.split(","))) for x in nearby.split("\n")[1:]])
 
 #%%
 def match(arr: np.ndarray, val: Iterable[int], out=None) -> np.ndarray:
@@ -46,5 +46,4 @@ def test2():
 
     matches = maximum_bipartite_matching(csr_matrix(adj))
     targets = [i for i, s in enumerate(dic.split("\n")) if s.startswith("departure")]
-
     assert np.prod(my[matches[targets]]) == 998358379943
