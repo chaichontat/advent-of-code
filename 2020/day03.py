@@ -3,8 +3,9 @@ import numpy as np
 
 from utils import load
 
-raw = load("day3.txt")
+raw = load("day03.txt")
 block = len(raw[0])
+
 # %%
 def get_tree(x, y):
     return raw[y][x % block]

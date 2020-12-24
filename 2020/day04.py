@@ -3,7 +3,7 @@ import re
 
 from utils import load
 
-raw = load("day4.txt", split="\n\n")
+raw = load("day04.txt", split="\n\n")
 
 # %%
 def test1():

@@ -3,7 +3,7 @@ from collections import Counter
 
 from utils import load
 
-raw = load("day2.txt")
+raw = load("day02.txt")
 
 # %% Part 1
 def test1():

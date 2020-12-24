@@ -3,7 +3,7 @@ import networkx as nx
 
 from utils import load
 
-raw = load("day7.txt")
+raw = load("day07.txt")
 target = "shiny gold bag"
 
 # %%

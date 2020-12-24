@@ -5,7 +5,7 @@ import numpy as np
 
 from utils import load
 
-raw = load("day5.txt")
+raw = load("day05.txt")
 
 # %%
 def binary(x: str, l: int, h: int, lowc: str, hic: str) -> int:

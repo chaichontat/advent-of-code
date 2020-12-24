@@ -1,9 +1,9 @@
 #%%
 from utils import load
 
-raw = load("day9.txt", parseint=True)
+raw = load("day09.txt", parseint=True)
 
-# %% Part 1
+# %%
 def run_test(idx):
     for i in range(idx - 25, idx):
         for j in range(i + 1, idx):

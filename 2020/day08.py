@@ -3,11 +3,10 @@ import copy
 
 from utils import load
 
-raw = load("day8.txt", split="\n")
+raw = load("day08.txt", split="\n")
 proc = [[(u := x.split())[0], int(u[1])] for x in raw]
+
 # %%
-
-
 def execute(program, acc, curr):
     cmd, n = program[curr]
     if cmd == "acc":
@@ -59,7 +58,7 @@ def test2():
     curr = 0
     while True:
         if curr in passed:
-            raise Exception
+            raise ValueError
         passed.add(curr)
 
         # Change

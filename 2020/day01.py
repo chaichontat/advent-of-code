@@ -1,9 +1,9 @@
 # %%
 from utils import load
 
-data = load("day1.txt", parseint=True)
+data = load("day01.txt", parseint=True)
 
-# %% Part 1
+# %%
 def test1():
     for i in range(len(data)):
         for j in range(i, len(data)):
@@ -14,7 +14,7 @@ def test1():
     raise ValueError("Failed.")
 
 
-# %% Part 2
+# %%
 def test2():
     for i in range(len(data)):
         for j in range(i, len(data)):
