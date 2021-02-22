@@ -1,6 +1,5 @@
 # Advent of Code Solutions
-
-[![Build Status](https://travis-ci.com/chaichontat/advent-of-code.svg?branch=master)](https://travis-ci.com/chaichontat/advent-of-code)
+![GitHub Actions](https://github.com/chaichontat/advent-of-code/actions/workflows/python-package-conda.yml/badge.svg)
 
 ## Philosophy
 
