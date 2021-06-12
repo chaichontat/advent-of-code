@@ -1,0 +1,6 @@
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /2020/rust
+    schedule:
+      interval: daily
