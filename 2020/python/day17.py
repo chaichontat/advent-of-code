@@ -9,7 +9,7 @@ raw = raw.strip().replace(".", "0").replace("#", "1").split("\n")
 
 # %%
 def gen_kernel(dim: int):
-    ker = np.ones((3,) * dim, dtype=np.bool)
+    ker = np.ones((3,) * dim, dtype=bool)
     ker[(1,) * dim] = False
     return ker
 
