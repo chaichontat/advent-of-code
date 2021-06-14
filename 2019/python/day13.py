@@ -5,7 +5,7 @@ import numpy as np
 from intcode import IntCode
 from utils import load
 
-raw = load("input_day13.txt", split=",", parseint=True)
+raw = load("day13.txt", split=",", parseint=True)
 # %%
 ic = IntCode(raw)
 ic.execute()

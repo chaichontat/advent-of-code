@@ -1,6 +1,7 @@
 #%%
 from collections import Counter
 
+
 #%% Part 1
 def check(n):
     ok = False
@@ -13,12 +14,12 @@ def check(n):
     return ok
 
 
-print(sum([check(n) for n in range(171309, 643603)]))
+def test04a(benchmark):
+    assert benchmark(lambda: sum([check(n) for n in range(171309, 643603)])) == 1625
+
 
 #%% Part 2
-
-
-def check(n):
+def check2(n):
     n = str(int(n))
     for i in range(len(n) - 1):
         if n[i] > n[i + 1]:  # Going from left to right, the digits never decrease.
@@ -31,4 +32,8 @@ def check(n):
     return False
 
 
-print(sum([check(n) for n in range(171309, 643603)]))
+def test04b(benchmark):
+    assert benchmark(lambda: sum([check2(n) for n in range(171309, 643603)])) == 1111
+
+
+# %%

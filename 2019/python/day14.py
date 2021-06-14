@@ -3,7 +3,7 @@ from math import ceil
 
 from utils import load
 
-raw = load("input_day14.txt")
+raw = load("day14.txt")
 
 # %%
 

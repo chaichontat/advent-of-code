@@ -1,9 +1,10 @@
 #%%
 from itertools import permutations
+
 from intcode import IntCode
 from utils import load
 
-raw = load("input_day7.txt", split=",", parseint=True)
+raw = load("day07.txt", split=",", parseint=True)
 
 #%% Part 1
 
@@ -17,7 +18,9 @@ def run_phase(seq):
     return input_
 
 
-print(max([run_phase(seq) for seq in permutations(range(5))]))
+def test07a(benchmark):
+    assert benchmark(lambda: max([run_phase(seq) for seq in permutations(range(5))])) == 77500
+
 
 #%% Part 2
 # Return code 1 -> need input, 2 -> have output.
@@ -41,5 +44,8 @@ def run_loop(seq):
         i += 1
 
 
-print(max([run_loop(seq) for seq in permutations(range(5, 10))]))
+def test07b(benchmark):
+    assert benchmark(lambda: max([run_loop(seq) for seq in permutations(range(5, 10))])) == 22476942
+
+
 # %%

@@ -5,7 +5,7 @@ import numpy as np
 
 
 def process(s: str):
-    """ Convert raw data to an array of asteroid coordinates. """
+    """Convert raw data to an array of asteroid coordinates."""
     s = s.replace(".", "0")
     s = s.replace("#", "1")
     s = s.split()
@@ -18,7 +18,7 @@ def process(s: str):
 
 
 def calc_polar(ori, target):
-    """ Returns l2 distance w/ angle in rad. """
+    """Returns l2 distance w/ angle in rad."""
     coords = ori.copy()
     coords[:, 0] -= target[0]
     coords[:, 1] -= target[1]
@@ -44,7 +44,7 @@ def get_largest_num(coords):
 
 
 def sort_for_scan(arr):
-    """ Need input to be presorted with increasing angle and decreasing distance. """
+    """Need input to be presorted with increasing angle and decreasing distance."""
     already = set()
     order = []
     i = arr.shape[0] - 1
@@ -62,14 +62,17 @@ def sort_for_scan(arr):
     return order
 
 
-if __name__ == "__main__":
-    loc = Path("input_day10.txt").read_text()
+path = Path(__file__).parent.parent / "data" / "day10.txt"
+loc = path.read_text()
 
-    # Part 1
+
+def test10a(benchmark):
+    assert benchmark(lambda: get_largest_num(process(loc))[0]) == 269
+
+
+# Part 2
+def part2():
     s = process(loc)
-    print(get_largest_num(s))
-
-    # Part 2
     polar = np.array(calc_polar(s, get_largest_num(s)[1])).T  # 0 rad at (1, 0).
     polar[:, 1] *= -1  # Flip y-axis.
     polar[polar < 0] += 2 * np.pi  # Set range to [0, 2π].
@@ -79,8 +82,14 @@ if __name__ == "__main__":
     polar[polar[:, 1] <= 0, 1] += 2 * np.pi
 
     polar = polar[np.lexsort((-polar[:, 0], polar[:, 1]))]
+
     polar = polar[sort_for_scan(polar), ...]
 
-    print(polar[199, 2] * 100 + polar[199, 3])
+    return polar[199, 2] * 100 + polar[199, 3]
+
+
+def test10b(benchmark):
+    assert benchmark(part2) == 612
+
 
 # %%

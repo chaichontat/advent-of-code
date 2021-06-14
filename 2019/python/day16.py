@@ -3,7 +3,7 @@ import numpy as np
 
 from utils import load
 
-raw = load("input_day16.txt")
+raw = load("day16.txt")
 
 
 def parse(s: str):

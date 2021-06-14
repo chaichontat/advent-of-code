@@ -2,7 +2,7 @@
 from intcode import IntCode
 from utils import load
 
-raw = load("input_day15.txt", split=",", parseint=True)
+raw = load("day15.txt", split=",", parseint=True)
 
 #%%
 class Repair(IntCode):

@@ -4,7 +4,7 @@ from itertools import combinations
 from utils import load
 
 
-raw = load("input_day12.txt")
+raw = load("day12.txt")
 poss = np.array([[int(y[2:]) for y in x[1:-1].split(", ")] for x in raw])
 
 
