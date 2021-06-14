@@ -7,3 +7,5 @@ dependencies:
   - numpy
   - pytest
   - scipy
+  - pip:
+      - pytest-benchmark
