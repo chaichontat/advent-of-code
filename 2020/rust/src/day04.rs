@@ -1,25 +1,19 @@
-extern crate advent_of_code_2020;
-
-use advent_of_code_2020::utils::*;
+use super::utils::*;
 use itertools::Itertools;
 use std::str::FromStr;
 use strum_macros::EnumString;
 
-fn process() -> Vec<String> {
-    let raw = read_sep("day04.txt", "\n\n");
-    raw.into_iter()
+fn process(raw: &Vec<String>) -> Vec<String> {
+    let seped: Vec<String> = raw.join("\n").split("\n\n").map(str::to_string).collect();
+    seped
+        .into_iter()
         .filter(|x| {
             gen_re(r"[bie]yr").find_iter(&x).count() == 3
                 && gen_re(r"hgt").is_match(&x)
                 && gen_re(r"[he]cl").find_iter(&x).count() == 2
                 && gen_re(r"pid").is_match(&x)
         })
-        .collect()
-}
-
-#[test]
-fn part1() {
-    assert_eq!(process().len(), 190);
+        .collect::<Vec<_>>()
 }
 
 #[allow(non_camel_case_types)]
@@ -62,13 +56,26 @@ fn check(s: &str) -> bool {
     }
 }
 
-#[test]
-fn part2() {
-    assert_eq!(
-        process()
-            .iter()
-            .filter(|line| line.split_whitespace().all(check))
-            .count(),
-        121
-    );
+pub fn part1(raw: &Vec<String>) -> usize {
+    process(raw).len()
+}
+
+pub fn part2(raw: &Vec<String>) -> usize {
+    process(raw)
+        .iter()
+        .filter(|line| line.split_whitespace().all(check))
+        .count()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test1() {
+        assert_eq!(part1(&read("day04.txt")), 190);
+    }
+    #[test]
+    fn test2() {
+        assert_eq!(part2(&read("day04.txt")), 121);
+    }
 }

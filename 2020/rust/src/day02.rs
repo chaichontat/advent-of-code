@@ -1,10 +1,7 @@
-extern crate advent_of_code_2020;
-
-use advent_of_code_2020::utils::*;
+use super::utils::*;
 use itertools::Itertools;
 
-fn process(f: fn((Vec<usize>, char, String)) -> bool, ans: usize) {
-    let input = read("day02.txt");
+fn process(input: &Vec<String>, f: fn((Vec<usize>, char, String)) -> bool) -> usize {
     let mut valid = 0;
     for x in input {
         let (num, c, pwd) = x.splitn(3, " ").collect_tuple().unwrap();
@@ -19,21 +16,34 @@ fn process(f: fn((Vec<usize>, char, String)) -> bool, ans: usize) {
             valid += 1;
         }
     }
-    assert_eq!(valid, ans);
+    valid
 }
 
-#[test]
-fn part1() {
+pub fn part1(input: &Vec<String>) -> usize {
     let f = |(num, c, pwd): (Vec<usize>, char, String)| -> bool {
         (num[0]..=num[1]).contains(&(pwd.matches(c).count()))
     };
-    process(f, 447);
+    process(input, f)
 }
 
-#[test]
-fn part2() {
+pub fn part2(input: &Vec<String>) -> usize {
     let f = |(num, c, pwd): (Vec<usize>, char, String)| -> bool {
         (str_idx(&pwd, num[0] - 1) == c) ^ (str_idx(&pwd, num[1] - 1) == c)
     };
-    process(f, 249);
+    process(input, f)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test1() {
+        assert_eq!(part1(&read("day02.txt")), 447);
+    }
+
+    #[test]
+    fn test2() {
+        assert_eq!(part2(&read("day02.txt")), 249);
+    }
+}
+

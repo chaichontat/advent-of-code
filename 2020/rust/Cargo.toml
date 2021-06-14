@@ -9,13 +9,14 @@ version = "0.1.0"
 [dependencies]
 itertools = "0.10.1"
 ndarray = "0.15.3"
+nohash-hasher = "0.2.0"
 regex = "1.5"
 strum = "0.21"
 strum_macros = "0.21"
 
-# [dev-dependencies]
-# criterion = "0.3"
+[dev-dependencies]
+criterion = "0.3"
 
-# [[bench]]
-# harness = false
-# name = "my_benchmark"
+[[bench]]
+harness = false
+name = "bench"
