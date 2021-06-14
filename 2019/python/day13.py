@@ -1,5 +1,4 @@
 #%%
-import matplotlib.pyplot as plt
 import numpy as np
 
 from intcode import IntCode
@@ -52,13 +51,13 @@ class Arcade(IntCode):
 def show(ic):
     s = ic.img.copy()
     s[s == 3] = 1
-    plt.imshow(s, cmap="gray", origin="lower")
+    # plt.imshow(s, cmap="gray", origin="lower")
 
 
 ic = Arcade(raw)
 ic.ins[0] = 2
 ic.run_game()
-show(ic)
+# show(ic)
 
 # %% Part 2
 while not np.all(ic.img != 2):
