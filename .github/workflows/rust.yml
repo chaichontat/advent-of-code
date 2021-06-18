@@ -23,6 +23,3 @@ jobs:
       - name: Test
         run: cargo test --verbose
         working-directory: ${{ matrix.dir }}
-      - name: Benchmark
-        run: cargo bench -vv
-        working-directory: ${{ matrix.dir }}
