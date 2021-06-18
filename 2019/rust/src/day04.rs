@@ -1,4 +1,3 @@
-use super::utils::*;
 // use regex::Regex;  // Cannot use lookaheads.
 
 fn val1(n: &str) -> bool {
@@ -51,6 +50,7 @@ pub fn part2(raw: &[String]) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use super::super::utils::*;
     use super::*;
     #[test]
     fn test1() {
