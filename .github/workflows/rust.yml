@@ -2,23 +2,36 @@ name: Rust
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  test_2019:
     runs-on: ubuntu-latest
     env:
-        working-directory: ./2020/rust
+      working-directory: ./2019/rust
     steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: cargo build --verbose
-      working-directory: ${{env.working-directory}}
-    - name: Run tests
-      run: cargo test --verbose
-      working-directory: ${{env.working-directory}}
+      - uses: actions/checkout@v2
+      - name: Build 2019
+        run: cargo build --verbose
+        working-directory: ${{env.working-directory}}
+      - name: Test 2019
+        run: cargo test --verbose
+        working-directory: ${{env.working-directory}}
+
+  test_2020:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./2020/rust
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build 2020
+        run: cargo build --verbose
+        working-directory: ${{env.working-directory}}
+      - name: Test 2020
+        run: cargo test --verbose
+        working-directory: ${{env.working-directory}}
