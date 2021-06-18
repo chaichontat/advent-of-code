@@ -9,28 +9,20 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test_2019:
+  tests:
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./2019/rust
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build 2019
-        run: cargo build --verbose
-        working-directory: ${{env.working-directory}}
-      - name: Test 2019
-        run: cargo test --verbose
-        working-directory: ${{env.working-directory}}
+    strategy:
+      matrix:
+        dir: ["./2019/rust", "./2020/rust"]
 
-  test_2020:
-    runs-on: ubuntu-latest
-    env:
-      working-directory: ./2020/rust
     steps:
       - uses: actions/checkout@v2
-      - name: Build 2020
+      - name: Build
         run: cargo build --verbose
-        working-directory: ${{env.working-directory}}
-      - name: Test 2020
+        working-directory: ${{ matrix.dir }}
+      - name: Test
         run: cargo test --verbose
-        working-directory: ${{env.working-directory}}
+        working-directory: ${{ matrix.dir }}
+      - name: Benchmark
+        run: cargo bench -vv
+        working-directory: ${{ matrix.dir }}
