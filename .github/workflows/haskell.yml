@@ -8,41 +8,32 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
         dir: ["./2020/haskell"]
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-haskell@v1
-      with:
-        ghc-version: '8.10.3'
-        cabal-version: '3.2'
+      - uses: actions/checkout@v2
+      - uses: actions/setup-haskell@v1.1.4
+        with:
+          ghc-version: "8.10.4"
+          stack-version: "2.7.1"
 
-    - name: Cache
-      uses: actions/cache@v1
-      env:
-        cache-name: cache-cabal
-      with:
-        path: ${{ matrix.dir }}/.cabal
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.cabal') }}-${{ hashFiles('**/cabal.project') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
+      - uses: actions/cache@v2.1.3
+        name: Cache ~/.stack
+        with:
+          path: ${{ matrix.dir }}/.stack
+          key: ${{ env.cache-name }}-stack-${{ hashFiles('${{ matrix.dir }}/package.yaml') }}
 
-    - name: Install dependencies
-      run: |
-        cabal update
-        cabal build --only-dependencies --enable-tests --enable-benchmarks
-      working-directory: ${{ matrix.dir }}
-      
-    - name: Build
-      run: cabal build --enable-tests --enable-benchmarks all
-      working-directory: ${{ matrix.dir }}
-      
-    - name: Run tests
-      run: cabal test all
-      working-directory: ${{ matrix.dir }}
+      - name: Install dependencies
+        run: stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --only-dependencies
+        working-directory: ${{ matrix.dir }}
+
+      - name: Build
+        run: stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks
+        working-directory: ${{ matrix.dir }}
+
+      - name: Test
+        run: stack test --system-ghc
+        working-directory: ${{ matrix.dir }}
