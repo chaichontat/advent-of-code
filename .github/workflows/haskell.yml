@@ -24,7 +24,7 @@ jobs:
         name: Cache ~/.stack
         with:
           path: ${{ matrix.dir }}/.stack
-          key: ${{ env.cache-name }}-stack-${{ hashFiles('${{ matrix.dir }}/package.yaml') }}
+          key: ${{ env.cache-name }}-stack-${{ hashFiles('**/package.yaml') }}
 
       - name: Install dependencies
         run: stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --only-dependencies
