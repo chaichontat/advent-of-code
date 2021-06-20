@@ -17,6 +17,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: ⚡ Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ matrix.dir }}/.cargo/registry
+            ${{ matrix.dir }}/.cargo/git
+            ${{ matrix.dir }}/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Build
         run: cargo build --verbose
         working-directory: ${{ matrix.dir }}
