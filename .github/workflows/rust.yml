@@ -2,23 +2,32 @@ name: Rust
 
 on:
   push:
-    branches: [ master ]
   pull_request:
-    branches: [ master ]
-
+  schedule:
+    - cron: "0 0 * * 1"
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  tests:
     runs-on: ubuntu-latest
-    env:
-        working-directory: ./2020/rust
+    strategy:
+      matrix:
+        dir: ["./2019/rust", "./2020/rust"]
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: cargo build --verbose
-      working-directory: ${{env.working-directory}}
-    - name: Run tests
-      run: cargo test --verbose
-      working-directory: ${{env.working-directory}}
+      - uses: actions/checkout@v2
+      - name: ⚡ Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ matrix.dir }}/.cargo/registry
+            ${{ matrix.dir }}/.cargo/git
+            ${{ matrix.dir }}/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build
+        run: cargo build --verbose
+        working-directory: ${{ matrix.dir }}
+      - name: Test
+        run: cargo test --verbose
+        working-directory: ${{ matrix.dir }}
