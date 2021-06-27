@@ -49,6 +49,12 @@ impl IntCode {
         &self.mem
     }
 
+    pub fn run_pause(&mut self) {
+        while !self.done && self.output.is_empty() {
+            self.execute()
+        }
+    }
+
     fn execute(&mut self) {
         let (op, p) = self.fetch_ins(self.ptr);
         let (op, modes) = self.parse_ins(op);
