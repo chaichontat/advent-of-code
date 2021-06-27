@@ -11,19 +11,22 @@ enum OpCode {
     Jif = 6, // Jump if false.
     Lt = 7,
     Eq = 8,
+    AdjRel = 9, // Adjust relative base.
     End = 99,
 }
 
-#[derive(FromPrimitive, Debug)]
+#[derive(FromPrimitive, Debug, PartialEq)]
 enum Mode {
     Pos = 0,
     Imm = 1,
+    Rel = 2,
 }
 
 #[derive(Debug)]
 pub struct IntCode {
     pub mem: Vec<isize>,
     pub ptr: usize,
+    pub rel: isize,
     pub done: bool,
     pub input: VecDeque<isize>,
     pub output: VecDeque<isize>,
@@ -34,6 +37,7 @@ impl From<&[isize]> for IntCode {
         IntCode {
             mem: mem.to_vec(),
             ptr: 0,
+            rel: 0,
             done: false,
             input: VecDeque::new(),
             output: VecDeque::new(),
@@ -61,15 +65,16 @@ impl IntCode {
         let cmd = (
             self.fetch_data(&modes[0], p.0),
             self.fetch_data(&modes[1], p.1),
+            self.fetch_write(&modes[2], p.2),
         );
         let mut step = true;
 
         match op {
-            OpCode::Add => self.set(cmd.0 + cmd.1, p.2),
-            OpCode::Mul => self.set(cmd.0 * cmd.1, p.2),
+            OpCode::Add => self.set(cmd.0 + cmd.1, cmd.2),
+            OpCode::Mul => self.set(cmd.0 * cmd.1, cmd.2),
             OpCode::In => {
                 let test = self.input.pop_front().unwrap();
-                self.set(test, p.0) // Retain addr for writing.
+                self.set(test, self.fetch_write(&modes[0], p.0)) // Retain addr for writing.
             }
             OpCode::Out => self.output.push_back(cmd.0),
             OpCode::End => {
@@ -88,15 +93,16 @@ impl IntCode {
                     step = false;
                 }
             }
-            OpCode::Lt => self.op_lteq(OpCode::Lt, cmd, p.2),
-            OpCode::Eq => self.op_lteq(OpCode::Eq, cmd, p.2),
+            OpCode::Lt => self.op_lteq(OpCode::Lt, (cmd.0, cmd.1), cmd.2),
+            OpCode::Eq => self.op_lteq(OpCode::Eq, (cmd.0, cmd.1), cmd.2),
+            OpCode::AdjRel => self.rel += cmd.0,
         };
         if step {
             self.step(op);
         }
     }
 
-    fn op_lteq(&mut self, op: OpCode, cmd: (isize, isize), p: isize) {
+    fn op_lteq(&mut self, op: OpCode, cmd: (isize, isize), p: usize) {
         if (cmd.0 < cmd.1 && op == OpCode::Lt) || (cmd.0 == cmd.1 && op == OpCode::Eq) {
             self.set(1, p)
         } else {
@@ -108,13 +114,12 @@ impl IntCode {
         self.ptr += match op {
             OpCode::Add | OpCode::Mul | OpCode::Lt | OpCode::Eq => 4,
             OpCode::Jit | OpCode::Jif => 3,
-            OpCode::In | OpCode::Out => 2,
+            OpCode::In | OpCode::Out | OpCode::AdjRel => 2,
             OpCode::End => 0,
         };
     }
 
-    fn set(&mut self, to_set: isize, addr: isize) {
-        let addr = usize::try_from(addr).unwrap();
+    fn set(&mut self, to_set: isize, addr: usize) {
         if addr >= self.mem.len() {
             self.mem.resize(addr + 1, 0);
         }
@@ -138,6 +143,18 @@ impl IntCode {
         match mode {
             Mode::Pos => *self.mem.get(usize::try_from(addr).unwrap()).unwrap_or(&0),
             Mode::Imm => addr,
+            Mode::Rel => *self
+                .mem
+                .get(usize::try_from(addr + self.rel).unwrap())
+                .unwrap_or(&0),
+        }
+    }
+
+    fn fetch_write(&self, mode: &Mode, addr: isize) -> usize {
+        match mode {
+            Mode::Pos => usize::try_from(addr).unwrap_or(0),
+            Mode::Imm => unreachable!(),
+            Mode::Rel => usize::try_from(addr + self.rel).unwrap_or(0),
         }
     }
 
@@ -201,5 +218,30 @@ mod tests {
             20, 1105, 1, 46, 98, 99,
         ];
         test_inout(larger, &[7, 8, 9], &[999, 1000, 1001]);
+    }
+
+    fn test_out(mem: &[isize], ins: &Vec<isize>, outs: &[isize]) {
+        let mut ic = IntCode::from(mem);
+        ic.input.append(&mut VecDeque::from(ins.clone()));
+        ic.run();
+        assert_eq!(ic.output, outs);
+    }
+
+    #[test]
+    fn day9_rel_base() {
+        let quine = [
+            109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99,
+        ];
+        test_out(&quine, &Vec::<isize>::new(), &quine);
+        test_out(
+            &[1102, 34915192, 34915192, 7, 4, 7, 99, 0],
+            &Vec::<isize>::new(),
+            &[1219070632396864],
+        );
+        test_out(
+            &[104, 1125899906842624, 99],
+            &Vec::<isize>::new(),
+            &[1125899906842624],
+        );
     }
 }

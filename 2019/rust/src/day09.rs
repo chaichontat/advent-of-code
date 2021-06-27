@@ -1,0 +1,35 @@
+use super::intcode::*;
+use super::utils::*;
+
+fn run_ic(raw: &[String], input: isize) -> usize {
+    let mem: Vec<isize> = raw[0]
+        .split(',')
+        .map(|x| x.parse::<isize>().unwrap())
+        .collect();
+    let mut ic = IntCode::from(mem.as_slice());
+    ic.input.push_back(input);
+    ic.run();
+    ic.output.pop_front().unwrap() as usize
+}
+
+pub fn part1(raw: &[String]) -> usize {
+    run_ic(raw, 1)
+}
+
+pub fn part2(raw: &[String]) -> usize {
+    run_ic(raw, 2)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test1() {
+        assert_eq!(part1(&read("day09.txt")), 2789104029);
+    }
+
+    #[test]
+    fn test2() {
+        assert_eq!(part2(&read("day09.txt")), 32869);
+    }
+}
