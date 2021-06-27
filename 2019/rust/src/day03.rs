@@ -2,26 +2,6 @@ use super::utils::*;
 use num_complex::Complex;
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
-use strum_macros::EnumString;
-
-#[derive(Debug, PartialEq, EnumString)]
-enum Dir {
-    U,
-    D,
-    L,
-    R,
-}
-
-impl Dir {
-    fn to_cmp(&self) -> Complex<isize> {
-        match self {
-            Self::U => Complex::new(0, 1),
-            Self::D => Complex::new(0, -1),
-            Self::L => Complex::new(-1, 0),
-            Self::R => Complex::new(1, 0),
-        }
-    }
-}
 
 fn gen_set(path: &str) -> HashSet<Complex<isize>> {
     let dirs: Vec<(char, isize)> = path

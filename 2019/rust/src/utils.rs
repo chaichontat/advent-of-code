@@ -1,8 +1,10 @@
+use num_complex::Complex;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::fs;
 use std::hash::Hash;
+use strum_macros::EnumString;
 
 pub fn read(path: &str) -> Vec<String> {
     let p = format!("../data/{}", path);
@@ -40,6 +42,21 @@ impl<T: Clone + Eq + Hash, R> Set for HashMap<T, R> {
     }
 }
 
-// pub fn to_tuple<T>(v: Vec<&T>) -> (&T,) {
-//     v.iter().collect_tuple().unwrap()
-// }
+#[derive(Debug, PartialEq, EnumString)]
+pub enum Dir {
+    U,
+    D,
+    L,
+    R,
+}
+
+impl Dir {
+    pub fn to_cmp(&self) -> Complex<isize> {
+        match self {
+            Self::U => Complex::new(0, 1),
+            Self::D => Complex::new(0, -1),
+            Self::L => Complex::new(-1, 0),
+            Self::R => Complex::new(1, 0),
+        }
+    }
+}
