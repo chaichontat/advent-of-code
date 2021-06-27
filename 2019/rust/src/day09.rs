@@ -1,11 +1,7 @@
 use super::intcode::*;
 
 fn run_ic(raw: &[String], input: isize) -> usize {
-    let mem: Vec<isize> = raw[0]
-        .split(',')
-        .map(|x| x.parse::<isize>().unwrap())
-        .collect();
-    let mut ic = IntCode::from(mem.as_slice());
+    let mut ic = IntCode::from(&raw[0]);
     ic.input.push_back(input);
     ic.run();
     ic.output.pop_front().unwrap() as usize

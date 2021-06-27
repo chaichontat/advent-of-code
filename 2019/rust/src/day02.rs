@@ -2,11 +2,7 @@ use super::intcode::*;
 use std::cmp::Ordering;
 
 pub fn part1(raw: &[String]) -> usize {
-    let mem: Vec<isize> = raw[0]
-        .split(',')
-        .map(|x| x.parse::<isize>().unwrap())
-        .collect();
-    let mut ic = IntCode::from(mem.as_slice());
+    let mut ic = IntCode::from(&raw[0]);
     ic.mem[1] = 12;
     ic.mem[2] = 2;
     ic.run()[0] as usize

@@ -45,6 +45,24 @@ impl From<&[isize]> for IntCode {
     }
 }
 
+impl From<&String> for IntCode {
+    fn from(raw: &String) -> Self {
+        let mem: Vec<isize> = raw
+            .split(',')
+            .map(|x| x.parse::<isize>().unwrap())
+            .collect::<Vec<_>>();
+
+        IntCode {
+            mem,
+            ptr: 0,
+            rel: 0,
+            done: false,
+            input: VecDeque::new(),
+            output: VecDeque::new(),
+        }
+    }
+}
+
 impl IntCode {
     pub fn run(&mut self) -> &Vec<isize> {
         while !self.done {
