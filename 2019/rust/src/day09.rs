@@ -1,5 +1,4 @@
 use super::intcode::*;
-use super::utils::*;
 
 fn run_ic(raw: &[String], input: isize) -> usize {
     let mem: Vec<isize> = raw[0]
@@ -23,6 +22,7 @@ pub fn part2(raw: &[String]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::*;
     #[test]
     fn test1() {
         assert_eq!(part1(&read("day09.txt")), 2789104029);

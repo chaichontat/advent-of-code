@@ -1,5 +1,4 @@
 use super::intcode::*;
-use super::utils::*;
 use itertools::Itertools;
 
 fn run_ic(raw: &[String], code: [isize; 2]) -> isize {
@@ -60,6 +59,7 @@ pub fn part2(raw: &[String]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::*;
     #[test]
     fn test1() {
         assert_eq!(part1(&read("day07.txt")), 77500);

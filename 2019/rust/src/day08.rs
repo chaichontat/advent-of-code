@@ -1,4 +1,3 @@
-use super::utils::*;
 use ndarray::prelude::*;
 use ndarray::Array;
 
@@ -48,6 +47,7 @@ pub fn part2(raw: &[String]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::*;
     #[test]
     fn test1() {
         assert_eq!(part1(&read("day08.txt")), 1950);

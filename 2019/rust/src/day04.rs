@@ -50,8 +50,8 @@ pub fn part2(raw: &[String]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::super::utils::*;
     use super::*;
+    use crate::utils::*;
     #[test]
     fn test1() {
         assert_eq!(part1(&read("day04.txt")), 1625);
