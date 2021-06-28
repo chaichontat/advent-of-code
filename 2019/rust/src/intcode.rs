@@ -39,8 +39,8 @@ impl From<&[isize]> for IntCode {
             ptr: 0,
             rel: 0,
             done: false,
-            input: VecDeque::new(),
-            output: VecDeque::new(),
+            input: VecDeque::with_capacity(100),
+            output: VecDeque::with_capacity(100),
         }
     }
 }
@@ -57,8 +57,8 @@ impl From<&String> for IntCode {
             ptr: 0,
             rel: 0,
             done: false,
-            input: VecDeque::new(),
-            output: VecDeque::new(),
+            input: VecDeque::with_capacity(100),
+            output: VecDeque::with_capacity(100),
         }
     }
 }
@@ -77,19 +77,23 @@ impl IntCode {
         }
     }
 
+    pub fn run_pause_i(&mut self, i: usize) {
+        for _ in 0..i {
+            self.run_pause();
+        }
+    }
+
     fn execute(&mut self) {
         let (op, p) = self.fetch_ins(self.ptr);
         let (op, modes) = self.parse_ins(op);
         let cmd = (
             self.fetch_data(&modes[0], p.0),
             self.fetch_data(&modes[1], p.1),
-            self.fetch_write(&modes[2], p.2),
         );
         let mut step = true;
-
         match op {
-            OpCode::Add => self.set(cmd.0 + cmd.1, cmd.2),
-            OpCode::Mul => self.set(cmd.0 * cmd.1, cmd.2),
+            OpCode::Add => self.set(cmd.0 + cmd.1, self.fetch_write(&modes[2], p.2)),
+            OpCode::Mul => self.set(cmd.0 * cmd.1, self.fetch_write(&modes[2], p.2)),
             OpCode::In => {
                 let test = self.input.pop_front().unwrap();
                 self.set(test, self.fetch_write(&modes[0], p.0)) // Retain addr for writing.
@@ -111,8 +115,12 @@ impl IntCode {
                     step = false;
                 }
             }
-            OpCode::Lt => self.op_lteq(OpCode::Lt, (cmd.0, cmd.1), cmd.2),
-            OpCode::Eq => self.op_lteq(OpCode::Eq, (cmd.0, cmd.1), cmd.2),
+            OpCode::Lt => {
+                self.op_lteq(OpCode::Lt, (cmd.0, cmd.1), self.fetch_write(&modes[2], p.2))
+            }
+            OpCode::Eq => {
+                self.op_lteq(OpCode::Eq, (cmd.0, cmd.1), self.fetch_write(&modes[2], p.2))
+            }
             OpCode::AdjRel => self.rel += cmd.0,
         };
         if step {
@@ -139,7 +147,7 @@ impl IntCode {
 
     fn set(&mut self, to_set: isize, addr: usize) {
         if addr >= self.mem.len() {
-            self.mem.resize(addr + 1, 0);
+            self.mem.resize(2 * addr, 0);
         }
         self.mem[addr] = to_set;
     }
@@ -158,6 +166,9 @@ impl IntCode {
     }
 
     fn fetch_data(&self, mode: &Mode, addr: isize) -> isize {
+        // Memory beyond the initial program starts with the value 0
+        // and can be read or written like any other memory.
+        // (It is invalid to try to access memory at a negative address, though.)
         match mode {
             Mode::Pos => *self.mem.get(usize::try_from(addr).unwrap()).unwrap_or(&0),
             Mode::Imm => addr,
@@ -170,9 +181,9 @@ impl IntCode {
 
     fn fetch_write(&self, mode: &Mode, addr: isize) -> usize {
         match mode {
-            Mode::Pos => usize::try_from(addr).unwrap_or(0),
+            Mode::Pos => usize::try_from(addr).unwrap(),
             Mode::Imm => unreachable!(),
-            Mode::Rel => usize::try_from(addr + self.rel).unwrap_or(0),
+            Mode::Rel => usize::try_from(addr + self.rel).unwrap(),
         }
     }
 
