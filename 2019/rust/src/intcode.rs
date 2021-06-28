@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 use std::convert::TryFrom;
+use std::num::TryFromIntError;
 
 #[derive(FromPrimitive, Debug, PartialEq)]
 enum OpCode {
@@ -66,14 +67,14 @@ impl From<&String> for IntCode {
 impl IntCode {
     pub fn run(&mut self) -> &Vec<isize> {
         while !self.done {
-            self.execute()
+            self.execute().unwrap();
         }
         &self.mem
     }
 
     pub fn run_pause(&mut self) {
         while !self.done && self.output.is_empty() {
-            self.execute()
+            self.execute().unwrap();
         }
     }
 
@@ -83,49 +84,48 @@ impl IntCode {
         }
     }
 
-    fn execute(&mut self) {
+    fn execute(&mut self) -> Result<(), TryFromIntError> {
+        // All this unwrapping is to detect negative addresses.
         let (op, p) = self.fetch_ins(self.ptr);
         let (op, modes) = self.parse_ins(op);
         let cmd = (
-            self.fetch_data(&modes[0], p.0),
-            self.fetch_data(&modes[1], p.1),
+            self.fetch_data(&modes[0], p[0]),
+            self.fetch_data(&modes[1], p[1]),
+            self.fetch_write(&modes[2], p[2]),
         );
         let mut step = true;
         match op {
-            OpCode::Add => self.set(cmd.0 + cmd.1, self.fetch_write(&modes[2], p.2)),
-            OpCode::Mul => self.set(cmd.0 * cmd.1, self.fetch_write(&modes[2], p.2)),
+            OpCode::Add => self.set(cmd.0? + cmd.1?, cmd.2?),
+            OpCode::Mul => self.set(cmd.0? * cmd.1?, cmd.2?),
             OpCode::In => {
                 let test = self.input.pop_front().unwrap();
-                self.set(test, self.fetch_write(&modes[0], p.0)) // Retain addr for writing.
+                self.set(test, self.fetch_write(&modes[0], p[0])?) // Retain addr for writing.
             }
-            OpCode::Out => self.output.push_back(cmd.0),
+            OpCode::Out => self.output.push_back(cmd.0?),
             OpCode::End => {
                 self.done = true;
-                return;
+                return Ok(());
             }
             OpCode::Jit => {
-                if cmd.0 != 0 {
-                    self.ptr = usize::try_from(cmd.1).unwrap();
+                if cmd.0.unwrap() != 0 {
+                    self.ptr = cmd.1.and_then(usize::try_from)?;
                     step = false;
                 }
             }
             OpCode::Jif => {
-                if cmd.0 == 0 {
-                    self.ptr = usize::try_from(cmd.1).unwrap();
+                if cmd.0.unwrap() == 0 {
+                    self.ptr = cmd.1.and_then(usize::try_from)?;
                     step = false;
                 }
             }
-            OpCode::Lt => {
-                self.op_lteq(OpCode::Lt, (cmd.0, cmd.1), self.fetch_write(&modes[2], p.2))
-            }
-            OpCode::Eq => {
-                self.op_lteq(OpCode::Eq, (cmd.0, cmd.1), self.fetch_write(&modes[2], p.2))
-            }
-            OpCode::AdjRel => self.rel += cmd.0,
+            OpCode::Lt => self.op_lteq(OpCode::Lt, (cmd.0?, cmd.1?), cmd.2?),
+            OpCode::Eq => self.op_lteq(OpCode::Eq, (cmd.0?, cmd.1?), cmd.2?),
+            OpCode::AdjRel => self.rel += cmd.0?,
         };
         if step {
             self.step(op);
         }
+        Ok(())
     }
 
     fn op_lteq(&mut self, op: OpCode, cmd: (isize, isize), p: usize) {
@@ -152,38 +152,38 @@ impl IntCode {
         self.mem[addr] = to_set;
     }
 
-    fn fetch_ins(&self, ptr: usize) -> (isize, (isize, isize, isize)) {
+    fn fetch_ins(&self, ptr: usize) -> (isize, [isize; 3]) {
         // Returns 0 when out of bound.
         let mut iter = self.mem[ptr..].iter();
         (
             *iter.next().unwrap_or(&0),
-            (
+            [
                 *iter.next().unwrap_or(&0),
                 *iter.next().unwrap_or(&0),
                 *iter.next().unwrap_or(&0),
-            ),
+            ],
         )
     }
 
-    fn fetch_data(&self, mode: &Mode, addr: isize) -> isize {
+    fn fetch_data(&self, mode: &Mode, addr: isize) -> Result<isize, TryFromIntError> {
         // Memory beyond the initial program starts with the value 0
         // and can be read or written like any other memory.
         // (It is invalid to try to access memory at a negative address, though.)
         match mode {
-            Mode::Pos => *self.mem.get(usize::try_from(addr).unwrap()).unwrap_or(&0),
-            Mode::Imm => addr,
-            Mode::Rel => *self
+            Mode::Pos => Ok(*self.mem.get(usize::try_from(addr)?).unwrap_or(&0)),
+            Mode::Imm => Ok(addr),
+            Mode::Rel => Ok(*self
                 .mem
-                .get(usize::try_from(addr + self.rel).unwrap())
-                .unwrap_or(&0),
+                .get(usize::try_from(addr + self.rel)?)
+                .unwrap_or(&0)),
         }
     }
 
-    fn fetch_write(&self, mode: &Mode, addr: isize) -> usize {
+    fn fetch_write(&self, mode: &Mode, addr: isize) -> Result<usize, TryFromIntError> {
         match mode {
-            Mode::Pos => usize::try_from(addr).unwrap(),
+            Mode::Pos => usize::try_from(addr),
             Mode::Imm => unreachable!(),
-            Mode::Rel => usize::try_from(addr + self.rel).unwrap(),
+            Mode::Rel => usize::try_from(addr + self.rel),
         }
     }
 
