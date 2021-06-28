@@ -52,7 +52,6 @@ class IntCode:
 
     def execute(self) -> int:
         while True:
-            print(self.ins)
             cmd, *params = self.parse_op(*self.get_params())
 
             if cmd == 99:
@@ -113,8 +112,6 @@ class IntCode:
         if cmd != 3:
             for mode, param in zip(reversed(op[:-2]), params[:2]):
                 if mode == "0":
-                    if param < 0:
-                        print(param)
                     proc = self.ins[param]
                 elif mode == "1":
                     proc = param
