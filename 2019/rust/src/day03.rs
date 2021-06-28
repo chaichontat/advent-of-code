@@ -12,7 +12,7 @@ fn gen_set(path: &str) -> HashSet<Complex<isize>> {
     let mut curr = Complex::new(0, 0);
     let mut out = HashSet::new();
     for (dir, mag) in dirs.iter() {
-        let d = Dir::to_cmp(&Dir::from_str(&String::from(*dir)).unwrap());
+        let d = Complex::from(Dir::from_str(&String::from(*dir)).unwrap());
         for i in 0..=*mag {
             out.insert(curr + i * d);
         }
@@ -32,7 +32,7 @@ fn gen_dist(path: &str) -> HashMap<Complex<isize>, isize> {
     let mut curr = (Complex::new(0, 0), 0); // Location and total distance.
     let mut out = HashMap::new();
     for (dir, mag) in dirs.iter() {
-        let d = Dir::to_cmp(&Dir::from_str(&String::from(*dir)).unwrap());
+        let d = Complex::from(Dir::from_str(&String::from(*dir)).unwrap());
         for i in 0..=*mag {
             out.entry(curr.0 + i * d).or_insert(curr.1 + i); // Since current step is monotonically increasing.
         }

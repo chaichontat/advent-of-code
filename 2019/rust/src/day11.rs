@@ -8,16 +8,10 @@ enum Color {
     White = 1,
 }
 
-#[derive(Debug, Copy, Clone, FromPrimitive)]
-enum Turn {
-    Left = 0,
-    Right = 1,
-}
-
 struct Board {
     board: HashMap<Complex<isize>, Color>,
     pos: Complex<isize>,
-    dir: Complex<isize>,
+    dir: Dir,
 }
 
 impl Board {
@@ -28,11 +22,8 @@ impl Board {
         self.board.insert(self.pos, c);
     }
     pub fn step(&mut self, d: Turn) {
-        match d {
-            Turn::Left => self.dir *= Complex::new(0, 1),
-            Turn::Right => self.dir *= Complex::new(0, -1),
-        }
-        self.pos += self.dir;
+        self.dir.turn(d);
+        self.pos += Complex::from(self.dir);
     }
 }
 
@@ -41,7 +32,7 @@ impl Default for Board {
         Board {
             board: HashMap::new(),
             pos: Complex::new(0, 0),
-            dir: Complex::new(0, 1),
+            dir: Dir::U,
         }
     }
 }
@@ -53,10 +44,18 @@ fn run(ic: &mut IntCode, board: &mut Board) {
         if ic.done {
             break;
         }
-        board.set(num::FromPrimitive::from_isize(ic.output.pop_front().unwrap()).unwrap()); // Color to paint.
+        board.set(
+            ic.output
+                .pop_front()
+                .and_then(num::FromPrimitive::from_isize)
+                .unwrap(),
+        ); // Color to paint.
         ic.run_pause();
-        board.step(num::FromPrimitive::from_isize(ic.output.pop_front().unwrap()).unwrap());
-        // Dir to turn.
+        board.step(match ic.output.pop_front() {
+            Some(0) => Turn::L,
+            Some(1) => Turn::R,
+            _ => unreachable!(),
+        })
     }
 }
 
@@ -106,7 +105,6 @@ pub fn part2(raw: &[String]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::*;
     #[test]
     fn test1() {
         assert_eq!(part1(&read("day11.txt")), 2082);

@@ -42,7 +42,7 @@ impl<T: Clone + Eq + Hash, R> Set for HashMap<T, R> {
     }
 }
 
-#[derive(Debug, PartialEq, EnumString)]
+#[derive(Debug, PartialEq, EnumString, Clone, Copy)]
 pub enum Dir {
     U,
     D,
@@ -51,12 +51,52 @@ pub enum Dir {
 }
 
 impl Dir {
-    pub fn to_cmp(&self) -> Complex<isize> {
-        match self {
-            Self::U => Complex::new(0, 1),
-            Self::D => Complex::new(0, -1),
-            Self::L => Complex::new(-1, 0),
-            Self::R => Complex::new(1, 0),
+    pub fn turn(&mut self, turn: Turn) {
+        std::mem::swap(
+            self,
+            &mut Dir::from(Complex::from(*self) * Complex::from(turn)),
+        );
+    }
+}
+
+impl From<Complex<isize>> for Dir {
+    fn from(x: Complex<isize>) -> Self {
+        if x == Complex::new(0, 1) {
+            Self::U
+        } else if x == Complex::new(0, -1) {
+            Self::D
+        } else if x == Complex::new(-1, 0) {
+            Self::L
+        } else if x == Complex::new(1, 0) {
+            Self::R
+        } else {
+            unreachable!("Invalid Dir");
+        }
+    }
+}
+
+impl From<Dir> for Complex<isize> {
+    fn from(x: Dir) -> Self {
+        match x {
+            Dir::U => Complex::new(0, 1),
+            Dir::D => Complex::new(0, -1),
+            Dir::L => Complex::new(-1, 0),
+            Dir::R => Complex::new(1, 0),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, EnumString, Clone, Copy)]
+pub enum Turn {
+    L,
+    R,
+}
+
+impl From<Turn> for Complex<isize> {
+    fn from(x: Turn) -> Self {
+        match x {
+            Turn::L => Complex::new(0, 1),
+            Turn::R => Complex::new(0, -1),
         }
     }
 }
