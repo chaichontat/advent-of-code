@@ -1,6 +1,6 @@
+use ahash::{AHashMap, AHashSet};
 use num_complex::Complex;
 use regex::Regex;
-use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::fs;
 use std::hash::Hash;
@@ -35,8 +35,8 @@ pub trait Set {
     fn keys_to(&self) -> Self::Item;
 }
 
-impl<T: Clone + Eq + Hash, R> Set for HashMap<T, R> {
-    type Item = HashSet<T>;
+impl<T: Clone + Eq + Hash, R> Set for AHashMap<T, R> {
+    type Item = AHashSet<T>;
     fn keys_to(&self) -> Self::Item {
         self.keys().cloned().collect::<Self::Item>()
     }

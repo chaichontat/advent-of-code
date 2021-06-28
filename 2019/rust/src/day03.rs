@@ -1,16 +1,16 @@
 use super::utils::*;
+use ahash::{AHashMap, AHashSet};
 use num_complex::Complex;
-use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 
-fn gen_set(path: &str) -> HashSet<Complex<isize>> {
+fn gen_set(path: &str) -> AHashSet<Complex<isize>> {
     let dirs: Vec<(char, isize)> = path
         .split(',')
         .map(|x| (x.chars().next().unwrap(), x[1..].parse::<isize>().unwrap()))
         .collect();
 
     let mut curr = Complex::new(0, 0);
-    let mut out = HashSet::new();
+    let mut out = AHashSet::new();
     for (dir, mag) in dirs.iter() {
         let d = Complex::from(Dir::from_str(&String::from(*dir)).unwrap());
         for i in 0..=*mag {
@@ -22,7 +22,7 @@ fn gen_set(path: &str) -> HashSet<Complex<isize>> {
     out
 }
 
-fn gen_dist(path: &str) -> HashMap<Complex<isize>, isize> {
+fn gen_dist(path: &str) -> AHashMap<Complex<isize>, isize> {
     // HashMap is significantly slower.
     let dirs: Vec<(char, isize)> = path
         .split(',')
@@ -30,7 +30,7 @@ fn gen_dist(path: &str) -> HashMap<Complex<isize>, isize> {
         .collect();
 
     let mut curr = (Complex::new(0, 0), 0); // Location and total distance.
-    let mut out = HashMap::new();
+    let mut out = AHashMap::new();
     for (dir, mag) in dirs.iter() {
         let d = Complex::from(Dir::from_str(&String::from(*dir)).unwrap());
         for i in 0..=*mag {
@@ -53,7 +53,7 @@ pub fn part1(raw: &[String]) -> usize {
 
 pub fn part2(raw: &[String]) -> usize {
     let maps = vec![gen_dist(&raw[0]), gen_dist(&raw[1])];
-    let sets = vec![HashMap::keys_to(&maps[0]), HashMap::keys_to(&maps[1])];
+    let sets = vec![AHashMap::keys_to(&maps[0]), AHashMap::keys_to(&maps[1])];
     let intersect = sets[0].intersection(&sets[1]).collect::<Vec<_>>();
     intersect
         .iter()

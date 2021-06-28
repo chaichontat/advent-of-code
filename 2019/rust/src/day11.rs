@@ -1,7 +1,7 @@
 use super::intcode::*;
 use super::utils::*;
+use ahash::AHashMap;
 use num_complex::Complex;
-use std::collections::HashMap;
 
 #[derive(Debug, Copy, Clone, FromPrimitive)]
 enum Color {
@@ -10,7 +10,7 @@ enum Color {
 }
 
 struct Board {
-    board: HashMap<Complex<isize>, Color>,
+    board: AHashMap<Complex<isize>, Color>,
     pos: Complex<isize>,
     dir: Dir,
 }
@@ -31,7 +31,7 @@ impl Board {
 impl Default for Board {
     fn default() -> Self {
         Board {
-            board: HashMap::new(),
+            board: AHashMap::new(),
             pos: Complex::new(0, 0),
             dir: Dir::U,
         }
