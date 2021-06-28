@@ -1,6 +1,5 @@
 use std::collections::VecDeque;
 use std::convert::TryFrom;
-use std::num::TryFromIntError;
 
 #[derive(FromPrimitive, Debug, PartialEq)]
 enum OpCode {
@@ -40,8 +39,8 @@ impl From<&[isize]> for IntCode {
             ptr: 0,
             rel: 0,
             done: false,
-            input: VecDeque::with_capacity(100),
-            output: VecDeque::with_capacity(100),
+            input: VecDeque::new(),
+            output: VecDeque::new(),
         }
     }
 }
@@ -58,8 +57,8 @@ impl From<&String> for IntCode {
             ptr: 0,
             rel: 0,
             done: false,
-            input: VecDeque::with_capacity(100),
-            output: VecDeque::with_capacity(100),
+            input: VecDeque::new(),
+            output: VecDeque::new(),
         }
     }
 }
@@ -67,14 +66,14 @@ impl From<&String> for IntCode {
 impl IntCode {
     pub fn run(&mut self) -> &Vec<isize> {
         while !self.done {
-            self.execute().unwrap();
+            self.execute()
         }
         &self.mem
     }
 
     pub fn run_pause(&mut self) {
         while !self.done && self.output.is_empty() {
-            self.execute().unwrap();
+            self.execute()
         }
     }
 
@@ -84,48 +83,69 @@ impl IntCode {
         }
     }
 
-    fn execute(&mut self) -> Result<(), TryFromIntError> {
-        // All this unwrapping is to detect negative addresses.
+    pub fn run_wait_input(&mut self) {
+        while !self.done {
+            let op: OpCode = num::FromPrimitive::from_isize(self.mem[self.ptr] % 100).unwrap();
+            if op == OpCode::In && self.input.is_empty() {
+                break;
+            }
+            self.execute();
+        }
+    }
+
+    fn execute(&mut self) {
         let (op, p) = self.fetch_ins(self.ptr);
         let (op, modes) = self.parse_ins(op);
-        let cmd = (
-            self.fetch_data(&modes[0], p[0]),
-            self.fetch_data(&modes[1], p[1]),
-            self.fetch_write(&modes[2], p[2]),
-        );
+        if op == OpCode::End {
+            self.done = true; // In case next instruction is negative.
+            return;
+        }
+
+        let c0 = self.fetch_data(&modes[0], p[0]);
         let mut step = true;
+
         match op {
-            OpCode::Add => self.set(cmd.0? + cmd.1?, cmd.2?),
-            OpCode::Mul => self.set(cmd.0? * cmd.1?, cmd.2?),
+            OpCode::Add => self.set(
+                c0 + self.fetch_data(&modes[1], p[1]),
+                self.fetch_write(&modes[2], p[2]),
+            ),
+            OpCode::Mul => self.set(
+                c0 * self.fetch_data(&modes[1], p[1]),
+                self.fetch_write(&modes[2], p[2]),
+            ),
             OpCode::In => {
                 let test = self.input.pop_front().unwrap();
-                self.set(test, self.fetch_write(&modes[0], p[0])?) // Retain addr for writing.
+                self.set(test, self.fetch_write(&modes[0], p[0])) // Retain addr for writing.
             }
-            OpCode::Out => self.output.push_back(cmd.0?),
-            OpCode::End => {
-                self.done = true;
-                return Ok(());
-            }
+            OpCode::Out => self.output.push_back(c0),
             OpCode::Jit => {
-                if cmd.0.unwrap() != 0 {
-                    self.ptr = cmd.1.and_then(usize::try_from)?;
+                if c0 != 0 {
+                    self.ptr = usize::try_from(self.fetch_data(&modes[1], p[1])).unwrap();
                     step = false;
                 }
             }
             OpCode::Jif => {
-                if cmd.0.unwrap() == 0 {
-                    self.ptr = cmd.1.and_then(usize::try_from)?;
+                if c0 == 0 {
+                    self.ptr = usize::try_from(self.fetch_data(&modes[1], p[1])).unwrap();
                     step = false;
                 }
             }
-            OpCode::Lt => self.op_lteq(OpCode::Lt, (cmd.0?, cmd.1?), cmd.2?),
-            OpCode::Eq => self.op_lteq(OpCode::Eq, (cmd.0?, cmd.1?), cmd.2?),
-            OpCode::AdjRel => self.rel += cmd.0?,
+            OpCode::Lt => self.op_lteq(
+                OpCode::Lt,
+                (c0, self.fetch_data(&modes[1], p[1])),
+                self.fetch_write(&modes[2], p[2]),
+            ),
+            OpCode::Eq => self.op_lteq(
+                OpCode::Eq,
+                (c0, self.fetch_data(&modes[1], p[1])),
+                self.fetch_write(&modes[2], p[2]),
+            ),
+            OpCode::AdjRel => self.rel += c0,
+            OpCode::End => (),
         };
         if step {
             self.step(op);
         }
-        Ok(())
     }
 
     fn op_lteq(&mut self, op: OpCode, cmd: (isize, isize), p: usize) {
@@ -147,7 +167,7 @@ impl IntCode {
 
     fn set(&mut self, to_set: isize, addr: usize) {
         if addr >= self.mem.len() {
-            self.mem.resize(2 * addr, 0);
+            self.mem.resize(addr + 1, 0);
         }
         self.mem[addr] = to_set;
     }
@@ -165,25 +185,22 @@ impl IntCode {
         )
     }
 
-    fn fetch_data(&self, mode: &Mode, addr: isize) -> Result<isize, TryFromIntError> {
-        // Memory beyond the initial program starts with the value 0
-        // and can be read or written like any other memory.
-        // (It is invalid to try to access memory at a negative address, though.)
+    fn fetch_data(&self, mode: &Mode, addr: isize) -> isize {
         match mode {
-            Mode::Pos => Ok(*self.mem.get(usize::try_from(addr)?).unwrap_or(&0)),
-            Mode::Imm => Ok(addr),
-            Mode::Rel => Ok(*self
+            Mode::Pos => *self.mem.get(usize::try_from(addr).unwrap()).unwrap_or(&0),
+            Mode::Imm => addr,
+            Mode::Rel => *self
                 .mem
-                .get(usize::try_from(addr + self.rel)?)
-                .unwrap_or(&0)),
+                .get(usize::try_from(addr + self.rel).unwrap())
+                .unwrap_or(&0),
         }
     }
 
-    fn fetch_write(&self, mode: &Mode, addr: isize) -> Result<usize, TryFromIntError> {
+    fn fetch_write(&self, mode: &Mode, addr: isize) -> usize {
         match mode {
-            Mode::Pos => usize::try_from(addr),
+            Mode::Pos => usize::try_from(addr).unwrap(),
             Mode::Imm => unreachable!(),
-            Mode::Rel => usize::try_from(addr + self.rel),
+            Mode::Rel => usize::try_from(addr + self.rel).unwrap(),
         }
     }
 
