@@ -23,7 +23,7 @@ impl Board {
         self.board.insert(self.pos, c);
     }
     pub fn step(&mut self, d: Turn) {
-        self.dir.turn(d);
+        self.dir = self.dir.turn(d);
         self.pos += Complex::from(self.dir);
     }
 }

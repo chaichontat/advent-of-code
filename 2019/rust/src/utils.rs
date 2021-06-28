@@ -6,6 +6,8 @@ use std::fs;
 use std::hash::Hash;
 use strum_macros::EnumString;
 
+pub type Coord = Complex<isize>;
+
 pub fn read(path: &str) -> Vec<String> {
     let p = format!("../data/{}", path);
     let res = fs::read_to_string(p).unwrap();
@@ -51,11 +53,15 @@ pub enum Dir {
 }
 
 impl Dir {
-    pub fn turn(&mut self, turn: Turn) {
-        std::mem::swap(
-            self,
-            &mut Dir::from(Complex::from(*self) * Complex::from(turn)),
-        );
+    // pub fn turn(&mut self, turn: Turn) {
+    //     std::mem::swap(
+    //         self,
+    //         &mut Dir::from(Complex::from(*self) * Complex::from(turn)),
+    //     );
+    // }
+
+    pub fn turn(&self, turn: Turn) -> Self {
+        Dir::from(Complex::from(*self) * Complex::from(turn))
     }
 }
 
