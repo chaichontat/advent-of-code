@@ -1,5 +1,6 @@
-use super::intcode::*;
 use itertools::Itertools;
+
+use super::intcode::*;
 
 fn run_ic(raw: &[String], code: [isize; 2]) -> isize {
     let mut ic = IntCode::from(&raw[0]);

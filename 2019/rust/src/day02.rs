@@ -1,5 +1,6 @@
-use super::intcode::*;
 use std::cmp::Ordering;
+
+use super::intcode::*;
 
 pub fn part1(raw: &[String]) -> usize {
     let mut ic = IntCode::from(&raw[0]);

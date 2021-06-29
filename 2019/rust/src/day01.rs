@@ -1,12 +1,8 @@
 use super::utils::*;
 
-fn fuel(x: usize) -> Option<usize> {
-    (x / 3).checked_sub(2)
-}
+fn fuel(x: usize) -> Option<usize> { (x / 3).checked_sub(2) }
 
-pub fn part1(raw: &[String]) -> usize {
-    raw.iter().map(|x| int(x)).map(fuel).flatten().sum()
-}
+pub fn part1(raw: &[String]) -> usize { raw.iter().map(|x| int(x)).map(fuel).flatten().sum() }
 
 fn recurse(x: usize) -> usize {
     match fuel(x) {
@@ -15,9 +11,7 @@ fn recurse(x: usize) -> usize {
     }
 }
 
-pub fn part2(raw: &[String]) -> usize {
-    raw.iter().map(|x| int(x)).map(recurse).sum()
-}
+pub fn part2(raw: &[String]) -> usize { raw.iter().map(|x| int(x)).map(recurse).sum() }
 
 #[cfg(test)]
 mod tests {

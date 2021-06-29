@@ -1,31 +1,33 @@
-use super::intcode::*;
+use std::cmp::Ordering;
+
 use ahash::AHashSet;
 use num_complex::Complex;
-use std::cmp::Ordering;
+
+use super::intcode::*;
 
 #[derive(Debug, FromPrimitive, PartialEq)]
 enum Tile {
-    Empty = 0,
-    Wall = 1,
-    Block = 2,
+    Empty   = 0,
+    Wall    = 1,
+    Block   = 2,
     HorzPad = 3,
-    Ball = 4,
+    Ball    = 4,
 }
 
 struct Game {
     blocks: AHashSet<Complex<isize>>,
-    pad: Complex<isize>,
-    ball: Complex<isize>,
-    score: isize,
+    pad:    Complex<isize>,
+    ball:   Complex<isize>,
+    score:  isize,
 }
 
 fn init(raw: &[String]) -> (IntCode, Game) {
     let ic = IntCode::from(&raw[0]);
     let game = Game {
         blocks: AHashSet::with_capacity(200),
-        pad: Complex::new(0, 0),
-        ball: Complex::new(0, 0),
-        score: 0,
+        pad:    Complex::new(0, 0),
+        ball:   Complex::new(0, 0),
+        score:  0,
     };
     (ic, game)
 }

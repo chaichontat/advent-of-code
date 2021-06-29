@@ -7,13 +7,9 @@ fn run_ic(raw: &[String], input: isize) -> usize {
     ic.output.pop_front().unwrap() as usize
 }
 
-pub fn part1(raw: &[String]) -> usize {
-    run_ic(raw, 1)
-}
+pub fn part1(raw: &[String]) -> usize { run_ic(raw, 1) }
 
-pub fn part2(raw: &[String]) -> usize {
-    run_ic(raw, 2)
-}
+pub fn part2(raw: &[String]) -> usize { run_ic(raw, 2) }
 
 #[cfg(test)]
 mod tests {

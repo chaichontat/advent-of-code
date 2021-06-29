@@ -1,7 +1,8 @@
-use super::intcode::*;
-use super::utils::*;
 use ahash::AHashMap;
 use num_complex::Complex;
+
+use super::intcode::*;
+use super::utils::*;
 
 #[derive(Debug, Copy, Clone, FromPrimitive)]
 enum Color {
@@ -11,17 +12,15 @@ enum Color {
 
 struct Board {
     board: AHashMap<Complex<isize>, Color>,
-    pos: Complex<isize>,
-    dir: Dir,
+    pos:   Complex<isize>,
+    dir:   Dir,
 }
 
 impl Board {
-    pub fn get(&mut self) -> Color {
-        *self.board.get(&self.pos).unwrap_or(&Color::Black)
-    }
-    pub fn set(&mut self, c: Color) {
-        self.board.insert(self.pos, c);
-    }
+    pub fn get(&mut self) -> Color { *self.board.get(&self.pos).unwrap_or(&Color::Black) }
+
+    pub fn set(&mut self, c: Color) { self.board.insert(self.pos, c); }
+
     pub fn step(&mut self, d: Turn) {
         self.dir = self.dir.turn(d);
         self.pos += Complex::from(self.dir);
@@ -32,8 +31,8 @@ impl Default for Board {
     fn default() -> Self {
         Board {
             board: AHashMap::new(),
-            pos: Complex::new(0, 0),
-            dir: Dir::U,
+            pos:   Complex::new(0, 0),
+            dir:   Dir::U,
         }
     }
 }

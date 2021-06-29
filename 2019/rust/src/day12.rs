@@ -1,6 +1,7 @@
+use std::cmp::Ordering;
+
 use num::Integer;
 use regex::Regex;
-use std::cmp::Ordering;
 
 type Index = usize;
 
@@ -25,9 +26,7 @@ impl Moon {
         }
     }
 
-    pub fn step_axis(&mut self, i: Index) {
-        self.pos[i] += self.vel[i];
-    }
+    pub fn step_axis(&mut self, i: Index) { self.pos[i] += self.vel[i]; }
 
     pub fn energy(&self) -> isize {
         let pos = self.pos.iter().fold(0, |sum, x| sum + x.abs());

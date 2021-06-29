@@ -3,16 +3,16 @@ use std::convert::TryFrom;
 
 #[derive(FromPrimitive, Debug, PartialEq)]
 enum OpCode {
-    Add = 1, // This is called a discriminant.
-    Mul = 2,
-    In = 3,
-    Out = 4,
-    Jit = 5, // Jump if true.
-    Jif = 6, // Jump if false.
-    Lt = 7,
-    Eq = 8,
+    Add    = 1, // This is called a discriminant.
+    Mul    = 2,
+    In     = 3,
+    Out    = 4,
+    Jit    = 5, // Jump if true.
+    Jif    = 6, // Jump if false.
+    Lt     = 7,
+    Eq     = 8,
     AdjRel = 9, // Adjust relative base.
-    End = 99,
+    End    = 99,
 }
 
 #[derive(FromPrimitive, Debug, PartialEq)]
@@ -24,22 +24,22 @@ enum Mode {
 
 #[derive(Debug)]
 pub struct IntCode {
-    pub mem: Vec<isize>,
-    pub ptr: usize,
-    pub rel: isize,
-    pub done: bool,
-    pub input: VecDeque<isize>,
+    pub mem:    Vec<isize>,
+    pub ptr:    usize,
+    pub rel:    isize,
+    pub done:   bool,
+    pub input:  VecDeque<isize>,
     pub output: VecDeque<isize>,
 }
 
 impl From<&[isize]> for IntCode {
     fn from(mem: &[isize]) -> Self {
         IntCode {
-            mem: mem.to_vec(),
-            ptr: 0,
-            rel: 0,
-            done: false,
-            input: VecDeque::new(),
+            mem:    mem.to_vec(),
+            ptr:    0,
+            rel:    0,
+            done:   false,
+            input:  VecDeque::new(),
             output: VecDeque::new(),
         }
     }
@@ -175,14 +175,11 @@ impl IntCode {
     fn fetch_ins(&self, ptr: usize) -> (isize, [isize; 3]) {
         // Returns 0 when out of bound.
         let mut iter = self.mem[ptr..].iter();
-        (
+        (*iter.next().unwrap_or(&0), [
             *iter.next().unwrap_or(&0),
-            [
-                *iter.next().unwrap_or(&0),
-                *iter.next().unwrap_or(&0),
-                *iter.next().unwrap_or(&0),
-            ],
-        )
+            *iter.next().unwrap_or(&0),
+            *iter.next().unwrap_or(&0),
+        ])
     }
 
     fn fetch_data(&self, mode: &Mode, addr: isize) -> isize {
@@ -230,10 +227,9 @@ mod tests {
         assert_eq!(prep(&[1, 0, 0, 0, 99]), &[2, 0, 0, 0, 99]);
         assert_eq!(prep(&[2, 3, 0, 3, 99]), &[2, 3, 0, 6, 99]);
         assert_eq!(prep(&[2, 4, 4, 5, 99, 0]), &[2, 4, 4, 5, 99, 9801]);
-        assert_eq!(
-            prep(&[1, 1, 1, 4, 99, 5, 6, 0, 99]),
-            &[30, 1, 1, 4, 2, 5, 6, 0, 99]
-        );
+        assert_eq!(prep(&[1, 1, 1, 4, 99, 5, 6, 0, 99]), &[
+            30, 1, 1, 4, 2, 5, 6, 0, 99
+        ]);
     }
 
     fn test_inout(mem: &[isize], codes: &[isize], expects: &[isize]) {
@@ -284,10 +280,8 @@ mod tests {
             &Vec::<isize>::new(),
             &[1219070632396864],
         );
-        test_out(
-            &[104, 1125899906842624, 99],
-            &Vec::<isize>::new(),
-            &[1125899906842624],
-        );
+        test_out(&[104, 1125899906842624, 99], &Vec::<isize>::new(), &[
+            1125899906842624,
+        ]);
     }
 }

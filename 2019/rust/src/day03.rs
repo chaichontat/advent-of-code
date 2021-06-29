@@ -1,7 +1,9 @@
-use super::utils::*;
+use std::str::FromStr;
+
 use ahash::{AHashMap, AHashSet};
 use num_complex::Complex;
-use std::str::FromStr;
+
+use super::utils::*;
 
 fn gen_set(path: &str) -> AHashSet<Complex<isize>> {
     let dirs: Vec<(char, isize)> = path
