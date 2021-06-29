@@ -96,6 +96,7 @@ impl From<Dir> for Complex<isize> {
 pub enum Turn {
     L,
     R,
+    N,
 }
 
 impl From<Turn> for Complex<isize> {
@@ -103,6 +104,7 @@ impl From<Turn> for Complex<isize> {
         match x {
             Turn::L => Complex::new(0, 1),
             Turn::R => Complex::new(0, -1),
+            Turn::N => Complex::new(1, 0),
         }
     }
 }
