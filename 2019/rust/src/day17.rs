@@ -87,6 +87,15 @@ pub fn part1(raw: &[String]) -> usize {
     }) as usize
 }
 
+/// This is quite complicated.
+/// First, we need to find a path that traverses through the maze.
+/// Then, we need to perform a dictionary compression with 3 keys,
+/// each not exceeding 20 bytes (ASCII). This is done by getting all
+/// unique substrings of 3-5 units and calculating the total bytes
+/// replaced by each substring. This list of substrings is sorted by
+/// total bytes replaced. Only the 3-combinations that replace the exact
+/// number of bytes as the full string got chosen for the coverage test.
+
 fn path_finder(p: &Pos, board: Board) -> Vec<String> {
     let mut out = Vec::with_capacity(100);
     let mut acc = 1;
