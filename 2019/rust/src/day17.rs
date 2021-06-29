@@ -3,7 +3,6 @@ use std::cmp::Reverse;
 use std::collections::VecDeque;
 
 use ahash::AHashSet;
-use itertools::Iterate;
 use itertools::Itertools;
 use num_complex::Complex;
 
@@ -125,6 +124,8 @@ fn path_finder(p: &Pos, board: Board) -> Vec<String> {
     }
 }
 
+fn space_saved(full: &str, cand: &str) -> usize { full.matches(cand).count() * cand.len() }
+
 fn get_subseq(v: &[String], n: usize, full: &str) -> Vec<(usize, String)> {
     // Returns (num_occurence × len of subseq, subseq).
     ((n - 2)..=n)
@@ -139,8 +140,6 @@ fn get_subseq(v: &[String], n: usize, full: &str) -> Vec<(usize, String)> {
         .collect_vec()
 }
 
-fn space_saved(full: &str, cand: &str) -> usize { full.matches(cand).count() * cand.len() }
-
 fn subs_test(full: &String, cand: &[&String]) -> Option<String> {
     let keys = ["A,", "B,", "C,"];
     let res = cand
@@ -154,12 +153,6 @@ fn subs_test(full: &String, cand: &[&String]) -> Option<String> {
         None
     }
 }
-
-// fn gen_cmd<I>(depth: usize, iter: I) -> Option<VecDeque<isize>>
-// where I: Iterator<Item = (usize, String)> {
-//     if depth > 0 {gen_cmd(depth - 1, iter)}
-
-// }
 
 fn compress(cmds: &[String]) -> Option<VecDeque<isize>> {
     let full = cmds.concat();
@@ -195,7 +188,6 @@ fn compress(cmds: &[String]) -> Option<VecDeque<isize>> {
             }
         }
     }
-
     None
 }
 
