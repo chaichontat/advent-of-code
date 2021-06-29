@@ -1,7 +1,9 @@
+use std::cmp::Ordering;
+use std::cmp::Reverse;
 use std::collections::VecDeque;
-use std::usize;
 
 use ahash::AHashSet;
+use itertools::Iterate;
 use itertools::Itertools;
 use num_complex::Complex;
 
@@ -123,68 +125,77 @@ fn path_finder(p: &Pos, board: Board) -> Vec<String> {
     }
 }
 
-fn get_subseq(v: &[String], n: usize) -> Vec<String> {
+fn get_subseq(v: &[String], n: usize, full: &str) -> Vec<(usize, String)> {
+    // Returns (num_occurence × len of subseq, subseq).
     ((n - 2)..=n)
         .rev()
         .flat_map(|sl| {
             (0..v.len() - sl)
                 .map(|i| (&v[i..i + sl]).to_vec().concat())
-                .unique()
                 .collect_vec()
         })
+        .unique()
+        .map(|x| (space_saved(&full, &x), x))
         .collect_vec()
 }
 
 fn space_saved(full: &str, cand: &str) -> usize { full.matches(cand).count() * cand.len() }
 
-fn subs_test(full: &String, cand: &Vec<&String>) -> Option<String> {
+fn subs_test(full: &String, cand: &[&String]) -> Option<String> {
     let keys = ["A,", "B,", "C,"];
     let res = cand
         .iter()
         .enumerate()
         .fold(full.clone(), |pass, (i, &this)| pass.replace(this, keys[i]));
 
-    if !(res.contains("L") || res.contains("R")) {
+    if res.chars().all(|x| x != 'L' && x != 'R') {
         Some(res)
     } else {
         None
     }
 }
 
-fn compress(cmds: &[String]) -> Option<Vec<isize>> {
+// fn gen_cmd<I>(depth: usize, iter: I) -> Option<VecDeque<isize>>
+// where I: Iterator<Item = (usize, String)> {
+//     if depth > 0 {gen_cmd(depth - 1, iter)}
+
+// }
+
+fn compress(cmds: &[String]) -> Option<VecDeque<isize>> {
     let full = cmds.concat();
-    let subs = get_subseq(cmds, 5);
-    let subs_len = subs
-        .iter()
-        .map(|x| (x, space_saved(&full, &x)))
-        .collect_vec();
+    let mut subs_len = get_subseq(cmds, 5, &full);
+    subs_len.sort_unstable_by_key(|(len, _)| Reverse(len.clone()));
 
-    let test: Vec<Vec<&String>> = subs_len
-        .iter()
-        .combinations(3)
-        .filter(|x| x.iter().map(|y| y.1).sum::<usize>() == full.len())
-        .map(|x| x.iter().map(|y| y.0).collect_vec())
-        .collect_vec();
+    for i in 0..subs_len.len() {
+        for j in (i + 1)..subs_len.len() {
+            for k in (j + 1)..subs_len.len() {
+                match (subs_len[i].0 + subs_len[j].0 + subs_len[k].0).cmp(&full.len()) {
+                    Ordering::Greater => continue,
+                    Ordering::Less => break,
+                    Ordering::Equal => (),
+                }
 
-    for x in test.iter() {
-        if let Some(res) = subs_test(&full, &x) {
-            let mut res = res.chars();
-            res.next_back();
-            let mut fuck = vec![res.collect::<String>()];
-            fuck.append(
-                &mut x
-                    .iter()
-                    .map(|&y| (&y[..y.len() - 1]).to_owned())
-                    .collect_vec(),
-            );
+                let bundle = [&subs_len[i].1, &subs_len[j].1, &subs_len[k].1];
+                if let Some(res) = subs_test(&full, &bundle) {
+                    let mut res = res.chars();
+                    res.next_back(); // Remove last comma.
 
-            let fin = fuck.join("\n");
-            let g = fin.chars();
-            // g.next_back();
-            let u = g.map(|x| x as isize).collect_vec();
-            return Some(u);
+                    let mut res = vec![res.collect::<String>()];
+                    res.append(
+                        &mut bundle
+                            .iter()
+                            .map(|&y| (&y[..y.len() - 1]).to_owned())
+                            .collect_vec(),
+                    );
+
+                    let fin = res.join("\n");
+                    let c = fin.chars();
+                    return Some(c.map(|x| x as isize).collect::<VecDeque<_>>());
+                }
+            }
         }
     }
+
     None
 }
 
@@ -194,10 +205,11 @@ pub fn part2(raw: &[String]) -> usize {
     let mut ic = IntCode::from(&raw[0]);
     let (board, pos) = get_data(&mut ic);
     let seq = path_finder(&pos, board);
-    let ans = compress(&seq).unwrap();
+    let mut ans = compress(&seq).unwrap();
+
     let mut ic = IntCode::from(&raw[0]);
     ic.mem[0] = 2;
-    ic.input.append(&mut VecDeque::from(ans));
+    ic.input.append(&mut ans);
     ic.input.push_back(10);
     ic.input.push_back('n' as isize);
     ic.input.push_back(10);
@@ -208,7 +220,6 @@ pub fn part2(raw: &[String]) -> usize {
             return x as usize;
         }
     }
-
     0
 }
 
