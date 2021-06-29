@@ -52,23 +52,15 @@ impl From<&String> for IntCode {
             .map(|x| x.parse::<isize>().unwrap())
             .collect::<Vec<_>>();
 
-        IntCode {
-            mem,
-            ptr: 0,
-            rel: 0,
-            done: false,
-            input: VecDeque::new(),
-            output: VecDeque::new(),
-        }
+        IntCode::from(&mem[..])
     }
 }
 
 impl IntCode {
-    pub fn run(&mut self) -> &Vec<isize> {
+    pub fn run(&mut self) {
         while !self.done {
             self.execute()
         }
-        &self.mem
     }
 
     pub fn run_pause(&mut self) {

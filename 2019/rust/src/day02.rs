@@ -6,7 +6,8 @@ pub fn part1(raw: &[String]) -> usize {
     let mut ic = IntCode::from(&raw[0]);
     ic.mem[1] = 12;
     ic.mem[2] = 2;
-    ic.run()[0] as usize
+    ic.run();
+    ic.mem[0] as usize
 }
 
 /// Initial 10×10 grid search indicates monotonicity of the intcode function.
@@ -38,7 +39,8 @@ fn run_ic(mem: &[isize], m1: isize, m2: isize) -> isize {
     let mut ic = IntCode::from(mem);
     ic.mem[1] = m1;
     ic.mem[2] = m2;
-    ic.run()[0]
+    ic.run();
+    ic.mem[0]
 }
 
 pub fn part2(raw: &[String]) -> usize {
