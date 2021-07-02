@@ -8,6 +8,7 @@ use regex::Regex;
 use strum_macros::EnumString;
 
 pub type Coord = Complex<isize>;
+pub type Ans = Option<(usize, usize)>;
 
 pub fn read(path: &str) -> Vec<String> {
     let p = format!("../data/{}", path);
@@ -17,15 +18,21 @@ pub fn read(path: &str) -> Vec<String> {
     vec
 }
 
-pub fn str_idx(s: &str, i: usize) -> char { s.chars().nth(i).unwrap() }
+pub fn str_idx(s: &str, i: usize) -> char {
+    s.chars().nth(i).unwrap()
+}
 
 pub fn printt(x: &impl Debug) {
     println!("{:#?}", x);
 }
 
-pub fn gen_re(r: &str) -> Regex { Regex::new(r).unwrap() }
+pub fn gen_re(r: &str) -> Regex {
+    Regex::new(r).unwrap()
+}
 
-pub fn int(x: &str) -> usize { x.parse::<usize>().unwrap() }
+pub fn int(x: &str) -> usize {
+    x.parse::<usize>().unwrap()
+}
 
 pub trait Set {
     type Item;
@@ -35,7 +42,9 @@ pub trait Set {
 impl<T: Clone + Eq + Hash, R> Set for AHashMap<T, R> {
     type Item = AHashSet<T>;
 
-    fn keys_to(&self) -> Self::Item { self.keys().cloned().collect::<Self::Item>() }
+    fn keys_to(&self) -> Self::Item {
+        self.keys().cloned().collect::<Self::Item>()
+    }
 }
 
 #[derive(Debug, PartialEq, EnumString, Clone, Copy)]
@@ -54,7 +63,9 @@ impl Dir {
     //     );
     // }
 
-    pub fn turn(&self, turn: Turn) -> Self { Dir::from(Complex::from(*self) * Complex::from(turn)) }
+    pub fn turn(&self, turn: Turn) -> Self {
+        Dir::from(Complex::from(*self) * Complex::from(turn))
+    }
 }
 
 impl From<Complex<isize>> for Dir {

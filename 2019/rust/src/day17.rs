@@ -74,19 +74,7 @@ fn get_data(ic: &mut IntCode) -> (Board, Pos) {
     })
 }
 
-pub fn part1(raw: &[String]) -> usize {
-    let mut ic = IntCode::from(&raw[0]);
-    let (board, _) = get_data(&mut ic);
-    let adj = [Dir::U, Dir::D, Dir::L, Dir::R];
-    board.iter().fold(0, |sum, x| {
-        if adj.iter().all(|a| board.contains(&(x + Complex::from(*a)))) {
-            sum + x.re * x.im
-        } else {
-            sum
-        }
-    }) as usize
-}
-
+/// Part 2
 /// This is quite complicated.
 /// First, we need to find a path that traverses through the maze.
 /// Then, we need to perform a dictionary compression with 3 keys,
@@ -133,7 +121,9 @@ fn path_finder(p: &Pos, board: Board) -> Vec<String> {
     }
 }
 
-fn space_saved(full: &str, cand: &str) -> usize { full.matches(cand).count() * cand.len() }
+fn space_saved(full: &str, cand: &str) -> usize {
+    full.matches(cand).count() * cand.len()
+}
 
 fn get_subseq(v: &[String], n: usize, full: &str) -> Vec<(usize, String)> {
     // Returns (num_occurence × len of subseq, subseq).
@@ -145,16 +135,18 @@ fn get_subseq(v: &[String], n: usize, full: &str) -> Vec<(usize, String)> {
                 .collect_vec()
         })
         .unique()
-        .map(|x| (space_saved(&full, &x), x))
+        .map(|x| (space_saved(full, &x), x))
         .collect_vec()
 }
 
-fn subs_test(full: &String, cand: &[&String]) -> Option<String> {
+fn subs_test(full: &str, cand: &[&String]) -> Option<String> {
     let keys = ["A,", "B,", "C,"];
     let res = cand
         .iter()
         .enumerate()
-        .fold(full.clone(), |pass, (i, &this)| pass.replace(this, keys[i]));
+        .fold(full.to_string(), |pass, (i, &this)| {
+            pass.replace(this, keys[i])
+        }); // Replace repeatedly.
 
     if res.chars().all(|x| x != 'L' && x != 'R') {
         Some(res)
@@ -166,7 +158,7 @@ fn subs_test(full: &String, cand: &[&String]) -> Option<String> {
 fn compress(cmds: &[String]) -> Option<VecDeque<isize>> {
     let full = cmds.concat();
     let mut subs_len = get_subseq(cmds, 5, &full);
-    subs_len.sort_unstable_by_key(|(len, _)| Reverse(len.clone()));
+    subs_len.sort_unstable_by_key(|(len, _)| Reverse(*len));
 
     for i in 0..subs_len.len() {
         for j in (i + 1)..subs_len.len() {
@@ -200,11 +192,24 @@ fn compress(cmds: &[String]) -> Option<VecDeque<isize>> {
     None
 }
 
+pub fn part1(board: &Board) -> usize {
+    let adj = [Dir::U, Dir::D, Dir::L, Dir::R];
+    board.iter().fold(0, |sum, x| {
+        if adj.iter().all(|a| board.contains(&(x + Complex::from(*a)))) {
+            sum + x.re * x.im
+        } else {
+            sum
+        }
+    }) as usize
+}
+
 // "In general, the scaffold forms a path, but it sometimes loops back onto itself."
 // Just go straight as much as possible.
-pub fn part2(raw: &[String]) -> usize {
+pub fn run(raw: &[String]) -> Ans {
     let mut ic = IntCode::from(&raw[0]);
     let (board, pos) = get_data(&mut ic);
+    let p1 = part1(&board);
+
     let seq = path_finder(&pos, board);
     let mut ans = compress(&seq).unwrap();
 
@@ -218,10 +223,11 @@ pub fn part2(raw: &[String]) -> usize {
 
     for x in ic.output {
         if x > 255 {
-            return x as usize;
+            return Some((p1, x as usize));
         }
     }
-    0
+
+    None
 }
 
 #[cfg(test)]
@@ -230,11 +236,6 @@ mod tests {
 
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day17.txt")), 5056);
-    }
-
-    #[test]
-    fn test2() {
-        assert_eq!(part2(&read("day17.txt")), 942367);
+        assert_eq!(run(&read("day17.txt")), Some((5056, 942367)));
     }
 }
