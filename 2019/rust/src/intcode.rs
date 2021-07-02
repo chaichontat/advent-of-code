@@ -75,6 +75,14 @@ impl IntCode {
         }
     }
 
+    pub fn push(&mut self, val: isize) {
+        self.input.push_back(val);
+    }
+
+    pub fn pop(&mut self) -> Option<isize> {
+        self.output.pop_front()
+    }
+
     pub fn run_wait_input(&mut self) {
         while !self.done {
             let op: OpCode = num::FromPrimitive::from_isize(self.mem[self.ptr] % 100).unwrap();
