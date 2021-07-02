@@ -44,12 +44,11 @@ fn parse(raw: &[String]) -> Db {
                 unreachable!(); // Safety check.
             }
         }
-        ins.push(NName {
+        let out = NName {
             n,
             name: name.to_owned(),
-        });
+        };
 
-        let out = ins.pop().unwrap();
         db.insert(out.name.to_owned(), Recipe {
             ins,
             out,
@@ -64,9 +63,8 @@ fn topo_sort(db: &mut Db, top: &str) -> Vec<Name> {
         if let Some(mut r) = db.get_mut(&name) {
             if r.dfsed {
                 return;
-            } else {
-                r.dfsed = true;
             }
+            r.dfsed = true;
 
             let r = r.ins.clone();
             for p in r.iter() {
@@ -118,7 +116,7 @@ impl Cost {
     }
 }
 
-fn binary_search(mut lo: OreFuel, mut hi: OreFuel, avail: usize, cost: &Cost) -> usize {
+fn binary_search(mut lo: OreFuel, mut hi: OreFuel, avail: usize, cost: &Cost) -> OreFuel {
     while lo.fuel < hi.fuel - 1 {
         let deriv = (avail as f64 - lo.ore as f64) / (hi.ore as f64 - lo.ore as f64);
 
@@ -128,13 +126,12 @@ fn binary_search(mut lo: OreFuel, mut hi: OreFuel, avail: usize, cost: &Cost) ->
         fuel_est = fuel_est.max(lo.fuel + 1);
 
         let curr = cost.cost(fuel_est);
-
         match curr.ore.cmp(&avail) {
             Ordering::Equal | Ordering::Less => lo = curr,
             Ordering::Greater => hi = curr,
         }
     }
-    lo.fuel
+    lo
 }
 
 pub fn run(raw: &[String]) -> (usize, usize) {
@@ -154,8 +151,8 @@ pub fn run(raw: &[String]) -> (usize, usize) {
     let lo = cost_per_fuel;
     let hi = cost.cost(4 * avail / cost_per_fuel.ore);
 
-    let max_fuel_with_avail = binary_search(lo, hi, avail, &cost);
-    (cost_per_fuel.ore, max_fuel_with_avail)
+    let max_with_avail = binary_search(lo, hi, avail, &cost);
+    (cost_per_fuel.ore, max_with_avail.fuel)
 }
 
 #[cfg(test)]
