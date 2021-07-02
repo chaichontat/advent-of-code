@@ -1,8 +1,8 @@
 use ahash::AHashMap;
 use num_complex::Complex;
 
-use super::intcode::*;
-use super::utils::*;
+use crate::intcode::*;
+use crate::utils::*;
 
 #[derive(Debug, Copy, Clone, FromPrimitive)]
 enum Color {
@@ -17,9 +17,13 @@ struct Board {
 }
 
 impl Board {
-    pub fn get(&mut self) -> Color { *self.board.get(&self.pos).unwrap_or(&Color::Black) }
+    pub fn get(&mut self) -> Color {
+        *self.board.get(&self.pos).unwrap_or(&Color::Black)
+    }
 
-    pub fn set(&mut self, c: Color) { self.board.insert(self.pos, c); }
+    pub fn set(&mut self, c: Color) {
+        self.board.insert(self.pos, c);
+    }
 
     pub fn step(&mut self, d: Turn) {
         self.dir = self.dir.turn(d);
@@ -37,7 +41,7 @@ impl Default for Board {
     }
 }
 
-fn run(ic: &mut IntCode, board: &mut Board) {
+fn execute(ic: &mut IntCode, board: &mut Board) {
     loop {
         ic.input.push_back(board.get() as isize);
         ic.run_pause();
@@ -64,7 +68,7 @@ pub fn part1(raw: &[String]) -> usize {
     let mut board = Board {
         ..Default::default()
     };
-    run(&mut ic, &mut board);
+    execute(&mut ic, &mut board);
     board.board.len()
 }
 
@@ -74,7 +78,7 @@ pub fn part2(raw: &[String]) -> usize {
         ..Default::default()
     };
     board.board.insert(Complex::new(0, 0), Color::White);
-    run(&mut ic, &mut board);
+    execute(&mut ic, &mut board);
     // Get boundaries.
     let (xmin, xmax, ymin, ymax) = board.board.keys().fold((0, 0, 0, 0), |mut sum, x| {
         if x.re < sum.0 {

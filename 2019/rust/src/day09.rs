@@ -1,15 +1,19 @@
-use super::intcode::*;
+use crate::intcode::*;
 
 fn run_ic(raw: &[String], input: isize) -> usize {
     let mut ic = IntCode::from(&raw[0]);
-    ic.input.push_back(input);
+    ic.push(input);
     ic.run();
-    ic.output.pop_front().unwrap() as usize
+    ic.pop().unwrap() as usize
 }
 
-pub fn part1(raw: &[String]) -> usize { run_ic(raw, 1) }
+pub fn part1(raw: &[String]) -> usize {
+    run_ic(raw, 1)
+}
 
-pub fn part2(raw: &[String]) -> usize { run_ic(raw, 2) }
+pub fn part2(raw: &[String]) -> usize {
+    run_ic(raw, 2)
+}
 
 #[cfg(test)]
 mod tests {
