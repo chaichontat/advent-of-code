@@ -19,10 +19,7 @@ struct Pos {
 
 impl Pos {
     fn turn_step(&self, t: Turn) -> Self {
-        Pos {
-            loc: self.loc + Complex::from(self.dir.turn(t)),
-            dir: self.dir.turn(t),
-        }
+        Pos { loc: self.loc + Complex::from(self.dir.turn(t)), dir: self.dir.turn(t) }
     }
 }
 
@@ -68,10 +65,7 @@ fn get_data(ic: &mut IntCode) -> (Board, Pos) {
             curr += Complex::new(1, 0);
         }
     }
-    (board, Pos {
-        dir: dir.unwrap(),
-        loc: loc.unwrap(),
-    })
+    (board, Pos { dir: dir.unwrap(), loc: loc.unwrap() })
 }
 
 /// Part 2
@@ -129,11 +123,7 @@ fn get_subseq(v: &[String], n: usize, full: &str) -> Vec<(usize, String)> {
     // Returns (num_occurence × len of subseq, subseq).
     ((n - 2)..=n)
         .rev()
-        .flat_map(|sl| {
-            (0..v.len() - sl)
-                .map(|i| (&v[i..i + sl]).to_vec().concat())
-                .collect_vec()
-        })
+        .flat_map(|sl| (0..v.len() - sl).map(|i| (&v[i..i + sl]).to_vec().concat()).collect_vec())
         .unique()
         .map(|x| (space_saved(full, &x), x))
         .collect_vec()
@@ -144,9 +134,7 @@ fn subs_test(full: &str, cand: &[&String]) -> Option<String> {
     let res = cand
         .iter()
         .enumerate()
-        .fold(full.to_string(), |pass, (i, &this)| {
-            pass.replace(this, keys[i])
-        }); // Replace repeatedly.
+        .fold(full.to_string(), |pass, (i, &this)| pass.replace(this, keys[i])); // Replace repeatedly.
 
     if res.chars().all(|x| x != 'L' && x != 'R') {
         Some(res)
@@ -176,10 +164,7 @@ fn compress(cmds: &[String]) -> Option<VecDeque<isize>> {
 
                     let mut res = vec![res.collect::<String>()];
                     res.append(
-                        &mut bundle
-                            .iter()
-                            .map(|&y| (&y[..y.len() - 1]).to_owned())
-                            .collect_vec(),
+                        &mut bundle.iter().map(|&y| (&y[..y.len() - 1]).to_owned()).collect_vec(),
                     );
 
                     let fin = res.join("\n");
@@ -192,7 +177,9 @@ fn compress(cmds: &[String]) -> Option<VecDeque<isize>> {
     None
 }
 
-pub fn part1(board: &Board) -> usize {
+pub fn part1(raw: &[String]) -> usize {
+    let mut ic = IntCode::from(&raw[0]);
+    let (board, _) = get_data(&mut ic);
     let adj = [Dir::U, Dir::D, Dir::L, Dir::R];
     board.iter().fold(0, |sum, x| {
         if adj.iter().all(|a| board.contains(&(x + Complex::from(*a)))) {
@@ -205,10 +192,9 @@ pub fn part1(board: &Board) -> usize {
 
 // "In general, the scaffold forms a path, but it sometimes loops back onto itself."
 // Just go straight as much as possible.
-pub fn run(raw: &[String]) -> Ans {
+pub fn part2(raw: &[String]) -> usize {
     let mut ic = IntCode::from(&raw[0]);
     let (board, pos) = get_data(&mut ic);
-    let p1 = part1(&board);
 
     let seq = path_finder(&pos, board);
     let mut ans = compress(&seq).unwrap();
@@ -223,11 +209,10 @@ pub fn run(raw: &[String]) -> Ans {
 
     for x in ic.output {
         if x > 255 {
-            return Some((p1, x as usize));
+            return x as usize;
         }
     }
-
-    None
+    0
 }
 
 #[cfg(test)]
@@ -236,6 +221,11 @@ mod tests {
 
     #[test]
     fn test1() {
-        assert_eq!(run(&read("day17.txt")), Some((5056, 942367)));
+        assert_eq!(part1(&read("day17.txt")), 5056);
+    }
+
+    #[test]
+    fn test2() {
+        assert_eq!(part2(&read("day17.txt")), 942367);
     }
 }
