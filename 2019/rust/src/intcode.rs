@@ -22,7 +22,7 @@ enum Mode {
     Rel = 2,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntCode {
     pub mem:    Vec<isize>,
     pub ptr:    usize,
@@ -47,10 +47,8 @@ impl From<&[isize]> for IntCode {
 
 impl From<&String> for IntCode {
     fn from(raw: &String) -> Self {
-        let mem: Vec<isize> = raw
-            .split(',')
-            .map(|x| x.parse::<isize>().unwrap())
-            .collect::<Vec<_>>();
+        let mem: Vec<isize> =
+            raw.split(',').map(|x| x.parse::<isize>().unwrap()).collect::<Vec<_>>();
 
         IntCode::from(&mem[..])
     }
@@ -105,14 +103,12 @@ impl IntCode {
         let mut step = true;
 
         match op {
-            OpCode::Add => self.set(
-                c0 + self.fetch_data(&modes[1], p[1]),
-                self.fetch_write(&modes[2], p[2]),
-            ),
-            OpCode::Mul => self.set(
-                c0 * self.fetch_data(&modes[1], p[1]),
-                self.fetch_write(&modes[2], p[2]),
-            ),
+            OpCode::Add => {
+                self.set(c0 + self.fetch_data(&modes[1], p[1]), self.fetch_write(&modes[2], p[2]))
+            }
+            OpCode::Mul => {
+                self.set(c0 * self.fetch_data(&modes[1], p[1]), self.fetch_write(&modes[2], p[2]))
+            }
             OpCode::In => {
                 let test = self.input.pop_front().unwrap();
                 self.set(test, self.fetch_write(&modes[0], p[0])) // Retain addr for writing.
@@ -186,10 +182,7 @@ impl IntCode {
         match mode {
             Mode::Pos => *self.mem.get(usize::try_from(addr).unwrap()).unwrap_or(&0),
             Mode::Imm => addr,
-            Mode::Rel => *self
-                .mem
-                .get(usize::try_from(addr + self.rel).unwrap())
-                .unwrap_or(&0),
+            Mode::Rel => *self.mem.get(usize::try_from(addr + self.rel).unwrap()).unwrap_or(&0),
         }
     }
 
@@ -227,9 +220,7 @@ mod tests {
         assert_eq!(prep(&[1, 0, 0, 0, 99]), &[2, 0, 0, 0, 99]);
         assert_eq!(prep(&[2, 3, 0, 3, 99]), &[2, 3, 0, 6, 99]);
         assert_eq!(prep(&[2, 4, 4, 5, 99, 0]), &[2, 4, 4, 5, 99, 9801]);
-        assert_eq!(prep(&[1, 1, 1, 4, 99, 5, 6, 0, 99]), &[
-            30, 1, 1, 4, 2, 5, 6, 0, 99
-        ]);
+        assert_eq!(prep(&[1, 1, 1, 4, 99, 5, 6, 0, 99]), &[30, 1, 1, 4, 2, 5, 6, 0, 99]);
     }
 
     fn test_inout(mem: &[isize], codes: &[isize], expects: &[isize]) {
@@ -271,17 +262,11 @@ mod tests {
 
     #[test]
     fn day9_rel_base() {
-        let quine = [
-            109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99,
-        ];
+        let quine = [109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99];
         test_out(&quine, &Vec::<isize>::new(), &quine);
-        test_out(
-            &[1102, 34915192, 34915192, 7, 4, 7, 99, 0],
-            &Vec::<isize>::new(),
-            &[1219070632396864],
-        );
-        test_out(&[104, 1125899906842624, 99], &Vec::<isize>::new(), &[
-            1125899906842624,
+        test_out(&[1102, 34915192, 34915192, 7, 4, 7, 99, 0], &Vec::<isize>::new(), &[
+            1219070632396864,
         ]);
+        test_out(&[104, 1125899906842624, 99], &Vec::<isize>::new(), &[1125899906842624]);
     }
 }
