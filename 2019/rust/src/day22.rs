@@ -1,4 +1,3 @@
-extern crate num_integer;
 use std::{fmt::Debug, str::FromStr};
 
 use num::Signed;
