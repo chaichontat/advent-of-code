@@ -3,6 +3,7 @@ use std::fs;
 use std::hash::Hash;
 
 use ahash::{AHashMap, AHashSet};
+use num::Signed;
 use num_complex::Complex;
 use regex::Regex;
 use strum_macros::EnumString;
@@ -64,19 +65,19 @@ impl Dir {
     // }
 
     pub fn turn(&self, turn: Turn) -> Self {
-        Dir::from(Complex::from(*self) * Complex::from(turn))
+        Dir::from(Complex::<i8>::from(*self) * Complex::from(turn))
     }
 }
 
-impl From<Complex<isize>> for Dir {
-    fn from(x: Complex<isize>) -> Self {
-        if x == Complex::new(0, 1) {
+impl<T: Signed> From<Complex<T>> for Dir {
+    fn from(x: Complex<T>) -> Self {
+        if x == Complex::new(T::zero(), T::one()) {
             Self::U
-        } else if x == Complex::new(0, -1) {
+        } else if x == Complex::new(T::zero(), -T::one()) {
             Self::D
-        } else if x == Complex::new(-1, 0) {
+        } else if x == Complex::new(-T::one(), T::zero()) {
             Self::L
-        } else if x == Complex::new(1, 0) {
+        } else if x == Complex::new(T::one(), T::zero()) {
             Self::R
         } else {
             unreachable!("Invalid Dir");
@@ -84,13 +85,13 @@ impl From<Complex<isize>> for Dir {
     }
 }
 
-impl From<Dir> for Complex<isize> {
+impl<T: Signed> From<Dir> for Complex<T> {
     fn from(x: Dir) -> Self {
         match x {
-            Dir::U => Complex::new(0, 1),
-            Dir::D => Complex::new(0, -1),
-            Dir::L => Complex::new(-1, 0),
-            Dir::R => Complex::new(1, 0),
+            Dir::U => Complex::new(T::zero(), T::one()),
+            Dir::D => Complex::new(T::zero(), -T::one()),
+            Dir::L => Complex::new(-T::one(), T::zero()),
+            Dir::R => Complex::new(T::one(), T::zero()),
         }
     }
 }
@@ -102,12 +103,12 @@ pub enum Turn {
     N,
 }
 
-impl From<Turn> for Complex<isize> {
+impl<T: Signed> From<Turn> for Complex<T> {
     fn from(x: Turn) -> Self {
         match x {
-            Turn::L => Complex::new(0, 1),
-            Turn::R => Complex::new(0, -1),
-            Turn::N => Complex::new(1, 0),
+            Turn::L => Complex::new(T::zero(), T::one()),
+            Turn::R => Complex::new(T::zero(), -T::one()),
+            Turn::N => Complex::new(T::one(), T::zero()),
         }
     }
 }
