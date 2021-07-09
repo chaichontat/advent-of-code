@@ -1,6 +1,11 @@
 #[macro_use]
 extern crate num_derive;
 
+extern crate jemallocator;
+
+#[global_allocator]
+static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
+
 pub mod intcode;
 pub mod utils;
 
