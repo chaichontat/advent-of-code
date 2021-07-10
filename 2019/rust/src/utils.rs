@@ -3,6 +3,8 @@ use std::fs;
 use std::hash::Hash;
 
 use ahash::{AHashMap, AHashSet};
+use ascii::{AsciiStr, AsciiString};
+use itertools::Itertools;
 use num::Signed;
 use num_complex::Complex;
 use regex::Regex;
@@ -19,12 +21,41 @@ pub fn read(path: &str) -> Vec<String> {
     vec
 }
 
+pub fn read_ascii(path: &str) -> Vec<AsciiString> {
+    let p = format!("../data/{}", path);
+    let res = AsciiString::from_ascii(fs::read(p).unwrap()).unwrap();
+    let mut vec = res
+        .split(ascii::AsciiChar::LineFeed)
+        .map(AsciiStr::to_owned)
+        .collect_vec();
+    vec.truncate(vec.len() - 1);
+    vec
+}
+
+#[macro_export]
+macro_rules! ahashmap {
+    ($( $key: expr => $val: expr ),*) => {{
+         let mut map = AHashMap::new();
+         $( map.insert($key, $val); )*
+         map
+    }}
+}
+
+#[macro_export]
+macro_rules! ahashset {
+    ($( $key: expr ),*) => {{
+         let mut set = AHashSet::new();
+         $( set.insert($key); )*
+         set
+    }}
+}
+
 pub fn str_idx(s: &str, i: usize) -> char {
     s.chars().nth(i).unwrap()
 }
 
 pub fn printt(x: &impl Debug) {
-    println!("{:#?}", x);
+    println!("{:?}", x);
 }
 
 pub fn gen_re(r: &str) -> Regex {
