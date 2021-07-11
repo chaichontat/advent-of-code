@@ -3,7 +3,7 @@ module Day01 where
 import           Control.Monad (guard)
 import qualified Data.IntSet   as IS
 import           Data.Maybe    (listToMaybe)
-import           Test.Hspec
+import           Test.HUnit    (assertEqual)
 
 findPair :: Int -> IS.IntSet -> Maybe Int
 findPair goal xs =
@@ -13,8 +13,5 @@ findPair goal xs =
     guard (y `IS.member` xs)
     pure (x * y)
 
-test :: IO ()
-test = do
-  x <- readFile "../data/day01.txt"
-  let s = map (read :: String -> Int) . lines $ x
-  print $ findPair 2020 $ IS.fromList s
+day01a :: [Int] -> Maybe Int
+day01a s = findPair 2020 $ IS.fromList s

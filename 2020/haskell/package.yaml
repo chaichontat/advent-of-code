@@ -1,6 +1,6 @@
-name: haskell
+name: adventofcode2020
 version: 0.1.0.0
-github: "githubuser/haskell"
+github: "chaichontat/advent-of-code"
 license: BSD3
 author: "Author name here"
 maintainer: "example@example.com"
@@ -22,7 +22,6 @@ description: Please see the README on GitHub at <https://github.com/githubuser/h
 dependencies:
   - base >= 4.7 && < 5
   - containers
-  - hspec
 
 library:
   source-dirs: src
@@ -36,7 +35,7 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - haskell
+      - adventofcode2020
 
 tests:
   haskell-test:
@@ -47,4 +46,5 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - haskell
+      - adventofcode2020
+      - HUnit
