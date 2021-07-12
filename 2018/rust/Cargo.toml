@@ -10,6 +10,7 @@ version = "0.1.0"
 ahash = "0.7.4"
 ascii = "1.0.0"
 itertools = "0.10.1"
+num = "0.4"
 
 [dev-dependencies]
 criterion = "0.3"

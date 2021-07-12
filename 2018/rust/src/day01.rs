@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use num::Integer;
 use std::iter;
 
 pub fn bench(raw: &[String]) -> (u32, u32) {
@@ -45,13 +46,8 @@ pub fn bench(raw: &[String]) -> (u32, u32) {
         .enumerate()
         // Step 1
         .map(|(idx, &x)| {
-            let mut div = x / sum;
-            let mut md = x % sum;
-            if md < 0 {
-                md += sum;
-                div -= 1;
-            }
-            (md, div, idx as i16)
+            let (qt, md) = x.div_mod_floor(&sum);
+            (md, qt, idx as i16)
         })
         .sorted_unstable()
         .tuple_windows::<(_, _)>()
@@ -59,12 +55,9 @@ pub fn bench(raw: &[String]) -> (u32, u32) {
         // (diff, idx of cumsum whose upon adding (qt × shift) = goal, idx of said goal)
         // Need to sort using idx_pursuer because the cumsum seq is not monotonic.
         // That is, idx_goal could be < idx_pursuer.
-        .filter_map(|(prev, (md, qt, idx))| {
-            if md == prev.0 {
-                Some((qt - prev.1, prev.2, idx))
-            } else {
-                None
-            }
+        .filter_map(|(prev, (md, qt, idx))| match md {
+            x if x == prev.0 => Some((qt - prev.1, prev.2, idx)),
+            _ => None,
         })
         .min();
 
