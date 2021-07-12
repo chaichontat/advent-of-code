@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dir: ["./2020/haskell"]
+        dir: ["./2018/haskell", "./2020/haskell"]
 
     steps:
       - uses: actions/checkout@v2
@@ -27,13 +27,13 @@ jobs:
           key: ${{ env.cache-name }}-stack-${{ hashFiles('**/package.yaml') }}
 
       - name: Install dependencies
-        run: stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --only-dependencies
-        working-directory: ${{ matrix.dir }}
-
-      - name: Build
         run: stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks
         working-directory: ${{ matrix.dir }}
 
       - name: Test
         run: stack test --system-ghc
+        working-directory: ${{ matrix.dir }}
+        
+      - name: Bench
+        run: stack bench --system-ghc
         working-directory: ${{ matrix.dir }}
