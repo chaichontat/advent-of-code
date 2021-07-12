@@ -1,4 +1,3 @@
-use ahash::AHashSet;
 use itertools::Itertools;
 use std::iter;
 
@@ -14,10 +13,12 @@ pub fn bench(raw: &[String]) -> (u32, u32) {
 
     let sum = freq.pop().unwrap();
 
-    let mut unique = AHashSet::new();
-    if freq.iter().any(|x| !unique.insert(*x)) {
-        panic!("Answer in first iteration.");
-    }
+    // Assuming that the answer is not in the first iteration.
+    // Otherwise,
+    // let mut unique = AHashSet::new();
+    // if freq.iter().any(|x| !unique.insert(*x)) {
+    //     panic!("Answer in first iteration.");
+    // }
 
     // https://www.reddit.com/r/adventofcode/comments/a20646/2018_day_1_solutions/
     // Things to note:
@@ -28,18 +29,21 @@ pub fn bench(raw: &[String]) -> (u32, u32) {
     //       both elements and we get a better repeat. Contradiction.
     //
     // Therefore, the solution is the cumsum that, for others to reach it, requires the lowest
-    // `n × shift`. To find this, we partition cumsums that have the same remainder (modulo shift) into
-    // groups (we also save its quotient). (Each group is known as a congruence class.)
+    // `n × shift`.
+
+    // Step 1. We partition cumsums that have the same remainder (modulo shift) into
+    // "cosets" (we also save its quotient).
     //
-    // Then, out of all groups, find a pair of cumsums that has the lowest difference in their quotients.
+    // Then, out of all cosets, find a pair of cumsums that has the lowest difference in their quotients.
     // We need to compare quotients beacuse each quotient represents the "starting point" of each cumsum.
     // If there are multiple candidates, pick the one with the lower index, since that will be reached first.
 
     // Assuming that the sum is strictly positive. Need to reverse some sorting if not.
 
-    let moddiv = freq
+    let all_in_one = freq
         .iter()
         .enumerate()
+        // Step 1
         .map(|(idx, &x)| {
             let mut div = x / sum;
             let mut md = x % sum;
@@ -50,23 +54,21 @@ pub fn bench(raw: &[String]) -> (u32, u32) {
             (md, div, idx as i16)
         })
         .sorted_unstable()
-        .collect_vec();
-
-    let mut diff = Vec::new();
-    let mut prev = moddiv[0];
-    for (md, qt, idx) in &moddiv[1..] {
-        if *md != prev.0 {
-            prev = (*md, *qt, *idx);
-            continue;
-        }
+        .tuple_windows::<(_, _)>()
+        // Step 2
         // (diff, idx of cumsum whose upon adding (qt × shift) = goal, idx of said goal)
         // Need to sort using idx_pursuer because the cumsum seq is not monotonic.
         // That is, idx_goal could be < idx_pursuer.
-        diff.push((qt - prev.1, prev.2, idx));
-    }
+        .filter_map(|(prev, (md, qt, idx))| {
+            if md == prev.0 {
+                Some((qt - prev.1, prev.2, idx))
+            } else {
+                None
+            }
+        })
+        .min();
 
-    diff.sort_unstable();
-    (sum as u32, freq[*diff[0].2 as usize] as u32)
+    (sum as u32, freq[all_in_one.unwrap().2 as usize] as u32)
 }
 
 #[cfg(test)]

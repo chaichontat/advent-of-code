@@ -8,8 +8,8 @@ use pprof::criterion::{Output, PProfProfiler};
 
 fn bench_fi(c: &mut Criterion) {
     let day01 = &read("day01.txt");
-    c.bench_function("day01a", |b| b.iter(|| day01::part1(black_box(day01))));
-    c.bench_function("day01b", |b| b.iter(|| day01::part2(black_box(day01))));
+    c.bench_function("day01a", |b| b.iter(|| day01::bench(black_box(day01))));
+    // c.bench_function("day01b", |b| b.iter(|| day01::part2(black_box(day01))));
 }
 
 criterion_group! {
