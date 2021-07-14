@@ -3,6 +3,7 @@ use core::panic;
 use itertools::Itertools;
 // use ndarray::prelude::*;
 // use ndarray::{Array2, ShapeBuilder};
+use crate::utils::*;
 use std::str;
 
 #[derive(Debug, Clone, Copy)]
@@ -19,13 +20,13 @@ fn parse(raw: &[AsciiString]) -> Vec<Point> {
     #[allow(clippy::string_from_utf8_as_bytes)]
     raw.iter()
         .flat_map(|r| {
-            idxs.iter().map(move |(s, t)| {
-                str::from_utf8(&r.as_bytes()[*s..*t])
-                    .unwrap()
-                    .trim_start()
-                    .parse::<i32>()
-                    .unwrap()
-            })
+            idxs.iter()
+                .map(move |(s, t)| -> SomeResult<i32> {
+                    Ok(str::from_utf8(&r.as_bytes()[*s..*t])?
+                        .trim_start()
+                        .parse::<i32>()?)
+                })
+                .flatten() // Unwrap result.
         })
         .tuple_windows()
         .step_by(4)
@@ -48,14 +49,13 @@ fn ocr(x: &u64) -> char {
     }
 }
 
-pub fn combi(raw: &[AsciiString]) -> (String, u32) {
+pub fn combi(raw: &[AsciiString]) -> Option<(String, u32)> {
     let points = parse(raw);
 
     let (min, max) = points
         .iter()
         .minmax_by(|&s, &oth| (s.vy, -s.y).cmp(&(oth.vy, -oth.y)))
-        .into_option()
-        .unwrap();
+        .into_option()?;
 
     let part2 = (max.y - min.y) / (min.vy - max.vy);
 
@@ -64,8 +64,8 @@ pub fn combi(raw: &[AsciiString]) -> (String, u32) {
         .map(|p| (p.x + part2 * p.vx, p.y + part2 * p.vy))
         .collect_vec();
 
-    let x_bound = moved.iter().min_by(|s, o| s.0.cmp(&o.0)).unwrap().0;
-    let y_bound = moved.iter().min_by(|s, o| s.1.cmp(&o.1)).unwrap().1;
+    let x_bound = moved.iter().min_by(|s, o| s.0.cmp(&o.0))?.0;
+    let y_bound = moved.iter().min_by(|s, o| s.1.cmp(&o.1))?.1;
 
     let mut texts = [0u64; 8];
     moved.iter().for_each(|&p| {
@@ -75,7 +75,7 @@ pub fn combi(raw: &[AsciiString]) -> (String, u32) {
     });
 
     let part1 = texts.iter().map(ocr).collect::<String>();
-    (part1, part2 as u32)
+    Some((part1, part2 as u32))
 }
 
 // fn parse_ndarray(raw: &[AsciiString]) -> Vec<i32> {
@@ -112,13 +112,12 @@ pub fn combi(raw: &[AsciiString]) -> (String, u32) {
 
 mod tests {
     use super::*;
-    use crate::utils::*;
 
     #[test]
     fn test_combi() {
         assert_eq!(
             combi(&read_ascii("day10.txt")),
-            ("FBHKLEAG".to_string(), 10009)
+            Some(("FBHKLEAG".to_string(), 10009))
         );
     }
 }

@@ -1,7 +1,10 @@
 use ascii::{AsciiStr, AsciiString};
 use itertools::Itertools;
+use std::error;
 use std::fmt::Debug;
 use std::fs;
+
+pub type SomeResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 pub fn read(path: &str) -> Vec<String> {
     let p = format!("../data/{}", path);

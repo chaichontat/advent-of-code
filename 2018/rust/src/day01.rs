@@ -2,7 +2,7 @@ use itertools::Itertools;
 use num::Integer;
 use std::iter;
 
-pub fn bench(raw: &[String]) -> (u32, u32) {
+pub fn bench(raw: &[String]) -> Option<(u32, u32)> {
     let mut freq = iter::once(0)
         .chain(raw.iter().map(|x| x.parse::<i32>().unwrap()))
         .collect_vec();
@@ -12,7 +12,7 @@ pub fn bench(raw: &[String]) -> (u32, u32) {
         *i
     });
 
-    let sum = freq.pop().unwrap();
+    let sum = freq.pop()?;
 
     // Assuming that the answer is not in the first iteration.
     // Otherwise,
@@ -61,7 +61,7 @@ pub fn bench(raw: &[String]) -> (u32, u32) {
         })
         .min();
 
-    (sum as u32, freq[all_in_one.unwrap().2 as usize] as u32)
+    Some((sum as u32, freq[all_in_one?.2 as usize] as u32))
 }
 
 #[cfg(test)]
@@ -70,6 +70,6 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test() {
-        assert_eq!(bench(&read("day01.txt")), (454, 566));
+        assert_eq!(bench(&read("day01.txt")), Some((454, 566)));
     }
 }
