@@ -9,6 +9,7 @@ version = "0.1.0"
 [dependencies]
 ahash = "0.7.4"
 ascii = "1.0.0"
+bitvec = "0.22.3"
 bytecount = "0.6.2"
 crc32fast = "1.2.1"
 itertools = "0.10.1"
