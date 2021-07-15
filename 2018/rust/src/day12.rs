@@ -3,8 +3,13 @@ use std::cmp::Ordering;
 use ascii::{AsciiChar, AsciiString};
 use bitvec::prelude::*;
 
+struct BitVecBase {
+    state: BitVec,
+    base: i16,
+}
+
 #[allow(bindings_with_variant_name)]
-fn parse(raw: &[AsciiString]) -> (BitVec, u32) {
+fn parse(raw: &[AsciiString]) -> (BitVecBase, u32) {
     let start = raw[0][15..]
         .into_iter()
         .map(|&c| match c {
@@ -13,6 +18,18 @@ fn parse(raw: &[AsciiString]) -> (BitVec, u32) {
             _ => unreachable!(),
         })
         .collect::<BitVec>();
+
+    // let rules = raw[2..] Significantly slower.
+    //     .iter()
+    //     .filter(|&rule| rule[9] != AsciiChar::Dot)
+    //     .fold(0u32, |rules, rule| {
+    //         let r = rule[..5].into_iter().fold(0u8, |this, c| match *c {
+    //             AsciiChar::Hash => this << 1 | 1,
+    //             AsciiChar::Dot => this << 1,
+    //             _ => unreachable!(),
+    //         });
+    //         rules | 1 << r
+    //     });
 
     let mut rules = 0u32; // 2⁵ potential rules.
     for rule in raw[2..].iter() {
@@ -30,14 +47,20 @@ fn parse(raw: &[AsciiString]) -> (BitVec, u32) {
         }
         rules |= 1 << r; // Encode active rules by bit position.
     }
-    (start, rules)
+    (
+        BitVecBase {
+            state: start,
+            base: 0,
+        },
+        rules,
+    )
 }
 
-fn step(start: &BitVec, rules: u32, mut base: i16) -> (BitVec, i16) {
+fn step(start: &BitVecBase, rules: u32) -> BitVecBase {
     let mut new = BitVec::new();
     let mut i = 0;
-
-    while !start[i] {
+    let mut base = start.base;
+    while !start.state[i] {
         i += 1; // Skip empty bits.
         base += 1;
     }
@@ -45,8 +68,8 @@ fn step(start: &BitVec, rules: u32, mut base: i16) -> (BitVec, i16) {
 
     let mut win = 0u8;
     let mask = 0b011111; // Keep only 5 most recent bits.
-    while i < start.len() {
-        let b = start[i] as u8;
+    while i < start.state.len() {
+        let b = start.state[i] as u8;
         win = (win << 1 | b) & mask; // Sliding window; encode into rule.
         new.push((rules >> win) & 1 == 1); // Check if rule exists.
         i += 1;
@@ -61,39 +84,34 @@ fn step(start: &BitVec, rules: u32, mut base: i16) -> (BitVec, i16) {
         new.pop();
     }
 
-    (new, base)
+    BitVecBase { state: new, base }
 }
 
-fn score(state: &BitVec, base: i16) -> u64 {
-    state.iter_ones().map(|x| x as u64 + base as u64).sum()
+fn score(b: &BitVecBase) -> u64 {
+    b.state.iter_ones().map(|x| x as u64 + b.base as u64).sum()
 }
 
-#[allow(unused_assignments)]
-pub fn combi(raw: &[AsciiString]) -> (u64, u64) {
-    let (mut prev, rules) = parse(raw);
-    let mut base = 0;
-    let mut i = 0;
-    let (mut part1, mut part2) = (0, 0);
+pub fn combi(raw: &[AsciiString]) -> (Option<u64>, Option<u64>) {
+    let (input, rules) = parse(raw);
+    let (mut part1, mut part2) = (None, None);
 
-    loop {
-        let (now, new_base) = step(&prev, rules, base);
-        i += 1;
-
+    let mut prev = input;
+    for i in 1.. {
+        let now = step(&prev, rules);
         match i.cmp(&20) {
             Ordering::Less => (),
-            Ordering::Equal => part1 = score(&now, new_base),
+            Ordering::Equal => part1 = Some(score(&now)),
             Ordering::Greater => {
-                if prev == now {
-                    part2 = score(&now, new_base);
-                    part2 += (part2 - score(&prev, base)) * (50_000_000_000 - i as u64);
+                if prev.state == now.state {
+                    let p2 = score(&now);
+                    part2 = Some(p2 + (p2 - score(&prev)) * (50_000_000_000 - i as u64));
                     break;
                 }
             }
         }
-
-        base = new_base;
         prev = now;
     }
+
     (part1, part2)
 }
 
@@ -103,6 +121,9 @@ mod tests {
 
     #[test]
     fn test_combi() {
-        assert_eq!(combi(&read_ascii("day12.txt")), (2444, 750000000697));
+        assert_eq!(
+            combi(&read_ascii("day12.txt")),
+            (Some(2444), Some(750000000697))
+        );
     }
 }
