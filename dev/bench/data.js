@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1626555073452,
+  "lastUpdate": 1626555078552,
   "repoUrl": "https://github.com/chaichontat/advent-of-code",
   "entries": {
     "Rust Benchmark": [
@@ -505,6 +505,66 @@ window.BENCHMARK_DATA = {
             "name": "day14combi",
             "value": 321357181,
             "range": "± 10172448",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "34997334+chaichontat@users.noreply.github.com",
+            "name": "chaichontat",
+            "username": "chaichontat"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ee89c49c780321935380142094aacea47cd75c65",
+          "message": "Update rust.yml",
+          "timestamp": "2021-07-17T16:48:46-04:00",
+          "tree_id": "f51e56cc6210fba509400431ad39cce2ddce9d70",
+          "url": "https://github.com/chaichontat/advent-of-code/commit/ee89c49c780321935380142094aacea47cd75c65"
+        },
+        "date": 1626555077588,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "day01combi",
+            "value": 41047,
+            "range": "± 2051",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day02a",
+            "value": 11057,
+            "range": "± 759",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day02b",
+            "value": 70216,
+            "range": "± 3344",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day10combi",
+            "value": 51236,
+            "range": "± 3118",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day12combi",
+            "value": 74839,
+            "range": "± 7073",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day14combi",
+            "value": 276958463,
+            "range": "± 10755163",
             "unit": "ns/iter"
           }
         ]
