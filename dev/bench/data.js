@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1626554683481,
+  "lastUpdate": 1626555073452,
   "repoUrl": "https://github.com/chaichontat/advent-of-code",
   "entries": {
     "Rust Benchmark": [
@@ -443,6 +443,68 @@ window.BENCHMARK_DATA = {
             "name": "day25a",
             "value": 17359259,
             "range": "± 2673969",
+            "unit": "ns/iter"
+          }
+        ]
+      }
+    ],
+    "./2018/rust": [
+      {
+        "commit": {
+          "author": {
+            "email": "34997334+chaichontat@users.noreply.github.com",
+            "name": "chaichontat",
+            "username": "chaichontat"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "16fc09dc7d584595ac0998ac23adfd752d7ee106",
+          "message": "Update rust.yml",
+          "timestamp": "2021-07-17T16:48:25-04:00",
+          "tree_id": "9caa2636ba42ba953be418b960899233a4b297b3",
+          "url": "https://github.com/chaichontat/advent-of-code/commit/16fc09dc7d584595ac0998ac23adfd752d7ee106"
+        },
+        "date": 1626555072504,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "day01combi",
+            "value": 47873,
+            "range": "± 4493",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day02a",
+            "value": 11952,
+            "range": "± 644",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day02b",
+            "value": 78943,
+            "range": "± 3171",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day10combi",
+            "value": 58180,
+            "range": "± 3855",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day12combi",
+            "value": 82391,
+            "range": "± 4022",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day14combi",
+            "value": 321357181,
+            "range": "± 10172448",
             "unit": "ns/iter"
           }
         ]
