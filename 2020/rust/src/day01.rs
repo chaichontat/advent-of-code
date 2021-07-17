@@ -1,54 +1,60 @@
-use super::utils::*;
+use bitvec::prelude::*;
 use itertools::Itertools;
-use std::collections::HashSet;
-use std::iter::FromIterator;
 
-pub fn part1(raw: &Vec<String>) -> usize {
-    let nums: HashSet<usize> = HashSet::from_iter(raw.iter().map(|x| int(&x)));
-    let out = nums
-        .iter()
-        .filter_map(|x| {
-            if nums.contains(&(2020usize.checked_sub(*x)?)) {
-                Some(x * (2020 - x))
-            } else {
-                None
-            }
-        })
-        .collect::<Vec<usize>>();
-
-    assert_eq!(out.len(), 2);  // Commutativity of summation.
-    out[0]
+pub fn parse(raw: String) -> Vec<usize> {
+    raw.split('\n')
+        .map(|line| line.parse::<usize>().unwrap())
+        .collect_vec()
 }
 
-pub fn part2(raw: &Vec<String>) -> usize{
-    let nums: HashSet<usize> = HashSet::from_iter(raw.iter().map(|x| int(&x)));
-    let out = nums
-        .iter()
-        .combinations(2)
-        .filter_map(|x| {
-            if nums.contains(&(2020usize.checked_sub(x[0] + x[1])?)) {
-                Some(x[0] * x[1] * (2020 - x[0] - x[1]))
-            } else {
-                None
-            }
-        })
-        .collect::<Vec<usize>>();
-
-    assert_eq!(out.len(), 3);
-    out[0]
+fn build_bit(parsed: &[usize]) -> BitArray<Lsb0, [usize; 32]> {
+    let mut s = bitarr![0; 2048];
+    for &n in parsed {
+        s.set(n, true);
+    }
+    s
 }
 
+pub fn combi(parsed: &[usize]) -> (Option<usize>, Option<usize>) {
+    let nums = build_bit(parsed);
+    let have = nums.iter_ones().collect_vec();
+
+    let (mut part1, mut part2) = (None, None);
+
+    for &n in &have {
+        if *nums.get(2020 - n).unwrap() {
+            part1 = Some(n * (2020 - n));
+            break;
+        }
+    }
+
+    'outer: for i in 0..have.len() {
+        for j in (i + 1)..have.len() {
+            let o = 2020 - have[i] - have[j];
+            if o < have[j] {
+                break;
+            }
+
+            if *nums.get(o).unwrap() {
+                part2 = Some(o * have[i] * have[j]);
+                break 'outer;
+            }
+        }
+    }
+
+    (part1, part2)
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn test1() {
-        assert_eq!(part1(&read("day01.txt")), 605364);
-    }
+    use crate::utils::*;
 
     #[test]
-    fn test2() {
-        assert_eq!(part2(&read("day01.txt")), 128397680);
+    fn test_combi() {
+        assert_eq!(
+            combi(&parse(read_nosep("day01.txt"))),
+            (Some(605364), Some(128397680))
+        );
     }
 }

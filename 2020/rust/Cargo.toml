@@ -7,6 +7,8 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ahash = "0.7.4"
+bitvec = "0.22.3"
 itertools = "0.10.1"
 ndarray = "0.15.3"
 nohash-hasher = "0.2.0"
@@ -19,4 +21,4 @@ criterion = "0.3"
 
 [[bench]]
 harness = false
-name = "bench"
+name = "criterion"

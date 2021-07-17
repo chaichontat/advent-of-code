@@ -10,6 +10,13 @@ pub fn read(path: &str) -> Vec<String> {
     vec
 }
 
+pub fn read_nosep(path: &str) -> String {
+    let p = format!("../data/{}", path);
+    let mut res = fs::read_to_string(p).unwrap();
+    res.pop();
+    res
+}
+
 pub fn str_idx(s: &String, i: usize) -> char {
     s.chars().nth(i).unwrap()
 }
