@@ -1,11 +1,15 @@
 use std::cmp::Ordering;
 
+use itertools::Itertools;
+
+use crate::utils::*;
+
 fn simple_intcode(raw: &str, noun: usize, verb: usize) -> usize {
     let mut mem = raw
         .split(',')
         .map(|x| x.parse::<usize>())
         .flatten()
-        .collect::<Vec<_>>();
+        .collect_vec();
     let mut ptr = 0;
     mem[1] = noun;
     mem[2] = verb;
@@ -23,7 +27,7 @@ fn simple_intcode(raw: &str, noun: usize, verb: usize) -> usize {
     mem[0]
 }
 
-pub fn run(raw: &[String]) -> (usize, usize) {
+pub fn run(raw: &[String]) -> Ans {
     // f(x) = ax₁ + b + x₂
     // Solve for a, b.
     // Then, find x₁ and x₂ that results in target.
@@ -39,7 +43,7 @@ pub fn run(raw: &[String]) -> (usize, usize) {
     let verb = u - (noun * a); // Fine-tune remainder.
     assert_eq!(target, noun * a + verb + b);
 
-    (part1, (100 * noun + verb))
+    Some((part1, (100 * noun + verb)))
 
     // match fn_binary_search(|x| run_ic(&raw[0], x, 0), target, 0, 100) {
     //     Ok(r) => 100 * r as usize,
@@ -78,9 +82,8 @@ fn fn_binary_search(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(run(&read("day02.txt")), (5110675, 4847));
+        assert_eq!(run(&read("day02.txt")), Some((5110675, 4847)));
     }
 }

@@ -35,7 +35,12 @@ impl Droid {
 
     fn explore(&mut self, from: isize) {
         self.ic.run_wait_input();
-        let out = self.ic.output.iter().map(|&x| x as u8 as char).collect::<String>();
+        let out = self
+            .ic
+            .output
+            .iter()
+            .map(|&x| x as u8 as char)
+            .collect::<String>();
         self.ic.output.clear();
 
         if out.contains("Security Checkpoint") {
@@ -86,12 +91,19 @@ impl Droid {
     #[allow(dead_code)]
     fn interactive(&mut self) {
         loop {
-            let s = self.ic.output.iter().map(|&x| x as u8 as char).collect::<String>();
+            let s = self
+                .ic
+                .output
+                .iter()
+                .map(|&x| x as u8 as char)
+                .collect::<String>();
             self.ic.output.clear();
             println!("{}", s);
 
             let mut input = String::new();
-            io::stdin().read_line(&mut input).expect("Couldn't read line");
+            io::stdin()
+                .read_line(&mut input)
+                .expect("Couldn't read line");
             for c in input.chars() {
                 self.ic.push(c as isize);
             }
@@ -100,7 +112,9 @@ impl Droid {
 
     fn call(&mut self, op: &[isize], name: &str) {
         self.ic.input.extend(op);
-        name.chars().map(|x| x as u8 as isize).for_each(|x| self.ic.push(x));
+        name.chars()
+            .map(|x| x as u8 as isize)
+            .for_each(|x| self.ic.push(x));
         self.ic.push(END);
         self.ic.run_wait_input();
     }
@@ -153,7 +167,12 @@ impl Droid {
                 }
             }
             self.step(0); // Enter room.
-            let s = self.ic.output.iter().map(|&x| x as u8 as char).collect::<String>();
+            let s = self
+                .ic
+                .output
+                .iter()
+                .map(|&x| x as u8 as char)
+                .collect::<String>();
             if s.contains("proceed") {
                 let re = Regex::new(r"\d+").unwrap();
                 return Some(re.find(&s).unwrap().as_str().parse::<usize>().unwrap());

@@ -26,10 +26,10 @@ fn parse(raw: &[String]) -> Db {
         let mut name = String::new();
 
         for s in line.chars() {
-            if '0' <= s && s <= '9' {
+            if s.is_ascii_digit() {
                 let c = s as usize - '0' as usize;
                 n = 10 * n + c; // Build dec number.
-            } else if 'A' <= s && s <= 'Z' {
+            } else if s.is_ascii_uppercase() {
                 name.push(s); // Append name to building string.
             } else if s == ',' || s == '=' {
                 // End of name, build struct, and reset.
@@ -134,10 +134,21 @@ fn binary_search(mut lo: OreFuel, mut hi: OreFuel, avail: usize, cost: &Cost) ->
     lo
 }
 
-pub fn run(raw: &[String]) -> (usize, usize) {
-    // Part 1
+pub fn part1(raw: &[String]) -> usize {
     let mut db = parse(raw);
-    let sorted = topo_sort(&mut db, &"FUEL");
+    let sorted = topo_sort(&mut db, "FUEL");
+    let cost = Cost {
+        sorted,
+        db,
+        goal: "ORE".to_string(),
+    };
+
+    cost.cost(1).ore
+}
+
+pub fn part2(raw: &[String]) -> usize {
+    let mut db = parse(raw);
+    let sorted = topo_sort(&mut db, "FUEL");
     let cost = Cost {
         sorted,
         db,
@@ -152,7 +163,7 @@ pub fn run(raw: &[String]) -> (usize, usize) {
     let hi = cost.cost(4 * avail / cost_per_fuel.ore);
 
     let max_with_avail = binary_search(lo, hi, avail, &cost);
-    (cost_per_fuel.ore, max_with_avail.fuel)
+    max_with_avail.fuel
 }
 
 #[cfg(test)]
@@ -161,6 +172,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(run(&read("day14.txt")), (892207, 1935265));
+        assert_eq!(part1(&read("day14.txt")), 892207);
+    }
+
+    #[test]
+    fn test2() {
+        assert_eq!(part2(&read("day14.txt")), 1935265);
     }
 }

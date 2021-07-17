@@ -25,7 +25,12 @@ strum_macros = "0.21"
 
 [dev-dependencies]
 criterion = "0.3"
+criterion-macro = "0.3"
+pprof = {version = "0.4", features = ["criterion", "flamegraph", "protobuf"]}
 
 [[bench]]
 harness = false
-name = "bench"
+name = "criterion"
+
+[profile.release]
+debug = true

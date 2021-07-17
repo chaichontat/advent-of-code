@@ -54,7 +54,11 @@ impl<T: Signed + Copy + Debug> Mod<T> {
         debug_assert_eq!(self.base, other.base);
         let add = (self.add + self.mul * other.add) % self.base;
         let mul = self.mul * other.mul % self.base;
-        Mod { mul, add, base: self.base }
+        Mod {
+            mul,
+            add,
+            base: self.base,
+        }
     }
 
     fn curr_pos_from_ori_pos(&self, tar: T) -> T {
@@ -95,14 +99,24 @@ where
 pub fn part1(raw: &[String]) -> usize {
     let ops = parse::<i32>(raw);
     let base = 10007_i32;
-    let shuffle =
-        ops.iter().fold(Mod { mul: 1, add: 0, base }, |prog, x| prog.compose(&x.to_mod(base)));
+    let shuffle = ops.iter().fold(
+        Mod {
+            mul: 1,
+            add: 0,
+            base,
+        },
+        |prog, x| prog.compose(&x.to_mod(base)),
+    );
     shuffle.curr_pos_from_ori_pos(2019) as usize
 }
 
 fn pow(mut m: Mod<i128>, mut k: i128) -> Mod<i128> {
     // Binary exponentiation.
-    let mut g = Mod { mul: 1, add: 0, base: m.base };
+    let mut g = Mod {
+        mul:  1,
+        add:  0,
+        base: m.base,
+    };
     while k > 0 {
         // Check odd.
         if k & 1 == 1 {
@@ -117,8 +131,14 @@ fn pow(mut m: Mod<i128>, mut k: i128) -> Mod<i128> {
 pub fn part2(raw: &[String]) -> usize {
     let ops = parse::<i128>(raw);
     let base = 119315717514047_i128;
-    let shuffle =
-        ops.iter().fold(Mod { mul: 1, add: 0, base }, |prog, x| prog.compose(&x.to_mod(base)));
+    let shuffle = ops.iter().fold(
+        Mod {
+            mul: 1,
+            add: 0,
+            base,
+        },
+        |prog, x| prog.compose(&x.to_mod(base)),
+    );
 
     let res = pow(shuffle, 101741582076661);
     res.value_of_curr_pos(2020) as usize

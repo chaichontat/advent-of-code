@@ -5,10 +5,10 @@ use num_complex::Complex;
 
 use crate::utils::*;
 
-fn gen_set(path: &str) -> AHashSet<Complex<isize>> {
-    let dirs: Vec<(char, isize)> = path
+fn gen_set(path: &str) -> AHashSet<Complex<i32>> {
+    let dirs: Vec<(char, i32)> = path
         .split(',')
-        .map(|x| (x.chars().next().unwrap(), x[1..].parse::<isize>().unwrap()))
+        .map(|x| (x.chars().next().unwrap(), x[1..].parse::<i32>().unwrap()))
         .collect();
 
     let mut curr = Complex::new(0, 0);
@@ -24,11 +24,11 @@ fn gen_set(path: &str) -> AHashSet<Complex<isize>> {
     out
 }
 
-fn gen_dist(path: &str) -> AHashMap<Complex<isize>, isize> {
+fn gen_dist(path: &str) -> AHashMap<Complex<i32>, i32> {
     // HashMap is significantly slower.
-    let dirs: Vec<(char, isize)> = path
+    let dirs: Vec<(char, i32)> = path
         .split(',')
-        .map(|x| (x.chars().next().unwrap(), x[1..].parse::<isize>().unwrap()))
+        .map(|x| (x.chars().next().unwrap(), x[1..].parse::<i32>().unwrap()))
         .collect();
 
     let mut curr = (Complex::new(0, 0), 0); // Location and total distance.
@@ -45,15 +45,15 @@ fn gen_dist(path: &str) -> AHashMap<Complex<isize>, isize> {
     out
 }
 
-pub fn part1(raw: &[String]) -> usize {
+pub fn part1(raw: &[String]) -> u16 {
     gen_set(&raw[0])
         .intersection(&gen_set(&raw[1]))
         .map(Complex::l1_norm)
         .min()
-        .unwrap() as usize
+        .unwrap() as u16
 }
 
-pub fn part2(raw: &[String]) -> usize {
+pub fn part2(raw: &[String]) -> u16 {
     let maps = vec![gen_dist(&raw[0]), gen_dist(&raw[1])];
     let sets = vec![AHashMap::keys_to(&maps[0]), AHashMap::keys_to(&maps[1])];
     let intersect = sets[0].intersection(&sets[1]).collect::<Vec<_>>();
@@ -61,7 +61,7 @@ pub fn part2(raw: &[String]) -> usize {
         .iter()
         .map(|pos| maps[0][pos] + maps[1][pos])
         .min()
-        .unwrap() as usize
+        .unwrap() as u16
 }
 
 #[cfg(test)]

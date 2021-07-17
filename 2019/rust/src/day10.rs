@@ -8,15 +8,22 @@ type Pos = Complex<i32>;
 
 fn parse(raw: &[String]) -> AHashSet<Pos> {
     let mut out = AHashSet::new();
-    for (line, y) in raw.iter().zip(Range { start: 0i32, end: raw.len() as i32 }) {
-        line.chars().zip(Range { start: 0i32, end: raw[0].len() as i32 }).for_each(|(c, x)| match c
-        {
-            '.' => (),
-            '#' => {
-                out.insert(Complex::new(x, -y));
-            }
-            _ => unreachable!(),
-        })
+    for (line, y) in raw.iter().zip(Range {
+        start: 0i32,
+        end:   raw.len() as i32,
+    }) {
+        line.chars()
+            .zip(Range {
+                start: 0i32,
+                end:   raw[0].len() as i32,
+            })
+            .for_each(|(c, x)| match c {
+                '.' => (),
+                '#' => {
+                    out.insert(Complex::new(x, -y));
+                }
+                _ => unreachable!(),
+            })
     }
     out
 }
@@ -110,8 +117,11 @@ fn scan((fracs_p, fracs_n): &mut (Neighbors, Neighbors), target: usize) -> Optio
 
 pub fn bench(raw: &[String]) -> (usize, usize) {
     let asteroids = parse(raw);
-    let (argmax, part1) =
-        asteroids.iter().map(|&ast| (ast, count(&asteroids, ast))).max_by_key(|x| x.1).unwrap();
+    let (argmax, part1) = asteroids
+        .iter()
+        .map(|&ast| (ast, count(&asteroids, ast)))
+        .max_by_key(|x| x.1)
+        .unwrap();
     let mut nbrs = list_nbr(&asteroids, argmax);
     let res = scan(&mut nbrs, 200).unwrap();
     (part1, (res.0 * 100 - res.1) as usize)

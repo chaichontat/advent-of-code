@@ -7,9 +7,13 @@ fn run_ic(raw: &[String], code: isize) -> IntCode {
     ic
 }
 
-pub fn part1(raw: &[String]) -> usize { run_ic(raw, 1).output.pop_back().unwrap() as usize }
+pub fn part1(raw: &[String]) -> usize {
+    run_ic(raw, 1).output.pop_back().unwrap() as usize
+}
 
-pub fn part2(raw: &[String]) -> usize { run_ic(raw, 5).output.pop_back().unwrap() as usize }
+pub fn part2(raw: &[String]) -> usize {
+    run_ic(raw, 5).output.pop_back().unwrap() as usize
+}
 
 #[cfg(test)]
 mod tests {
