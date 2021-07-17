@@ -31,13 +31,13 @@ jobs:
         working-directory: ${{ matrix.dir }}
 
       - name: Run benchmark
-        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        if: github.event_name == 'push'
         run: cargo bench --bench criterion -- --output-format bencher | tee output.txt
         working-directory: ${{ matrix.dir }}
 
       # https://github.com/rhysd/github-action-benchmark/blob/a1914d7dcbe14d006e4b5f12c7ff303a82a411f1/examples/criterion-rs/README.md
       - name: Store benchmark result
-        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        if: github.event_name == 'push'
         uses: rhysd/github-action-benchmark@v1
         with:
           name: ${{ matrix.dir }}
