@@ -18,34 +18,44 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: ⚡ Cache
-        uses: actions/cache@v2
+      - uses: actions-rs/toolchain@v1
         with:
-          path: |
-            ${{ matrix.dir }}/.cargo/registry/index
-            ${{ matrix.dir }}/.cargo/registry/cache
-            ${{ matrix.dir }}/.cargo/git
-            ${{ matrix.dir }}/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          
-      - name: Build
-        run: cargo build --verbose
+          toolchain: stable
+
+      - uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: ${{ matrix.dir }}
+
+      # - name: ⚡ Cache
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: |
+      #       ${{ matrix.dir }}/.cargo/registry/index
+      #       ${{ matrix.dir }}/.cargo/registry/cache
+      #       ${{ matrix.dir }}/.cargo/git
+      #       ${{ matrix.dir }}/target
+      #     key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # - name: Build
+      #   run: cargo build --verbose
+      #   working-directory: ${{ matrix.dir }}
+
+      - name: Build & Test
+        run: cargo test --release # Release profile. Prevents benchmark recompilation.
         working-directory: ${{ matrix.dir }}
-        
-      - name: Test
-        run: cargo test --verbose
-        working-directory: ${{ matrix.dir }}
-        
+
       - name: Run benchmark
-        run: cargo bench | tee output.txt
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        run: cargo bench --bench criterion -- --output-format bencher | tee output.txt
         working-directory: ${{ matrix.dir }}
-        
+
+      # https://github.com/rhysd/github-action-benchmark/blob/a1914d7dcbe14d006e4b5f12c7ff303a82a411f1/examples/criterion-rs/README.md
       - name: Store benchmark result
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
         uses: rhysd/github-action-benchmark@v1
         with:
           name: Rust Benchmark
-          tool: 'criterion'
+          tool: "cargo"
           output-file-path: ${{ matrix.dir }}/output.txt
-          # Use personal access token instead of GITHUB_TOKEN due to https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869/highlight/false
           github-token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
           auto-push: true
