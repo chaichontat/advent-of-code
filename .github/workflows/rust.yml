@@ -17,11 +17,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: ⚡ Cache
         uses: actions/cache@v2
         with:
           path: |
-            ${{ matrix.dir }}/.cargo/registry
+            ${{ matrix.dir }}/.cargo/registry/index
+            ${{ matrix.dir }}/.cargo/registry/cache
             ${{ matrix.dir }}/.cargo/git
             ${{ matrix.dir }}/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
@@ -42,7 +44,7 @@ jobs:
         uses: rhysd/github-action-benchmark@v1
         with:
           name: Rust Benchmark
-          tool: 'cargo'
+          tool: 'criterion'
           output-file-path: ${{ matrix.dir }}/output.txt
           # Use personal access token instead of GITHUB_TOKEN due to https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869/highlight/false
           github-token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
