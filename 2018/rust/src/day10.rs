@@ -116,7 +116,7 @@ mod tests {
     #[test]
     fn test_combi() {
         assert_eq!(
-            combi(&read_ascii("day10.txt")),
+            combi(&read_ascii_sep("day10.txt")),
             Some(("FBHKLEAG".to_string(), 10009))
         );
     }

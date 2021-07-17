@@ -13,7 +13,12 @@ bitvec = "0.22.3"
 bytecount = "0.6.2"
 crc32fast = "1.2.1"
 itertools = "0.10.1"
+ndarray = "0.15.0"
 num = "0.4"
+regex = "1.5.4"
+rstar = "0.9.0"
+strum = "0.21"
+strum_macros = "0.21"
 
 [dev-dependencies]
 criterion = "0.3"
@@ -22,7 +27,7 @@ pprof = {version = "0.4", features = ["criterion", "flamegraph", "protobuf"]}
 
 [[bench]]
 harness = false
-name = "bench"
+name = "criterion"
 
 [profile.release]
 debug = true

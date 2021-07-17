@@ -122,7 +122,7 @@ mod tests {
     #[test]
     fn test_combi() {
         assert_eq!(
-            combi(&read_ascii("day12.txt")),
+            combi(&read_ascii_sep("day12.txt")),
             (Some(2444), Some(750000000697))
         );
     }

@@ -33,6 +33,7 @@ fn run_hash(x: &[u8]) -> usize {
 /// we can perform fast comparisons with the hardware-accelerated CRC32
 /// checksum to eliminate strings without any half-sameness to other strings.
 
+#[allow(bindings_with_variant_name)]
 pub fn part2(raw: &[AsciiString]) -> Option<AsciiString> {
     let hashes = raw
         .iter()
@@ -87,13 +88,13 @@ mod tests {
 
     #[test]
     fn test() {
-        assert_eq!(part1(&read_ascii("day02.txt")), 6175);
+        assert_eq!(part1(&read_ascii_sep("day02.txt")), 6175);
     }
 
     #[test]
     fn test2() {
         assert_eq!(
-            part2(&read_ascii("day02.txt")).unwrap(),
+            part2(&read_ascii_sep("day02.txt")).unwrap(),
             AsciiString::from_str("asgwjcmzredihqoutcylvzinx").unwrap()
         );
     }
