@@ -26,20 +26,6 @@ jobs:
         with:
           working-directory: ${{ matrix.dir }}
 
-      # - name: ⚡ Cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: |
-      #       ${{ matrix.dir }}/.cargo/registry/index
-      #       ${{ matrix.dir }}/.cargo/registry/cache
-      #       ${{ matrix.dir }}/.cargo/git
-      #       ${{ matrix.dir }}/target
-      #     key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      # - name: Build
-      #   run: cargo build --verbose
-      #   working-directory: ${{ matrix.dir }}
-
       - name: Build & Test
         run: cargo test --release # Release profile. Prevents benchmark recompilation.
         working-directory: ${{ matrix.dir }}
@@ -54,7 +40,7 @@ jobs:
         if: github.event_name == 'push' || github.event_name == 'pull_request'
         uses: rhysd/github-action-benchmark@v1
         with:
-          name: Rust Benchmark
+          name: ${{ matrix.dir }}
           tool: "cargo"
           output-file-path: ${{ matrix.dir }}/output.txt
           github-token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
