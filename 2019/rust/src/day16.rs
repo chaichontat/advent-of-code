@@ -2,6 +2,7 @@ use std::iter;
 
 use ascii::AsciiString;
 use itertools::Itertools;
+use rayon::prelude::*;
 
 use super::utils::*;
 
@@ -71,38 +72,62 @@ pub fn part1(raw: &[AsciiString]) -> u32 {
 ///     C(k+99, k) % 2 = 1 ; k % 128 = 0,4,8,12,16,20,24,28
 ///                    = 0 ; otherwise
 
+fn add_parallel(x: &mut [u8], y: &[u8]) {
+    x.iter_mut().zip(y.iter()).for_each(|(xx, yy)| *xx += *yy);
+}
+
 pub fn part2(raw: &[AsciiString]) -> usize {
     let cs = raw[0]
         .into_iter()
-        .map(|&x| x as u32 - ZERO as u32)
+        .map(|&x| x as u8 - ZERO as u8)
         .collect_vec();
     let n = cs.len();
     let offset = gen(&cs[0..7].iter().map(|&x| x as u32).collect_vec()) as usize;
 
     let t = 10000 * n;
 
-    let mut out = 0u32;
-    for d in offset..offset + 8 {
-        let mut sum = 0u32;
-        for i in (0..t - d).step_by(128) {
-            for j in (0..=28).step_by(4) {
-                if i + j < t - d {
-                    sum += 5 * cs[(d + i + j) % n] as u32;
+    let out = (offset..offset + 8)
+        .into_par_iter()
+        .map(|d| {
+            let mut sum = 0u8;
+            let mut idx = d % n;
+
+            // Mod base 2
+            for i in (0..t - d).step_by(128) {
+                for j in (0..=28).step_by(4) {
+                    if idx >= n {
+                        idx -= n;
+                    }
+                    if i + j < t - d {
+                        sum ^= cs[idx]; // We only care about the last bit.
+                    }
+                    idx += 4;
                 }
+                idx += 96;
             }
-        }
+            sum = 5 * (sum % 2);
 
-        for i in (0..t - d).step_by(125) {
-            sum += 6 * cs[(d + i) % n] as u32;
-            if i + 25 < t - d {
-                sum += 4 * cs[(d + i + 25) % n] as u32;
+            let mut sum = sum as u32;
+            let mut idx = d % n;
+
+            for i in (0..t - d).step_by(125) {
+                if idx >= n {
+                    idx -= n;
+                }
+                sum += 6 * cs[idx] as u32;
+                if i + 25 < t - d {
+                    idx += 25;
+                    if idx >= n {
+                        idx -= n;
+                    }
+                    sum += 4 * cs[idx] as u32;
+                }
+                idx += 100;
             }
-        }
-
-        out = 10 * out + sum % 10;
-    }
-
-    out as usize
+            sum % 10
+        })
+        .collect::<Vec<_>>();
+    gen(&out[..]) as usize
 }
 
 #[cfg(test)]

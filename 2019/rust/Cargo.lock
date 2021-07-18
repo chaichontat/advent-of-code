@@ -36,6 +36,7 @@ dependencies = [
  "num-traits",
  "pathfinding",
  "pprof",
+ "rayon",
  "regex",
  "strum",
  "strum_macros",
