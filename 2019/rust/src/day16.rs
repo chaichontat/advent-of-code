@@ -1,6 +1,8 @@
+use std::arch::x86_64::*;
 use std::iter;
 
 use ascii::AsciiString;
+use bitvec::prelude::*;
 use itertools::Itertools;
 use rayon::prelude::*;
 
@@ -72,10 +74,6 @@ pub fn part1(raw: &[AsciiString]) -> u32 {
 ///     C(k+99, k) % 2 = 1 ; k % 128 = 0,4,8,12,16,20,24,28
 ///                    = 0 ; otherwise
 
-fn add_parallel(x: &mut [u8], y: &[u8]) {
-    x.iter_mut().zip(y.iter()).for_each(|(xx, yy)| *xx += *yy);
-}
-
 pub fn part2(raw: &[AsciiString]) -> usize {
     let cs = raw[0]
         .into_iter()
@@ -128,6 +126,56 @@ pub fn part2(raw: &[AsciiString]) -> usize {
         })
         .collect::<Vec<_>>();
     gen(&out[..]) as usize
+}
+
+#[allow(dead_code)]
+fn parallelizable_base2(cs: &[u8], off: usize) -> [u8; 8] {
+    let n = cs.len();
+    let mut sum = [0u8; 8];
+    let mut idx = off % n;
+    let total = 10000 * n - off;
+
+    // Mod base 2
+    for i in (0..total).step_by(128) {
+        if i > total - 128 {
+            // Big loop always over-include later digits.
+            for j in (0..=28).step_by(4) {
+                for d in 0..8 {
+                    if i + j < total - d {
+                        sum[d] ^= cs[(idx + d) % n]; // We only care about the last bit.
+                    }
+                }
+                idx += 4;
+            }
+            idx += 96;
+            continue;
+        }
+        // }
+
+        // Typical, parallelized.
+        for _ in (0..=28).step_by(4) {
+            if idx >= n {
+                idx -= n;
+            }
+            let mut v = Vec::with_capacity(8);
+            let sl = if idx + 8 > n {
+                v.extend_from_slice(&cs[idx..]);
+                v.extend_from_slice(&cs[..idx + 8 - n]);
+                &v
+            } else {
+                &cs[idx..idx + 8]
+            };
+
+            sum.iter_mut()
+                .zip(sl.iter())
+                .for_each(|(xx, yy)| *xx ^= *yy);
+
+            idx += 4;
+        }
+        idx += 96;
+    }
+    sum.iter_mut().for_each(|s| *s = 5 * (*s % 2));
+    sum
 }
 
 #[cfg(test)]
