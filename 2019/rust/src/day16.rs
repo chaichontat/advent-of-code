@@ -1,10 +1,7 @@
-use std::arch::x86_64::*;
 use std::iter;
 
 use ascii::AsciiString;
-use bitvec::prelude::*;
-use itertools::Itertools;
-use rayon::prelude::*;
+use itertools::{izip, Itertools};
 
 use super::utils::*;
 
@@ -42,6 +39,7 @@ fn fft(start: &[i32], step: u16) -> Vec<i32> {
     cs
 }
 
+#[allow(bindings_with_variant_name)]
 pub fn part1(raw: &[AsciiString]) -> u32 {
     // Need to prepend 0 for a much simpler implementation of the add/subtract alternation.
     let cs = iter::once(0_i32)
@@ -59,8 +57,8 @@ pub fn part1(raw: &[AsciiString]) -> u32 {
 ///     we don't need to worry about the abs function.
 ///
 /// Then, https://www.reddit.com/r/adventofcode/comments/ebqgdu/2019_day_16_part_2_lets_combinatorics/
-/// By decomposing the input digit-by-digit, we can get the relation between the input and output as a combinatorics function.
-/// Therefore, the final output is
+/// By decomposing the input digit-by-digit, we can get the relation between the input and output as
+/// a combinatorics function. Therefore, the final output is
 /// > outputₙ mod 10 ≡ (inputₙ·₉₉C₀ + inputₙ₊₁·₁₀₀C₁ + inputₙ₊₂·₁₀₁C₂ + ⋯) mod 10
 /// where n extends back to the diagonal.
 ///
@@ -73,91 +71,59 @@ pub fn part1(raw: &[AsciiString]) -> u32 {
 ///                    = 0 ; otherwise
 ///     C(k+99, k) % 2 = 1 ; k % 128 = 0,4,8,12,16,20,24,28
 ///                    = 0 ; otherwise
+///
+/// Finally, we only sum on the remainder of (10000 * len - offset) mod (len * [125/128])
+/// since the partial sum repeats on this mod base.
 
 pub fn part2(raw: &[AsciiString]) -> usize {
     let cs = raw[0]
         .into_iter()
         .map(|&x| x as u8 - ZERO as u8)
         .collect_vec();
-    let n = cs.len();
+
     let offset = gen(&cs[0..7].iter().map(|&x| x as u32).collect_vec()) as usize;
 
-    let t = 10000 * n;
+    let sum2 = base2(&cs, offset, 128, 5);
+    let sum5_0 = base5(&cs, offset, 125, 6);
+    let sum5_25 = base5(&cs, offset + 25, 125, 4);
 
-    let out = (offset..offset + 8)
-        .into_par_iter()
-        .map(|d| {
-            let mut sum = 0u8;
-            let mut idx = d % n;
+    let out = izip!(sum2, sum5_0, sum5_25)
+        .map(|(x, y, z)| (x as u32 + y as u32 + z as u32) % 10)
+        .collect_vec();
 
-            // Mod base 2
-            for i in (0..t - d).step_by(128) {
-                for j in (0..=28).step_by(4) {
-                    if idx >= n {
-                        idx -= n;
-                    }
-                    if i + j < t - d {
-                        sum ^= cs[idx]; // We only care about the last bit.
-                    }
-                    idx += 4;
-                }
-                idx += 96;
-            }
-            sum = 5 * (sum % 2);
-
-            let mut sum = sum as u32;
-            let mut idx = d % n;
-
-            for i in (0..t - d).step_by(125) {
-                if idx >= n {
-                    idx -= n;
-                }
-                sum += 6 * cs[idx] as u32;
-                if i + 25 < t - d {
-                    idx += 25;
-                    if idx >= n {
-                        idx -= n;
-                    }
-                    sum += 4 * cs[idx] as u32;
-                }
-                idx += 100;
-            }
-            sum % 10
-        })
-        .collect::<Vec<_>>();
-    gen(&out[..]) as usize
+    gen(&out.iter().map(|x| *x as u32).collect_vec()) as usize
 }
 
-#[allow(dead_code)]
-fn parallelizable_base2(cs: &[u8], off: usize) -> [u8; 8] {
+fn base2(cs: &[u8], off: usize, step: usize, mul: u8) -> [u8; 8] {
     let n = cs.len();
     let mut sum = [0u8; 8];
     let mut idx = off % n;
     let total = 10000 * n - off;
+    let rem = total % (n * step);
 
     // Mod base 2
-    for i in (0..total).step_by(128) {
-        if i > total - 128 {
+    for i in (0..rem).step_by(step) {
+        if i > rem - step {
+            // Last iteration, different elements may or may not get added.
             // Big loop always over-include later digits.
             for j in (0..=28).step_by(4) {
-                for d in 0..8 {
-                    if i + j < total - d {
-                        sum[d] ^= cs[(idx + d) % n]; // We only care about the last bit.
+                for (d, s) in sum.iter_mut().enumerate() {
+                    if i + j < rem - d {
+                        idx -= n & (-((idx >= n) as isize)) as usize;
+                        *s ^= cs[idx]; // We only care about the last bit.
                     }
+                    idx += 1;
                 }
-                idx += 4;
+                idx += (n - 8) + 4; // Subtraction by addition.
             }
             idx += 96;
             continue;
         }
-        // }
 
         // Typical, parallelized.
         for _ in (0..=28).step_by(4) {
-            if idx >= n {
-                idx -= n;
-            }
-            let mut v = Vec::with_capacity(8);
+            idx -= n & (-((idx >= n) as isize)) as usize; // if idx >= n {idx -= n}
+            let mut v = Vec::new();
             let sl = if idx + 8 > n {
                 v.extend_from_slice(&cs[idx..]);
                 v.extend_from_slice(&cs[..idx + 8 - n]);
@@ -172,9 +138,48 @@ fn parallelizable_base2(cs: &[u8], off: usize) -> [u8; 8] {
 
             idx += 4;
         }
-        idx += 96;
+        idx += 96; // += 128 per iteration.
     }
-    sum.iter_mut().for_each(|s| *s = 5 * (*s % 2));
+    sum.iter_mut().for_each(|s| *s = mul * (*s % 2));
+    sum
+}
+
+fn base5(cs: &[u8], off: usize, step: usize, mul: u16) -> [u16; 8] {
+    let mut sum = [0u16; 8];
+    let n = cs.len();
+    let total = 10000 * n - off;
+    let mut idx = off % n;
+    let rem = total % (n * step);
+
+    for i in (0..rem).step_by(step) {
+        if i > rem - step {
+            // Last iteration, different elements may or may not get added.
+            for (d, s) in sum.iter_mut().enumerate() {
+                if i < total - d {
+                    idx -= n & (-((idx >= n) as isize)) as usize;
+                    *s += mul * cs[idx] as u16;
+                }
+                idx += 1;
+            }
+            continue;
+        }
+
+        idx -= n & (-((idx >= n) as isize)) as usize; // if idx >= n {idx -= n}
+        let mut v = Vec::new();
+        let sl = if idx + 8 > n {
+            v.extend_from_slice(&cs[idx..]);
+            v.extend_from_slice(&cs[..idx + 8 - n]);
+            &v
+        } else {
+            &cs[idx..idx + 8]
+        };
+
+        sum.iter_mut()
+            .zip(sl.iter())
+            .for_each(|(xx, yy)| *xx += mul * *yy as u16);
+
+        idx += step;
+    }
     sum
 }
 
