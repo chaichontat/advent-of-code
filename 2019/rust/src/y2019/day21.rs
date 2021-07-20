@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::intcode::*;
+use super::intcode::*;
 
 #[allow(dead_code)]
 #[derive(Clone, Copy)]

@@ -1,7 +1,7 @@
 use ahash::AHashMap;
 use num_complex::Complex;
 
-use crate::intcode::*;
+use super::intcode::*;
 use crate::utils::*;
 
 #[derive(Debug, Copy, Clone, FromPrimitive)]

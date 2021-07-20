@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use nohash_hasher::IntSet;
 
-use crate::intcode::*;
+use super::intcode::*;
 
 fn gen_ic(raw: &String) -> Vec<IntCode> {
     let ori = IntCode::from(raw);

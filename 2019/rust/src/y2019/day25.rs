@@ -5,7 +5,7 @@ use ahash::AHashSet;
 use nohash_hasher::{IntMap, IntSet};
 use regex::Regex;
 
-use crate::intcode::*;
+use crate::y2019::intcode::*;
 
 const END: isize = 10;
 const SP: isize = 32;

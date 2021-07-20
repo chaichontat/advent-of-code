@@ -3,7 +3,7 @@ use std::iter;
 use ascii::AsciiString;
 use itertools::{izip, Itertools};
 
-use super::utils::*;
+use crate::utils::*;
 
 const ZERO: i32 = 48;
 
@@ -122,7 +122,10 @@ fn base2(cs: &[u8], off: usize, step: usize, mul: u8) -> [u8; 8] {
 
         // Typical, parallelized.
         for _ in (0..=28).step_by(4) {
-            idx -= n & (-((idx >= n) as isize)) as usize; // if idx >= n {idx -= n}
+            if idx >= n {
+                idx -= n
+            }
+            // idx -= n & (-((idx >= n) as isize)) as usize; //
             let mut v = Vec::new();
             let sl = if idx + 8 > n {
                 v.extend_from_slice(&cs[idx..]);

@@ -1,4 +1,4 @@
-use crate::intcode::*;
+use super::intcode::*;
 
 fn run_ic(raw: &[String], input: isize) -> usize {
     let mut ic = IntCode::from(&raw[0]);

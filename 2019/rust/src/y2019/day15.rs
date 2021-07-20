@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use crate::intcode::*;
+use super::intcode::*;
 
 fn call(ic: &mut IntCode, cmd: isize) -> isize {
     ic.push(cmd + 1); // Shifting by 1 makes bitwise manipulation simple.

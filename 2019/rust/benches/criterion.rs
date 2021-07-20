@@ -1,12 +1,13 @@
 #[macro_use]
 extern crate criterion;
-extern crate advent_of_code_2019;
-use advent_of_code_2019::utils::*;
-use advent_of_code_2019::*;
+extern crate advent_of_code;
+use advent_of_code::utils::*;
 use criterion::{black_box, Criterion};
 use pprof::criterion::{Output, PProfProfiler};
 
-fn bench_fi(c: &mut Criterion) {
+fn bench_2019(c: &mut Criterion) {
+    use advent_of_code::y2019::*;
+
     let day01 = &read("day01.txt");
     c.bench_function("day01a", |b| b.iter(|| day01::part1(black_box(day01))));
     c.bench_function("day01b", |b| b.iter(|| day01::part2(black_box(day01))));
@@ -66,7 +67,7 @@ fn bench_fi(c: &mut Criterion) {
     c.bench_function("day15b", |b| b.iter(|| day15::part2(black_box(day15))));
 
     let day16 = &read_ascii("day16.txt");
-    // c.bench_function("day16a", |b| b.iter(|| day16::part1(black_box(day16))));
+    c.bench_function("day16a", |b| b.iter(|| day16::part1(black_box(day16))));
     c.bench_function("day16b", |b| b.iter(|| day16::part2(black_box(day16))));
 
     let day17 = &read("day17.txt");
@@ -115,7 +116,7 @@ fn bench_fi(c: &mut Criterion) {
 criterion_group! {
     name = benches;
     config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Protobuf));
-    targets = bench_fi
+    targets = bench_2019
 }
 
 criterion_main!(benches);
