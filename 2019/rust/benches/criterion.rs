@@ -1,8 +1,8 @@
 #[macro_use]
 extern crate criterion;
-extern crate advent_of_code_2020;
-use advent_of_code_2020::utils::*;
-use advent_of_code_2020::*;
+extern crate advent_of_code_2019;
+use advent_of_code_2019::utils::*;
+use advent_of_code_2019::*;
 use criterion::{black_box, Criterion};
 use pprof::criterion::{Output, PProfProfiler};
 
@@ -66,7 +66,7 @@ fn bench_fi(c: &mut Criterion) {
     c.bench_function("day15b", |b| b.iter(|| day15::part2(black_box(day15))));
 
     let day16 = &read_ascii("day16.txt");
-    c.bench_function("day16a", |b| b.iter(|| day16::part1(black_box(day16))));
+    // c.bench_function("day16a", |b| b.iter(|| day16::part1(black_box(day16))));
     c.bench_function("day16b", |b| b.iter(|| day16::part2(black_box(day16))));
 
     let day17 = &read("day17.txt");
