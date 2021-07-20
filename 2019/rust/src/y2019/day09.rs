@@ -1,18 +1,23 @@
 use super::intcode::*;
+type Parsed = isize;
 
-fn run_ic(raw: &[String], input: isize) -> usize {
-    let mut ic = IntCode::from(&raw[0]);
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    parse_ic(raw)
+}
+
+fn run_ic(parsed: &[Parsed], input: isize) -> usize {
+    let mut ic = IntCode::from(parsed);
     ic.push(input);
     ic.run();
     ic.pop().unwrap() as usize
 }
 
-pub fn part1(raw: &[String]) -> usize {
-    run_ic(raw, 1)
+pub fn part1(parsed: &[Parsed]) -> usize {
+    run_ic(parsed, 1)
 }
 
-pub fn part2(raw: &[String]) -> usize {
-    run_ic(raw, 2)
+pub fn part2(parsed: &[Parsed]) -> usize {
+    run_ic(parsed, 2)
 }
 
 #[cfg(test)]
@@ -21,11 +26,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day09.txt")), 2789104029);
+        assert_eq!(part1(&parse(&read(2019, "day09.txt"))), 2789104029);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day09.txt")), 32869);
+        assert_eq!(part2(&parse(&read(2019, "day09.txt"))), 32869);
     }
 }

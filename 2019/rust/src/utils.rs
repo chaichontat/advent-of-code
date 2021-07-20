@@ -13,12 +13,11 @@ use strum_macros::EnumString;
 pub type Coord = Complex<isize>;
 pub type Ans = Option<(usize, usize)>;
 
-pub fn read(path: &str) -> Vec<String> {
-    let p = format!("../data/{}", path);
-    let res = fs::read_to_string(p).unwrap();
-    let mut vec: Vec<String> = res.split('\n').map(str::to_string).collect();
-    vec.truncate(vec.len() - 1);
-    vec
+pub fn read(year: u16, path: &str) -> String {
+    let p = format!("../data/{}/{}", year, path);
+    let mut res = fs::read_to_string(p).unwrap();
+    res.pop();
+    res
 }
 
 pub fn read_ascii(path: &str) -> Vec<AsciiString> {

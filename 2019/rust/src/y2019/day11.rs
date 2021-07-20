@@ -4,6 +4,11 @@ use num_complex::Complex;
 use super::intcode::*;
 use crate::utils::*;
 
+type Parsed = isize;
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    parse_ic(raw)
+}
+
 #[derive(Debug, Copy, Clone, FromPrimitive)]
 enum Color {
     Black = 0,
@@ -63,8 +68,8 @@ fn execute(ic: &mut IntCode, board: &mut Board) {
     }
 }
 
-pub fn part1(raw: &[String]) -> usize {
-    let mut ic = IntCode::from(&raw[0]);
+pub fn part1(parsed: &[Parsed]) -> usize {
+    let mut ic = IntCode::from(parsed);
     let mut board = Board {
         ..Default::default()
     };
@@ -72,8 +77,8 @@ pub fn part1(raw: &[String]) -> usize {
     board.board.len()
 }
 
-pub fn part2(raw: &[String]) -> usize {
-    let mut ic = IntCode::from(&raw[0]);
+pub fn part2(parsed: &[Parsed]) -> usize {
+    let mut ic = IntCode::from(parsed);
     let mut board = Board {
         ..Default::default()
     };
@@ -111,11 +116,11 @@ mod tests {
     use super::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day11.txt")), 2082);
+        assert_eq!(part1(&parse(&read(2019, "day11.txt"))), 2082);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day11.txt")), 0);
+        assert_eq!(part2(&parse(&read(2019, "day11.txt"))), 0);
     }
 }

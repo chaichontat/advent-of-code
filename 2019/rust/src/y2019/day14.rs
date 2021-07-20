@@ -1,6 +1,36 @@
 use std::cmp::Ordering;
 
 use ahash::AHashMap;
+use itertools::Itertools;
+
+type Parsed = (usize, String);
+pub fn parse(raw: &str) -> Vec<Vec<Parsed>> {
+    raw.split('\n')
+        .map(|line| {
+            let mut ins = Vec::new();
+            let mut n = 0_usize;
+            let mut name = Vec::new();
+            for s in line.chars() {
+                if s.is_ascii_digit() {
+                    let c = s as usize - '0' as usize;
+                    n = 10 * n + c; // Build dec number.
+                } else if s.is_ascii_uppercase() {
+                    name.push(s); // Append name to building string.
+                } else if s == ',' || s == '=' {
+                    // End of name.
+                    ins.push((n, name.iter().collect()));
+                    n = 0;
+                    name.clear();
+                } else if s == ' ' || s == '>' {
+                } else {
+                    unreachable!(); // Safety check.
+                }
+            }
+            ins.push((n, name.iter().collect()));
+            ins
+        })
+        .collect()
+}
 
 type Name = String;
 type Db = AHashMap<Name, Recipe>;
@@ -18,36 +48,17 @@ struct Recipe {
     dfsed: bool,
 }
 
-fn parse(raw: &[String]) -> Db {
+fn gen_db(parsed: &[Vec<Parsed>]) -> Db {
     let mut db = AHashMap::with_capacity(100);
-    for line in raw.iter() {
-        let mut ins = Vec::new();
-        let mut n = 0_usize;
-        let mut name = String::new();
-
-        for s in line.chars() {
-            if s.is_ascii_digit() {
-                let c = s as usize - '0' as usize;
-                n = 10 * n + c; // Build dec number.
-            } else if s.is_ascii_uppercase() {
-                name.push(s); // Append name to building string.
-            } else if s == ',' || s == '=' {
-                // End of name, build struct, and reset.
-                ins.push(NName {
-                    n,
-                    name: name.to_owned(),
-                });
-                n = 0;
-                name.clear();
-            } else if s == ' ' || s == '>' {
-            } else {
-                unreachable!(); // Safety check.
-            }
-        }
-        let out = NName {
-            n,
-            name: name.to_owned(),
-        };
+    for line in parsed.iter() {
+        let mut ins = line
+            .iter()
+            .map(|(n, name)| NName {
+                n:    *n,
+                name: name.to_owned(),
+            })
+            .collect_vec();
+        let out = ins.pop().unwrap();
 
         db.insert(out.name.to_owned(), Recipe {
             ins,
@@ -134,8 +145,8 @@ fn binary_search(mut lo: OreFuel, mut hi: OreFuel, avail: usize, cost: &Cost) ->
     lo
 }
 
-pub fn part1(raw: &[String]) -> usize {
-    let mut db = parse(raw);
+pub fn part1(parsed: &[Vec<Parsed>]) -> usize {
+    let mut db = gen_db(parsed);
     let sorted = topo_sort(&mut db, "FUEL");
     let cost = Cost {
         sorted,
@@ -146,8 +157,8 @@ pub fn part1(raw: &[String]) -> usize {
     cost.cost(1).ore
 }
 
-pub fn part2(raw: &[String]) -> usize {
-    let mut db = parse(raw);
+pub fn part2(parsed: &[Vec<Parsed>]) -> usize {
+    let mut db = gen_db(parsed);
     let sorted = topo_sort(&mut db, "FUEL");
     let cost = Cost {
         sorted,
@@ -172,11 +183,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day14.txt")), 892207);
+        assert_eq!(part1(&parse(&read(2019, "day14.txt"))), 892207);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day14.txt")), 1935265);
+        assert_eq!(part2(&parse(&read(2019, "day14.txt"))), 1935265);
     }
 }

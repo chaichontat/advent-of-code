@@ -1,6 +1,11 @@
 use nohash_hasher::IntSet;
 
-fn parse(raw: &[String]) -> u32 {
+type Parsed = String;
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    raw.split('\n').map(|x| x.to_string()).collect()
+}
+
+fn parse_c(raw: &[String]) -> u32 {
     raw.concat()
         .chars()
         .enumerate()
@@ -12,7 +17,7 @@ fn parse(raw: &[String]) -> u32 {
         .sum()
 }
 
-pub fn part1(raw: &[String]) -> u32 {
+pub fn part1(parsed: &[Parsed]) -> u32 {
     fn run(arr: u32, dim: (u32, u32)) -> u32 {
         let mut new = 0;
         for i in 0..(dim.0 * dim.1) {
@@ -41,8 +46,8 @@ pub fn part1(raw: &[String]) -> u32 {
         new
     }
 
-    let dim = (raw[0].len() as u32, raw.len() as u32);
-    let mut arr = parse(raw);
+    let dim = (parsed[0].len() as u32, parsed.len() as u32);
+    let mut arr = parse_c(parsed);
     let mut set = IntSet::default();
     loop {
         if !set.insert(arr) {
@@ -52,7 +57,7 @@ pub fn part1(raw: &[String]) -> u32 {
     }
 }
 
-pub fn part2(raw: &[String]) -> u32 {
+pub fn part2(parsed: &[Parsed]) -> u32 {
     fn run(arr: u32, top: u32, bottom: u32) -> u32 {
         let mut new = 0;
         let center = 12u32;
@@ -111,7 +116,7 @@ pub fn part2(raw: &[String]) -> u32 {
         new
     }
 
-    let arr = parse(raw);
+    let arr = parse_c(parsed);
     let mut arrs = [0; 2 * 200 + 3]; // Iter
     let mut new = [0; 2 * 200 + 3];
     let center = 201;
@@ -135,11 +140,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day24.txt")), 18350099);
+        assert_eq!(part1(&parse(&read(2019, "day24.txt"))), 18350099);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day24.txt")), 2037);
+        assert_eq!(part2(&parse(&read(2019, "day24.txt"))), 2037);
     }
 }

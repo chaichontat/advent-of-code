@@ -189,9 +189,14 @@ impl Droid {
     }
 }
 
-pub fn part1(raw: &[String]) -> usize {
+type Parsed = isize;
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    parse_ic(raw)
+}
+
+pub fn part1(parsed: &[Parsed]) -> usize {
     let mut droid = Droid {
-        ic:          IntCode::from(&raw[0]),
+        ic:          IntCode::from(parsed),
         bag:         AHashSet::new(),
         weight_room: Vec::new(),
         pos:         VecDeque::new(),
@@ -206,6 +211,6 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day25.txt")), 1090529280);
+        assert_eq!(part1(&parse(&read(2019, "day25.txt"))), 1090529280);
     }
 }

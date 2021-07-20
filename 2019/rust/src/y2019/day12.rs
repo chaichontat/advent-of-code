@@ -1,9 +1,36 @@
 use std::cmp::Ordering;
 
+use itertools::Itertools;
 use num::Integer;
 use regex::Regex;
 
 type Index = usize;
+type Parsed = [isize; 3];
+
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    let re = Regex::new(r"-?\d+").unwrap();
+    raw.split('\n')
+        .map(|line| {
+            // let mut iter = (line);
+            let p = re
+                .find_iter(line)
+                .map(|x| x.as_str().parse::<isize>().unwrap())
+                .collect_tuple::<(_, _, _)>()
+                .unwrap();
+            [p.0, p.1, p.2]
+        })
+        .collect()
+}
+
+fn gen_moons(parsed: &[Parsed]) -> Vec<Moon> {
+    parsed
+        .iter()
+        .map(|p| Moon {
+            pos: *p,
+            vel: [0; 3],
+        })
+        .collect_vec()
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Moon {
@@ -37,23 +64,6 @@ impl Moon {
     }
 }
 
-fn parse(raw: &[String]) -> Vec<Moon> {
-    raw.iter()
-        .map(|line| {
-            let re = Regex::new(r"-?\d+").unwrap();
-            let mut iter = re.find_iter(line);
-            Moon {
-                pos: [
-                    iter.next().unwrap().as_str().parse::<isize>().unwrap(),
-                    iter.next().unwrap().as_str().parse::<isize>().unwrap(),
-                    iter.next().unwrap().as_str().parse::<isize>().unwrap(),
-                ],
-                vel: [0; 3],
-            }
-        })
-        .collect::<Vec<_>>()
-}
-
 fn simulate_axis(moons: &mut [Moon], ax: Index) {
     let n = moons.len();
     for i in 0..n {
@@ -66,8 +76,8 @@ fn simulate_axis(moons: &mut [Moon], ax: Index) {
 }
 
 // Simulate by axis.
-pub fn part1(raw: &[String]) -> usize {
-    let mut moons = parse(raw);
+pub fn part1(parsed: &[Parsed]) -> usize {
+    let mut moons = gen_moons(parsed);
     for _ in 0..1000 {
         for ax in 0..3 {
             simulate_axis(&mut moons, ax);
@@ -85,8 +95,8 @@ fn compare_axis(moons: &[Moon], ori: &[Moon], ax: Index) -> bool {
     true
 }
 
-pub fn part2(raw: &[String]) -> usize {
-    let moons_ori = parse(raw);
+pub fn part2(parsed: &[Parsed]) -> usize {
+    let moons_ori = gen_moons(parsed);
     let mut moons = moons_ori.clone();
     let mut out: [usize; 3] = [0; 3];
     let mut iter = 0;
@@ -111,11 +121,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day12.txt")), 8287);
+        assert_eq!(part1(&parse(&read(2019, "day12.txt"))), 8287);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day12.txt")), 528250271633772);
+        assert_eq!(part2(&parse(&read(2019, "day12.txt"))), 528250271633772);
     }
 }

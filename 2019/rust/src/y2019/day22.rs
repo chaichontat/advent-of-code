@@ -71,7 +71,7 @@ impl<T: Signed + Copy + Debug> Mod<T> {
     }
 }
 
-fn parse<T>(raw: &[String]) -> Vec<Op<T>>
+fn parse_generic<T>(raw: &[String]) -> Vec<Op<T>>
 where
     T: Signed + FromStr,
     <T as FromStr>::Err: Debug,
@@ -93,11 +93,17 @@ where
     vec
 }
 
+type Parsed = String;
+
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    raw.split('\n').map(|x| x.to_string()).collect()
+}
+
 // ℤₚ is a field when p is prime, which by the Bézout's identity,
 // implies the existence and uniqueness of the multiplicative modular inverse.
 
-pub fn part1(raw: &[String]) -> usize {
-    let ops = parse::<i32>(raw);
+pub fn part1(parsed: &[Parsed]) -> usize {
+    let ops = parse_generic::<i32>(parsed);
     let base = 10007_i32;
     let shuffle = ops.iter().fold(
         Mod {
@@ -128,8 +134,8 @@ fn pow(mut m: Mod<i128>, mut k: i128) -> Mod<i128> {
     g
 }
 
-pub fn part2(raw: &[String]) -> usize {
-    let ops = parse::<i128>(raw);
+pub fn part2(parsed: &[Parsed]) -> usize {
+    let ops = parse_generic::<i128>(parsed);
     let base = 119315717514047_i128;
     let shuffle = ops.iter().fold(
         Mod {
@@ -150,11 +156,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day22.txt")), 8775);
+        assert_eq!(part1(&parse(&read(2019, "day22.txt"))), 8775);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day22.txt")), 47141544607176);
+        assert_eq!(part2(&parse(&read(2019, "day22.txt"))), 47141544607176);
     }
 }

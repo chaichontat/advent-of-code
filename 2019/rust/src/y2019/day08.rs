@@ -1,13 +1,17 @@
 use ndarray::prelude::*;
 use ndarray::Array;
 
-fn process(raw: &[String]) -> Array3<u32> {
-    let arr: Vec<u32> = raw[0].chars().map(|x| x.to_digit(10).unwrap()).collect();
-    Array::from_shape_vec(((arr.len() / (25 * 6)), 6, 25), arr).unwrap()
+type Parsed = u32;
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    raw.chars().map(|x| x.to_digit(10).unwrap()).collect()
 }
 
-pub fn part1(raw: &[String]) -> usize {
-    let arr = process(raw);
+fn process(parsed: &[u32]) -> Array3<u32> {
+    Array::from_shape_vec(((parsed.len() / (25 * 6)), 6, 25), parsed.to_vec()).unwrap()
+}
+
+pub fn part1(parsed: &[u32]) -> usize {
+    let arr = process(parsed);
     let clipped = arr
         .outer_iter()
         .map(|x| x.iter().filter(|y| y < &&1).count())
@@ -29,8 +33,8 @@ pub fn part1(raw: &[String]) -> usize {
     counts.0 * counts.1
 }
 
-pub fn part2(raw: &[String]) -> usize {
-    let arr = process(raw);
+pub fn part2(parsed: &[u32]) -> usize {
+    let arr = process(parsed);
     for i in 0..6 {
         for j in 0..25 {
             match arr.slice(s![.., i, j]).iter().find(|&&x| x == 0 || x == 1) {
@@ -50,11 +54,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day08.txt")), 1950);
+        assert_eq!(part1(&parse(&read(2019, "day08.txt"))), 1950);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day08.txt")), 0);
+        assert_eq!(part2(&parse(&read(2019, "day08.txt"))), 0);
     }
 }

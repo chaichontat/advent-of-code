@@ -3,8 +3,13 @@ use nohash_hasher::IntSet;
 
 use super::intcode::*;
 
-fn gen_ic(raw: &String) -> Vec<IntCode> {
-    let ori = IntCode::from(raw);
+type Parsed = isize;
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    parse_ic(raw)
+}
+
+fn gen_ic(parsed: &[isize]) -> Vec<IntCode> {
+    let ori = IntCode::from(parsed);
     (0..50)
         .map(|i| {
             let mut ic = ori.clone();
@@ -36,8 +41,8 @@ fn run_ic(ics: &mut Vec<IntCode>, nat: &mut (isize, isize)) {
     }
 }
 
-pub fn part1(raw: &[String]) -> usize {
-    let mut ics = gen_ic(&raw[0]);
+pub fn part1(parsed: &[Parsed]) -> usize {
+    let mut ics = gen_ic(parsed);
     let mut nat = (0, 0);
     while nat == (0, 0) {
         run_ic(&mut ics, &mut nat);
@@ -45,8 +50,8 @@ pub fn part1(raw: &[String]) -> usize {
     nat.1 as usize
 }
 
-pub fn part2(raw: &[String]) -> usize {
-    let mut ics = gen_ic(&raw[0]);
+pub fn part2(parsed: &[Parsed]) -> usize {
+    let mut ics = gen_ic(parsed);
     let mut nat = (0, 0);
     let mut delivered = IntSet::default();
     loop {
@@ -70,11 +75,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day23.txt")), 19937);
+        assert_eq!(part1(&parse(&read(2019, "day23.txt"))), 19937);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day23.txt")), 13758);
+        assert_eq!(part2(&parse(&read(2019, "day23.txt"))), 13758);
     }
 }

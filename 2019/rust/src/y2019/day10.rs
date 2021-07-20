@@ -1,29 +1,30 @@
-use std::{collections::BinaryHeap, ops::Range};
+use std::collections::BinaryHeap;
 
 use ahash::AHashSet;
+use itertools::Itertools;
 use num::rational::Ratio;
 use num_complex::Complex;
 
 type Pos = Complex<i32>;
+type Parsed = Complex<i32>;
 
-fn parse(raw: &[String]) -> AHashSet<Pos> {
-    let mut out = AHashSet::new();
-    for (line, y) in raw.iter().zip(Range {
-        start: 0i32,
-        end:   raw.len() as i32,
-    }) {
-        line.chars()
-            .zip(Range {
-                start: 0i32,
-                end:   raw[0].len() as i32,
-            })
-            .for_each(|(c, x)| match c {
-                '.' => (),
-                '#' => {
-                    out.insert(Complex::new(x, -y));
-                }
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    raw.split('\n')
+        .enumerate()
+        .flat_map(|(y, line)| {
+            line.chars().enumerate().filter_map(move |(x, c)| match c {
+                '.' => None,
+                '#' => Some(Complex::new(x as i32, -(y as i32))),
                 _ => unreachable!(),
             })
+        })
+        .collect_vec()
+}
+
+fn gen_set(parsed: &[Parsed]) -> AHashSet<Pos> {
+    let mut out = AHashSet::new();
+    for z in parsed {
+        out.insert(*z);
     }
     out
 }
@@ -115,8 +116,8 @@ fn scan((fracs_p, fracs_n): &mut (Neighbors, Neighbors), target: usize) -> Optio
     None
 }
 
-pub fn bench(raw: &[String]) -> (usize, usize) {
-    let asteroids = parse(raw);
+pub fn bench(parsed: &[Parsed]) -> (usize, usize) {
+    let asteroids = gen_set(parsed);
     let (argmax, part1) = asteroids
         .iter()
         .map(|&ast| (ast, count(&asteroids, ast)))
@@ -133,6 +134,6 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test() {
-        assert_eq!(bench(&read("day10.txt")), (269, 612));
+        assert_eq!(bench(&parse(&read(2019, "day10.txt"))), (269, 612));
     }
 }

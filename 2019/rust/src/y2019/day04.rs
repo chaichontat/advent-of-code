@@ -1,4 +1,8 @@
-// use regex::Regex;  // Cannot use lookaheads.
+type Parsed = isize;
+
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    raw.split('\n').map(|x| x.parse().unwrap()).collect()
+}
 
 fn val1(n: &str) -> bool {
     let mut ok = false;
@@ -16,9 +20,10 @@ fn val1(n: &str) -> bool {
     ok
 }
 
-pub fn part1(raw: &[String]) -> usize {
-    let inp: Vec<isize> = raw.iter().map(|x| x.parse::<isize>().unwrap()).collect();
-    (inp[0]..inp[1]).filter(|x| val1(&format!("{}", x))).count()
+pub fn part1(parsed: &[Parsed]) -> usize {
+    (parsed[0]..parsed[1])
+        .filter(|x| val1(&format!("{}", x)))
+        .count()
 }
 
 fn val2(n: &str) -> bool {
@@ -43,9 +48,10 @@ fn val2(n: &str) -> bool {
     twosame && (onlytwosame || lenmatch == 2)
 }
 
-pub fn part2(raw: &[String]) -> usize {
-    let inp: Vec<isize> = raw.iter().map(|x| x.parse::<isize>().unwrap()).collect();
-    (inp[0]..inp[1]).filter(|x| val2(&format!("{}", x))).count()
+pub fn part2(parsed: &[Parsed]) -> usize {
+    (parsed[0]..parsed[1])
+        .filter(|x| val2(&format!("{}", x)))
+        .count()
 }
 
 #[cfg(test)]
@@ -54,17 +60,17 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day04.txt")), 1625);
-        assert_eq!(val1("111111"), true);
-        assert_eq!(val1("223450"), false);
-        assert_eq!(val1("123789"), false);
+        assert_eq!(part1(&parse(&read(2019, "day04.txt"))), 1625);
+        assert!(val1("111111"));
+        assert!(!val1("223450"));
+        assert!(!val1("123789"));
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day04.txt")), 1111);
-        assert_eq!(val2("112233"), true);
-        assert_eq!(val2("123444"), false);
-        assert_eq!(val2("111122"), true);
+        assert_eq!(part2(&parse(&read(2019, "day04.txt"))), 1111);
+        assert!(val2("112233"));
+        assert!(!val2("123444"));
+        assert!(val2("111122"));
     }
 }

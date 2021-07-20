@@ -5,6 +5,12 @@ use num_complex::Complex;
 
 use super::intcode::*;
 
+type Parsed = isize;
+
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    parse_ic(raw)
+}
+
 #[derive(Debug, FromPrimitive, PartialEq)]
 enum Tile {
     Empty   = 0,
@@ -21,8 +27,8 @@ struct Game {
     score:  isize,
 }
 
-fn init(raw: &[String]) -> (IntCode, Game) {
-    let ic = IntCode::from(&raw[0]);
+fn init(parsed: &[Parsed]) -> (IntCode, Game) {
+    let ic = IntCode::from(parsed);
     let game = Game {
         blocks: AHashSet::with_capacity(200),
         pad:    Complex::new(0, 0),
@@ -62,14 +68,14 @@ fn parse_game(ic: &mut IntCode, game: &mut Game) {
     }
 }
 
-pub fn part1(raw: &[String]) -> usize {
-    let (mut ic, mut game) = init(raw);
+pub fn part1(parsed: &[Parsed]) -> usize {
+    let (mut ic, mut game) = init(parsed);
     parse_game(&mut ic, &mut game);
     game.blocks.len()
 }
 
-pub fn part2(raw: &[String]) -> usize {
-    let (mut ic, mut game) = init(raw);
+pub fn part2(parsed: &[Parsed]) -> usize {
+    let (mut ic, mut game) = init(parsed);
     ic.mem[0] = 2;
 
     parse_game(&mut ic, &mut game);
@@ -90,11 +96,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day13.txt")), 180);
+        assert_eq!(part1(&parse(&read(2019, "day13.txt"))), 180);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day13.txt")), 8777);
+        assert_eq!(part2(&parse(&read(2019, "day13.txt"))), 8777);
     }
 }

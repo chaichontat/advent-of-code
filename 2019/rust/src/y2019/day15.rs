@@ -2,6 +2,12 @@ use std::ops::Range;
 
 use super::intcode::*;
 
+type Parsed = isize;
+
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    parse_ic(raw)
+}
+
 fn call(ic: &mut IntCode, cmd: isize) -> isize {
     ic.push(cmd + 1); // Shifting by 1 makes bitwise manipulation simple.
     ic.run_pause();
@@ -60,23 +66,23 @@ fn simple_dfs(ic: &mut IntCode, from: isize, dist: isize) -> Option<isize> {
     None
 }
 
-pub fn part1(raw: &[String]) -> usize {
-    let mut ic = IntCode::from(&raw[0]);
+pub fn part1(parsed: &[Parsed]) -> usize {
+    let mut ic = IntCode::from(parsed);
     ic.run_wait_input();
-    let (p1, p2) = dfs(&mut ic, -1, 0);
+    let (p1, _) = dfs(&mut ic, -1, 0);
     (p1 - 2) as usize
 }
 
 // Need to find max number of steps from tank.
-pub fn part2(raw: &[String]) -> usize {
-    let mut ic = IntCode::from(&raw[0]);
+pub fn part2(parsed: &[Parsed]) -> usize {
+    let mut ic = IntCode::from(parsed);
     ic.run_wait_input();
-    let (p1, p2) = dfs(&mut ic, -1, 0);
+    let (_, p2) = dfs(&mut ic, -1, 0);
     (p2 - 2) as usize
 }
 
-pub fn run_both(raw: &[String]) -> (usize, usize) {
-    let mut ic = IntCode::from(&raw[0]);
+pub fn run_both(parsed: &[Parsed]) -> (usize, usize) {
+    let mut ic = IntCode::from(parsed);
     ic.run_wait_input();
     let (p1, p2) = dfs(&mut ic, -1, 0);
     ((p1 - 2) as usize, (p2 - 2) as usize)
@@ -88,11 +94,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day15.txt")), 216);
+        assert_eq!(part1(&parse(&read(2019, "day15.txt"))), 216);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day15.txt")), 326);
+        assert_eq!(part2(&parse(&read(2019, "day15.txt"))), 326);
     }
 }

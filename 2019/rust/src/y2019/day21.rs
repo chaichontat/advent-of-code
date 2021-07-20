@@ -52,14 +52,19 @@ fn send_ins(ic: &mut IntCode, cmds: &[Ins], fin: &[isize]) {
     fin.iter().for_each(|x| ic.input.push_back(*x));
 }
 
-fn run_ic(raw: &[String], cmds: &[Ins], fin: &[isize]) -> usize {
-    let mut ic = IntCode::from(&raw[0]);
+fn run_ic(parsed: &[isize], cmds: &[Ins], fin: &[isize]) -> usize {
+    let mut ic = IntCode::from(parsed);
     send_ins(&mut ic, cmds, fin);
     ic.run();
     ic.output.pop_back().unwrap() as usize
 }
 
-pub fn part1(raw: &[String]) -> usize {
+type Parsed = isize;
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    parse_ic(raw)
+}
+
+pub fn part1(parsed: &[Parsed]) -> usize {
     // (~A ∨ ~B ∨ ~C) ∧ D
     let cmds = [
         Ins::Or(RReg::A, WReg::J),
@@ -68,10 +73,10 @@ pub fn part1(raw: &[String]) -> usize {
         Ins::Not(RReg::J, WReg::J),
         Ins::And(RReg::D, WReg::J),
     ];
-    run_ic(raw, &cmds, &WALK)
+    run_ic(parsed, &cmds, &WALK)
 }
 
-pub fn part2(raw: &[String]) -> usize {
+pub fn part2(parsed: &[Parsed]) -> usize {
     // (~A ∨ ~B ∨ ~C) ∧ D ∧ (E ∨ H)
     let cmds = [
         // Same as part 1
@@ -85,7 +90,7 @@ pub fn part2(raw: &[String]) -> usize {
         Ins::Or(RReg::H, WReg::T),
         Ins::And(RReg::T, WReg::J),
     ];
-    run_ic(raw, &cmds, &RUN)
+    run_ic(parsed, &cmds, &RUN)
 }
 
 #[cfg(test)]
@@ -94,11 +99,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day21.txt")), 19357507);
+        assert_eq!(part1(&parse(&read(2019, "day21.txt"))), 19357507);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day21.txt")), 1142830249);
+        assert_eq!(part2(&parse(&read(2019, "day21.txt"))), 1142830249);
     }
 }

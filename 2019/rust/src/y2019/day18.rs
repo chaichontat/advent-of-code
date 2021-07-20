@@ -34,6 +34,8 @@ impl IntAscii for char {
     }
 }
 
+type Parsed = String;
+
 struct Board {
     n_bot:  u8,
     board:  AHashMap<Pos, u8>,
@@ -232,6 +234,10 @@ fn main_search(allkeyspath: &AllReachableKeysMap, n_keys: u32, n_bot: usize) -> 
     None
 }
 
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    raw.split('\n').map(|x| x.to_string()).collect()
+}
+
 pub fn run(raw: &[String]) -> u32 {
     let (keys_pos, n_bot) = locate_keys(raw);
     let all_keys_paths = map_key_explore(raw, &keys_pos);
@@ -247,11 +253,11 @@ mod tests {
 
     #[test]
     fn test1() {
-        assert_eq!(run(&read("day18.txt")), 5402);
+        assert_eq!(run(&parse(&read(2019, "day18.txt"))), 5402);
     }
     #[test]
     fn test2() {
-        let mut raw = read("day18.txt");
+        let mut raw = parse(&read(2019, "day18.txt"));
         let xmid = (raw[0].len() - 1) / 2;
         let ymid = (raw.len() - 1) / 2;
         raw[ymid - 1].replace_range(xmid - 1..=xmid + 1, "@#@");

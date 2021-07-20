@@ -1,6 +1,10 @@
 use std::collections::VecDeque;
 use std::convert::TryFrom;
 
+pub fn parse_ic(raw: &str) -> Vec<isize> {
+    raw.split(',').map(|x| x.parse().unwrap()).collect()
+}
+
 #[derive(FromPrimitive, Debug, PartialEq)]
 enum OpCode {
     Add    = 1, // This is called a discriminant.

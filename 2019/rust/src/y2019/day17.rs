@@ -192,8 +192,13 @@ fn compress(cmds: &[String]) -> Option<VecDeque<isize>> {
     None
 }
 
-pub fn part1(raw: &[String]) -> usize {
-    let mut ic = IntCode::from(&raw[0]);
+type Parsed = isize;
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    parse_ic(raw)
+}
+
+pub fn part1(parsed: &[Parsed]) -> usize {
+    let mut ic = IntCode::from(parsed);
     let (board, _) = get_data(&mut ic);
     let adj = [Dir::U, Dir::D, Dir::L, Dir::R];
     board.iter().fold(0, |sum, x| {
@@ -207,14 +212,14 @@ pub fn part1(raw: &[String]) -> usize {
 
 // "In general, the scaffold forms a path, but it sometimes loops back onto itself."
 // Just go straight as much as possible.
-pub fn part2(raw: &[String]) -> usize {
-    let mut ic = IntCode::from(&raw[0]);
+pub fn part2(parsed: &[Parsed]) -> usize {
+    let mut ic = IntCode::from(parsed);
     let (board, pos) = get_data(&mut ic);
 
     let seq = path_finder(&pos, board);
     let mut ans = compress(&seq).unwrap();
 
-    let mut ic = IntCode::from(&raw[0]);
+    let mut ic = IntCode::from(parsed);
     ic.mem[0] = 2;
     ic.input.append(&mut ans);
     ic.input.push_back(10);
@@ -236,11 +241,11 @@ mod tests {
 
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day17.txt")), 5056);
+        assert_eq!(part1(&parse(&read(2019, "day17.txt"))), 5056);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day17.txt")), 942367);
+        assert_eq!(part2(&parse(&read(2019, "day17.txt"))), 942367);
     }
 }

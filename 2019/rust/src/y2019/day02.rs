@@ -1,15 +1,16 @@
 use std::cmp::Ordering;
 
-use itertools::Itertools;
-
 use crate::utils::*;
 
-fn simple_intcode(raw: &str, noun: usize, verb: usize) -> usize {
-    let mut mem = raw
-        .split(',')
-        .map(|x| x.parse::<usize>())
-        .flatten()
-        .collect_vec();
+type Parsed = usize;
+
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    let line = raw.split('\n').next().unwrap();
+    line.split(',').map(|x| x.parse()).flatten().collect()
+}
+
+fn simple_intcode(mem: &[Parsed], noun: usize, verb: usize) -> usize {
+    let mut mem = mem.to_owned();
     let mut ptr = 0;
     mem[1] = noun;
     mem[2] = verb;
@@ -27,14 +28,14 @@ fn simple_intcode(raw: &str, noun: usize, verb: usize) -> usize {
     mem[0]
 }
 
-pub fn run(raw: &[String]) -> Ans {
+pub fn run(parsed: &[Parsed]) -> Ans {
     // f(x) = ax₁ + b + x₂
     // Solve for a, b.
     // Then, find x₁ and x₂ that results in target.
     let x = (12, 2);
-    let part1 = simple_intcode(&raw[0], x.0, x.1);
+    let part1 = simple_intcode(parsed, x.0, x.1);
 
-    let b = simple_intcode(&raw[0], 0, 0);
+    let b = simple_intcode(parsed, 0, 0);
     let a = (part1 - b - x.1) / x.0;
 
     let target = 19690720;
@@ -84,6 +85,6 @@ mod tests {
     use super::*;
     #[test]
     fn test1() {
-        assert_eq!(run(&read("day02.txt")), Some((5110675, 4847)));
+        assert_eq!(run(&parse(&read(2019, "day02.txt"))), Some((5110675, 4847)));
     }
 }

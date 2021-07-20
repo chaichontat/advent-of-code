@@ -1,11 +1,14 @@
 use std::iter;
 
-use ascii::AsciiString;
 use itertools::{izip, Itertools};
 
-use crate::utils::*;
+const ZERO: u8 = 48;
+type Parsed = u8;
 
-const ZERO: i32 = 48;
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    // Need to prepend 0 for a much simpler implementation of the add/subtract alternation.
+    raw.chars().map(|x| x as u8 - ZERO).collect()
+}
 
 fn gen(x: &[u32]) -> u32 {
     x.iter().fold(0, |sum, y| 10 * sum + *y)
@@ -39,14 +42,11 @@ fn fft(start: &[i32], step: u16) -> Vec<i32> {
     cs
 }
 
-#[allow(bindings_with_variant_name)]
-pub fn part1(raw: &[AsciiString]) -> u32 {
-    // Need to prepend 0 for a much simpler implementation of the add/subtract alternation.
-    let cs = iter::once(0_i32)
-        .chain(raw[0].into_iter().map(|&x| x as i32 - ZERO))
+pub fn part1(parsed: &[Parsed]) -> u32 {
+    let parsed = iter::once(0_i32)
+        .chain(parsed.iter().map(|&x| x as i32))
         .collect_vec();
-
-    let ans = fft(&cs, 100);
+    let ans = fft(&parsed, 100);
     gen(&ans[1..9].iter().map(|&x| x as u32).collect_vec())
 }
 
@@ -75,17 +75,12 @@ pub fn part1(raw: &[AsciiString]) -> u32 {
 /// Finally, we only sum on the remainder of (10000 * len - offset) mod (len * [125/128])
 /// since the partial sum repeats on this mod base.
 
-pub fn part2(raw: &[AsciiString]) -> usize {
-    let cs = raw[0]
-        .into_iter()
-        .map(|&x| x as u8 - ZERO as u8)
-        .collect_vec();
+pub fn part2(parsed: &[Parsed]) -> usize {
+    let offset = gen(&parsed[0..7].iter().map(|&x| x as u32).collect_vec()) as usize;
 
-    let offset = gen(&cs[0..7].iter().map(|&x| x as u32).collect_vec()) as usize;
-
-    let sum2 = base2(&cs, offset, 128, 5);
-    let sum5_0 = base5(&cs, offset, 125, 6);
-    let sum5_25 = base5(&cs, offset + 25, 125, 4);
+    let sum2 = base2(parsed, offset, 128, 5);
+    let sum5_0 = base5(parsed, offset, 125, 6);
+    let sum5_25 = base5(parsed, offset + 25, 125, 4);
 
     let out = izip!(sum2, sum5_0, sum5_25)
         .map(|(x, y, z)| (x as u32 + y as u32 + z as u32) % 10)
@@ -189,13 +184,14 @@ fn base5(cs: &[u8], off: usize, step: usize, mul: u16) -> [u16; 8] {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read_ascii("day16.txt")), 27229269);
+        assert_eq!(part1(&parse(&read(2019, "day16.txt"))), 27229269);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read_ascii("day16.txt")), 26857164);
+        assert_eq!(part2(&parse(&read(2019, "day16.txt"))), 26857164);
     }
 }

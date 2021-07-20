@@ -1,7 +1,7 @@
 use std::{cmp::Reverse, collections::BinaryHeap};
 
 use ahash::{AHashMap, AHashSet};
-use ascii::{AsciiChar, AsciiString};
+use ascii::{AsAsciiStr, AsciiChar, AsciiString};
 use itertools::Itertools;
 use pathfinding::prelude::{bfs, dijkstra};
 
@@ -237,9 +237,16 @@ struct Prog {
     pos:  Pos,
 }
 
+type Parsed = AsciiString;
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    raw.split('\n')
+        .map(|x| x.as_ascii_str().unwrap().to_owned())
+        .collect()
+}
+
 type Reachable = AHashMap<Pos, AHashMap<Pos, u32>>;
 // Dijkstra
-pub fn part1a(raw: &[AsciiString]) -> Option<u32> {
+pub fn part1a(parsed: &[Parsed]) -> Option<u32> {
     fn successors(board: &Board, reach: &Reachable, pos: Pos) -> Vec<(Pos, u32)> {
         let nbrs = reach.get(&pos).unwrap().iter();
         nbrs.filter_map(|(&p, &d)| match p {
@@ -250,7 +257,7 @@ pub fn part1a(raw: &[AsciiString]) -> Option<u32> {
         .collect_vec()
     }
 
-    let board = Board::new(raw);
+    let board = Board::new(parsed);
     let reach = get_reachable(&board, &board.posport);
     let res = dijkstra(
         &board.start,
@@ -260,7 +267,7 @@ pub fn part1a(raw: &[AsciiString]) -> Option<u32> {
     Some(res.expect("No path").1)
 }
 
-pub fn part2(raw: &[AsciiString]) -> Option<u32> {
+pub fn part2(parsed: &[Parsed]) -> Option<u32> {
     fn successors(
         board: &Board,
         reach: &Reachable,
@@ -288,7 +295,7 @@ pub fn part2(raw: &[AsciiString]) -> Option<u32> {
         out
     }
 
-    let board = Board::new(raw);
+    let board = Board::new(parsed);
     let reach = get_reachable(&board, &board.posport);
 
     let result = dijkstra(
@@ -365,11 +372,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1a(&read_ascii("day20.txt")), Some(658));
+        assert_eq!(part1(&parse(&read(2019, "day20.txt"))), Some(658));
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read_ascii("day20.txt")), Some(7612));
+        assert_eq!(part2(&parse(&read(2019, "day20.txt"))), Some(7612));
     }
 }

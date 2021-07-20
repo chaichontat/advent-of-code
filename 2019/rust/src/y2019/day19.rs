@@ -75,13 +75,15 @@ impl IC {
     }
 }
 
-pub fn part1(raw: &[String]) -> usize {
+type Parsed = isize;
+
+pub fn parse(raw: &str) -> Vec<Parsed> {
+    parse_ic(raw)
+}
+
+pub fn part1(parsed: &[Parsed]) -> usize {
     let ic = IC {
-        mem: raw[0]
-            .split(',')
-            .map(|x| x.parse::<isize>())
-            .flatten()
-            .collect::<Vec<_>>(),
+        mem: parsed.to_vec(),
     };
 
     let beam = ic.get_bounds(49);
@@ -94,13 +96,9 @@ pub fn part1(raw: &[String]) -> usize {
     (u + 1) as usize // 1 at (0,0).
 }
 
-pub fn part2(raw: &[String]) -> usize {
+pub fn part2(parsed: &[Parsed]) -> usize {
     let ic = IC {
-        mem: raw[0]
-            .split(',')
-            .map(|x| x.parse::<isize>())
-            .flatten()
-            .collect::<Vec<_>>(),
+        mem: parsed.to_vec(),
     };
     let beam = ic.get_bounds(100);
     let (a, b) = (100. / (beam.1 + 1) as f32, 100. / beam.0 as f32);
@@ -118,11 +116,11 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test1() {
-        assert_eq!(part1(&read("day19.txt")), 197);
+        assert_eq!(part1(&parse(&read(2019, "day19.txt"))), 197);
     }
 
     #[test]
     fn test2() {
-        assert_eq!(part2(&read("day19.txt")), 9181022);
+        assert_eq!(part2(&parse(&read(2019, "day19.txt"))), 9181022);
     }
 }
