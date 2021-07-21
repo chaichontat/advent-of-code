@@ -14,6 +14,12 @@ fn bench_fi(c: &mut Criterion) {
     c.bench_function("day02a", |b| b.iter(|| day02::part1(black_box(day02))));
     c.bench_function("day02b", |b| b.iter(|| day02::part2(black_box(day02))));
 
+    let day08 = day08::parse(read_nosep("day08.txt"));
+    c.bench_function("day08combi", |b| b.iter(|| day08::combi(black_box(&day08))));
+
+    let day09 = day09::parse(&read_nosep("day09.txt"));
+    c.bench_function("day09combi", |b| b.iter(|| day09::combi(black_box(&day09))));
+
     let day10 = &read_ascii_sep("day10.txt");
     c.bench_function("day10combi", |b| b.iter(|| day10::combi(black_box(day10))));
 
