@@ -3,7 +3,7 @@ from pathlib import Path
 
 def load(path: str, **kwargs) -> list:
     if not Path(path).is_absolute():
-        path = Path(__file__).parent.parent / "data" / path
+        path = Path(__file__).parent.parent / "rust/data/2019" / path
     return _load(Path(path).read_text(), **kwargs)
 
 
