@@ -6,6 +6,8 @@ extern crate jemallocator;
 #[global_allocator]
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
+pub mod utils;
+
 pub mod y2019 {
     pub mod day01;
     pub mod day02;
@@ -35,4 +37,14 @@ pub mod y2019 {
     pub mod intcode;
 }
 
-pub mod utils;
+pub mod y2018 {
+    pub mod day01;
+    pub mod day02;
+    pub mod day08;
+    pub mod day09;
+    pub mod day10;
+    pub mod day12;
+    pub mod day14;
+    pub mod day23;
+    pub mod day24;
+}

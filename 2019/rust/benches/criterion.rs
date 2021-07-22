@@ -114,10 +114,22 @@ fn bench_2019(c: &mut Criterion) {
     c.bench_function("day25a", |b| b.iter(|| day25::part1(black_box(day25))));
 }
 
+fn bench_2018(c: &mut Criterion) {
+    use advent_of_code::y2018::*;
+    let read = |p| utils::read(2018, p);
+
+    let day01 = &day01::parse(&read("day01.txt"));
+    c.bench_function("day01c", |b| b.iter(|| day01::combi(black_box(day01))));
+
+    let day02 = &day02::parse(&read("day02.txt"));
+    c.bench_function("day02a", |b| b.iter(|| day02::part1(black_box(day02))));
+    c.bench_function("day02b", |b| b.iter(|| day02::part2_simd(black_box(day02))));
+}
+
 criterion_group! {
     name = benches;
     config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Protobuf));
-    targets = bench_2019
+    targets = bench_2019, bench_2018
 }
 
 criterion_main!(benches);

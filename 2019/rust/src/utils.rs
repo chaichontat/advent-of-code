@@ -1,3 +1,4 @@
+use std::error;
 use std::fmt::Debug;
 use std::fs;
 use std::hash::Hash;
@@ -12,6 +13,7 @@ use strum_macros::EnumString;
 
 pub type Coord = Complex<isize>;
 pub type Ans = Option<(usize, usize)>;
+pub type SomeResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 pub fn read(year: u16, path: &str) -> String {
     let p = format!("../data/{}/{}", year, path);
