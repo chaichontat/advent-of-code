@@ -1,7 +1,6 @@
 # Advent of Code Solutions
 ![GitHub Actions](https://github.com/chaichontat/advent-of-code/actions/workflows/python-package-conda.yml/badge.svg)
-![GitHub Actions](https://github.com/chaichontat/advent-of-code/actions/workflows/rust.yml/badge.svg)
-![GitHub Actions](https://github.com/chaichontat/advent-of-code/actions/workflows/haskell.yml/badge.svg)
+[![GitHub Actions](https://github.com/chaichontat/advent-of-code/actions/workflows/rust.yml/badge.svg)](https://github.com/chaichontat/advent-of-code/actions/workflows/rust.yml)
 
 An evolving repository of best practices in software engineering that I'm aware of.
 
@@ -12,7 +11,7 @@ An evolving repository of best practices in software engineering that I'm aware 
   - Code focuses on the algorithm rather than the implementation. For example, explicitly name Dijkstra's algorithm rather than moving a bunch of things around a priority queue.
 - Rust
   - Speed within 10× of the known C++ [state-of-the-art](https://github.com/Voltara?tab=repositories&q=advent&type=&language=&sort=).
-  - Not handcoding x86-64 SIMD as [universal intrinsics](https://numpy.org/neps/nep-0038-SIMD-optimizations.html) are in active development.
+  - Not handcoding x86-64 SIMD as [portable SIMD](https://blog.rust-lang.org/inside-rust/2020/09/29/Portable-SIMD-PG.html) is in active development.
 - Python
   - Enforce strict static type checking.
   - Avoid [`None`](https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/) like SARS-CoV-2.
