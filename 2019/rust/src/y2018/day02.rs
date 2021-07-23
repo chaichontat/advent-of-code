@@ -1,6 +1,6 @@
 use bytecount::count;
 use crc32fast::Hasher;
-use itertools::Itertools;
+use itertools::{izip, Itertools};
 use packed_simd::u8x32;
 
 type Parsed = Vec<u8>;
@@ -104,7 +104,7 @@ pub fn part2_simd(parsed: &[Parsed]) -> Option<String> {
                 let mut buf = String::with_capacity(25);
                 let a: [u8; 32] = a.into();
                 let b: [u8; 32] = b.into();
-                for (&a, &b) in a.iter().zip(&b) {
+                for (&a, &b, _) in izip!(a.iter(), b.iter(), 0..26) {
                     if a == b {
                         buf.push(a as char);
                     }
