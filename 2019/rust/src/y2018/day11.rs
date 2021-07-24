@@ -1,9 +1,5 @@
-use itertools::{izip, Itertools};
-use ndarray::prelude::*;
 use packed_simd::i16x16;
 use rayon::prelude::*;
-
-use crate::utils::*;
 
 type Parsed = i32;
 
@@ -80,24 +76,24 @@ fn find_max(summed: &Arr, win: usize) -> (i16, (usize, usize)) {
     let mut max = i16::MIN;
     let mut vmax = i16x16::splat(max);
     let mut ans = (0usize, 0usize);
-    let mut sum = i16x16::splat(0);
+    let mut sum;
 
     for y in 0..len {
         for i in (0..PAD - win - 16).step_by(16) {
             unsafe {
                 let _tl = i16x16::from_slice_unaligned_unchecked(
-                    &summed.get_unchecked(y).get_unchecked(i..i + 16),
+                    summed.get_unchecked(y).get_unchecked(i..i + 16),
                 );
                 let _br = i16x16::from_slice_unaligned_unchecked(
-                    &summed
+                    summed
                         .get_unchecked(y + win)
                         .get_unchecked(win + i..win + i + 16),
                 );
                 let _bl = i16x16::from_slice_unaligned_unchecked(
-                    &summed.get_unchecked(y + win).get_unchecked(i..i + 16),
+                    summed.get_unchecked(y + win).get_unchecked(i..i + 16),
                 );
                 let _tr = i16x16::from_slice_unaligned_unchecked(
-                    &summed.get_unchecked(y).get_unchecked(win + i..win + i + 16),
+                    summed.get_unchecked(y).get_unchecked(win + i..win + i + 16),
                 );
                 sum = (_tl + _br) - (_bl + _tr);
             }
