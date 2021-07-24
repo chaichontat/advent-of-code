@@ -96,12 +96,12 @@ pub fn combi((ins, codes): &(Vec<Parsed>, Vec<Parsed>)) -> (usize, u16) {
 
     let mut reg = [0u16;4];
     codes.chunks_exact(4).for_each(|ins| {
-        let op = keys[ins[0] as usize];
         let ia = ins[1] as u16;
         let ib = ins[2] as u16;
         let ic = ins[3] as u16;
 
         unsafe {
+            let op = keys.get_unchecked(ins[0] as usize);
             let ra = *reg.get_unchecked(ia as usize);
             let rb = *reg.get_unchecked(ib as usize);
             let rc = reg.get_unchecked_mut(ic as usize);
