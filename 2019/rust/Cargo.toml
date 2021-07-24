@@ -23,6 +23,7 @@ num-rational = "0.4"
 num-traits = "0.2.14"
 packed_simd = {version = "0.3.5", package = "packed_simd_2"}
 pathfinding = "2.1.6"
+rayon = "1.5.1"
 regex = "1.5"
 rstar = "0.9.0"
 strum = "0.21"
@@ -31,7 +32,7 @@ strum_macros = "0.21"
 [dev-dependencies]
 criterion = "0.3"
 criterion-macro = "0.3"
-pprof = {version = "0.4", features = ["criterion", "flamegraph", "protobuf"]}
+pprof = {version = "0.5.0", features = ["criterion", "flamegraph", "protobuf"]}
 
 [[bench]]
 harness = false
