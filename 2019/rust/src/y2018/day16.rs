@@ -55,8 +55,9 @@ pub fn match_keys(mut keys: Keys) -> [u8; 16] {
 #[rustfmt::skip]
 #[allow(clippy::identity_op)]
 pub fn combi((ins, codes): &(Vec<Parsed>, Vec<Parsed>)) -> (usize, u16) {
+    let mut part1 = 0;
     let mut keys = [-1i16; 16];
-    let part1 = ins.chunks_exact(12).map(|block| {
+    ins.chunks_exact(12).for_each(|block| {
         let bef = &block[..4];
         let ins = &block[4..8];
         let aft = &block[8..];
@@ -88,12 +89,13 @@ pub fn combi((ins, codes): &(Vec<Parsed>, Vec<Parsed>)) -> (usize, u16) {
     
             let op = ins[0] as usize;
             *keys.get_unchecked_mut(op) &= m;
-            m
+            if m.count_ones() >= 3 {
+                part1 += 1;
+            }
         }
-        
-    }).filter(|m| m.count_ones() >= 3).count();
-    let keys = match_keys(keys);
+    });
 
+    let keys = match_keys(keys);
     let mut reg = [0u16;4];
     codes.chunks_exact(4).for_each(|ins| {
         let ia = ins[1] as u16;
