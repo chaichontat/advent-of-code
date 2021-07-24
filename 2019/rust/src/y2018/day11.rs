@@ -1,6 +1,6 @@
 use itertools::{izip, Itertools};
 use ndarray::prelude::*;
-use packed_simd::i32x8;
+use packed_simd::i16x16;
 use rayon::prelude::*;
 
 use crate::utils::*;
@@ -14,15 +14,8 @@ pub fn parse(raw: &str) -> Parsed {
 const DIM: usize = 300;
 
 // https://stackoverflow.com/questions/1766535/bit-hack-round-off-to-multiple-of-8/1766565
-const PAD: usize = ((DIM + 2) + 7) & !7;
-type Arr = [[i32; PAD]; PAD];
-
-fn gen_power(x: i32, y: i32, sn: i32) -> i32 {
-    let r_id = x + 10;
-    let power = (r_id * y + sn) * r_id;
-    let power = (power / 100) % 10;
-    power - 5
-}
+const PAD: usize = ((DIM + 2) + 15) & !15;
+type Arr = [[i16; PAD]; PAD];
 
 /// f(x, y; s) = r(ry + s)
 /// where r = x + 10;
@@ -30,11 +23,11 @@ fn gen_power(x: i32, y: i32, sn: i32) -> i32 {
 /// Add along the y-axis.
 /// ∂/∂y f = r².
 #[allow(non_snake_case)]
-fn build_arr(sn: i32) -> Arr {
+pub fn build_arr(sn: i32) -> Arr {
     // Index starts at 1.
-
     let mut dY = [0i32; PAD];
     let mut arr = [[0i32; PAD]; PAD]; // [y][x]
+    let mut out = [[0i16; PAD]; PAD]; // [y][x]
 
     dY.iter_mut().enumerate().for_each(|(x, r)| {
         let xp = x as i32 + 10;
@@ -50,14 +43,16 @@ fn build_arr(sn: i32) -> Arr {
 
     for y in 1..=DIM {
         let (fst, snd) = arr.split_at_mut(y + 1);
-        for (xp, x, dy) in izip!(snd[0].iter_mut(), fst[y], dY) {
-            *xp = x + dy;
-        }
+        snd[0].copy_from_slice(&fst[y]); // arr[y+1] = arr[y] + dY
+        snd[0].iter_mut().zip(dY).for_each(|(xp, dy)| *xp += dy);
 
-        arr[y].iter_mut().for_each(|x| *x = (*x / 100) % 10 - 5);
-        arr[y][0] = 0;
+        out[y]
+            .iter_mut()
+            .zip(arr[y])
+            .for_each(|(o, x)| *o = ((x / 100) % 10 - 5) as i16);
+        out[y][0] = 0;
     }
-    arr
+    out
 }
 
 /// https://en.wikipedia.org/wiki/Summed-area_table
@@ -66,12 +61,12 @@ fn build_summed(mut arr: Arr) -> Arr {
         // y-direction.
         let (fst, snd) = arr.split_at_mut(y + 1);
         for (xp, x) in snd[0].iter_mut().zip(fst[y]) {
-            *xp += x; // arr[y + 1] += arr[y];
+            *xp = xp.wrapping_add(x); // arr[y + 1] += arr[y];
         }
 
         // x-direction.
         fst[y][1..=DIM].iter_mut().fold(0, |acc, x| {
-            *x += acc; // Cumulative sum.
+            *x = x.wrapping_add(acc); // Cumulative sum.
             *x
         });
     }
@@ -79,43 +74,43 @@ fn build_summed(mut arr: Arr) -> Arr {
 }
 
 /// Sum is (x₀, x₁]. To get the sum of [1:3], we need x₃ - x₀.
-fn find_max(summed: &Arr, win: usize) -> (i32, (usize, usize)) {
+fn find_max(summed: &Arr, win: usize) -> (i16, (usize, usize)) {
     let len = DIM - win;
 
-    let mut max = i32::MIN;
-    let mut vmax = i32x8::splat(max);
+    let mut max = i16::MIN;
+    let mut vmax = i16x16::splat(max);
     let mut ans = (0usize, 0usize);
-    let mut sum = i32x8::splat(0);
+    let mut sum = i16x16::splat(0);
 
     for y in 0..len {
-        for i in (0..PAD - win - 8).step_by(8) {
+        for i in (0..PAD - win - 16).step_by(16) {
             unsafe {
-                let _tl = i32x8::from_slice_unaligned_unchecked(
-                    &summed.get_unchecked(y).get_unchecked(i..i + 8),
+                let _tl = i16x16::from_slice_unaligned_unchecked(
+                    &summed.get_unchecked(y).get_unchecked(i..i + 16),
                 );
-                let _br = i32x8::from_slice_unaligned_unchecked(
+                let _br = i16x16::from_slice_unaligned_unchecked(
                     &summed
                         .get_unchecked(y + win)
-                        .get_unchecked(win + i..win + i + 8),
+                        .get_unchecked(win + i..win + i + 16),
                 );
-                let _bl = i32x8::from_slice_unaligned_unchecked(
-                    &summed.get_unchecked(y + win).get_unchecked(i..i + 8),
+                let _bl = i16x16::from_slice_unaligned_unchecked(
+                    &summed.get_unchecked(y + win).get_unchecked(i..i + 16),
                 );
-                let _tr = i32x8::from_slice_unaligned_unchecked(
-                    &summed.get_unchecked(y).get_unchecked(win + i..win + i + 8),
+                let _tr = i16x16::from_slice_unaligned_unchecked(
+                    &summed.get_unchecked(y).get_unchecked(win + i..win + i + 16),
                 );
                 sum = (_tl + _br) - (_bl + _tr);
             }
 
             if sum.gt(vmax).any() {
-                let sum: [i32; 8] = sum.into();
+                let sum: [i16; 16] = sum.into();
                 for (j, &u) in sum.iter().enumerate() {
                     if i + j > len {
                         break;
                     }
                     if u > max {
                         max = u;
-                        vmax = i32x8::splat(max);
+                        vmax = i16x16::splat(max);
                         ans.0 = i + j + 1;
                         ans.1 = y + 1;
                     }
@@ -201,4 +196,11 @@ mod tests {
 //         }
 //     }
 //     (max, (ans[0], ans[1]))
+// }
+//
+// fn gen_power(x: i32, y: i32, sn: i32) -> i32 {
+//     let r_id = x + 10;
+//     let power = (r_id * y + sn) * r_id;
+//     let power = (power / 100) % 10;
+//     power - 5
 // }
