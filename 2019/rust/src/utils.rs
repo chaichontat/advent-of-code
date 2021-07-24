@@ -51,6 +51,23 @@ macro_rules! ahashset {
     }}
 }
 
+/// https://stackoverflow.com/a/45792463
+#[macro_export]
+macro_rules! compose {
+    ( $last:expr ) => { $last };
+    ( $head:expr, $($tail:expr), +) => {
+        compose_two($head, compose!($($tail),+))
+    };
+}
+
+pub fn compose_two<A, B, C, G, F>(f: F, g: G) -> impl Fn(A) -> C
+where
+    F: Fn(A) -> B,
+    G: Fn(B) -> C,
+{
+    move |x| g(f(x))
+}
+
 pub fn str_idx(s: &str, i: usize) -> char {
     s.chars().nth(i).unwrap()
 }
