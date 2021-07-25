@@ -1,3 +1,6 @@
+use std::ops::Mul;
+use std::str::from_utf8;
+
 use bytecount::count;
 use crc32fast::Hasher;
 use itertools::{izip, Itertools};
@@ -91,25 +94,20 @@ pub fn part2_simd(parsed: &[Parsed]) -> Option<String> {
     let mut buf = Line([0; 32]);
     for (storage, line) in storage.iter_mut().zip(parsed) {
         buf.0[..line.len()].copy_from_slice(line);
-        *storage = u8x32::from_slice_aligned(&buf.0);
+        unsafe {
+            *storage = u8x32::from_slice_aligned_unchecked(&buf.0);
+        }
     }
 
     for (i, &a) in storage.iter().enumerate() {
         for &b in &storage[i + 1..] {
-            if a.eq(b)
-                .select(u8x32::splat(1), u8x32::splat(0))
-                .wrapping_sum()
-                == 31
-            {
-                let mut buf = String::with_capacity(25);
+            let diff = (!a.eq(b)).bitmask();
+            let one_bit = diff & diff.wrapping_neg(); // BLSI. Return only right-most bit.
+            if diff == one_bit {
                 let a: [u8; 32] = a.into();
-                let b: [u8; 32] = b.into();
-                for (&a, &b, _) in izip!(a.iter(), b.iter(), 0..26) {
-                    if a == b {
-                        buf.push(a as char);
-                    }
-                }
-                return Some(buf);
+                let mut s = from_utf8(&a[..26]).unwrap().to_string();
+                s.remove(one_bit.trailing_zeros() as usize); // Position of difference.
+                return Some(s);
             }
         }
     }
