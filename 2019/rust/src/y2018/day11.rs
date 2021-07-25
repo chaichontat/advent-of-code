@@ -80,6 +80,8 @@ fn find_max(summed: &Arr, win: usize) -> (i16, (usize, usize)) {
 
     for y in 0..len {
         for i in (0..PAD - win - 16).step_by(16) {
+            // from_slice_unaligned_unchecked is bad when len(slice) < len(lane). Cannot happen from loop structure.
+            // Both get_unchecked are impossible to be out-of-bound due to constraints on y and i.
             unsafe {
                 let _tl = i16x16::from_slice_unaligned_unchecked(
                     summed.get_unchecked(y).get_unchecked(i..i + 16),

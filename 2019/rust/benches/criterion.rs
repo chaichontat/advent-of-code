@@ -130,6 +130,11 @@ fn bench_2018(c: &mut Criterion) {
 
     let day16 = &day16::parse(&read("day16.txt"));
     c.bench_function("day16c", |b| b.iter(|| day16::combi(black_box(day16))));
+    unsafe {
+        c.bench_function("day16c_unchecked", |b| {
+            b.iter(|| day16::combi_unchecked(black_box(day16)))
+        });
+    }
 }
 
 criterion_group! {
