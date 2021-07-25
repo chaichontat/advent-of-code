@@ -1,8 +1,6 @@
 use itertools::Itertools;
 use regex::Regex;
 
-use crate::utils::printt;
-
 type Parsed = u8;
 type Keys = [i16; 16];
 
@@ -70,19 +68,19 @@ pub unsafe fn combi_unchecked((ins, codes): &(Vec<Parsed>, Vec<Parsed>)) -> (usi
             let ans = *aft.get_unchecked(ins[3] as usize);
     
             let mut m = 0i16;
-            m |= ((ans ==  ra + rb)         as i16) << 0;
-            m |= ((ans ==  ra + ib)         as i16) << 1;
-            m |= ((ans ==  ra * rb)         as i16) << 2;
-            m |= ((ans ==  ra * ib)         as i16) << 3;
-            m |= ((ans ==  ra & rb)         as i16) << 4;
-            m |= ((ans ==  ra & ib)         as i16) << 5;
-            m |= ((ans ==  ra | rb)         as i16) << 6;
-            m |= ((ans ==  ra | ib)         as i16) << 7;
-            m |= ((ans ==  ra     )         as i16) << 8;
-            m |= ((ans ==  ia     )         as i16) << 9;
-            m |= ((ans == (ia > rb)  as u8) as i16) << 10;
-            m |= ((ans == (ra > ib)  as u8) as i16) << 11;
-            m |= ((ans == (ra > rb)  as u8) as i16) << 12;
+            m |= ((ans ==  ra  + rb)        as i16) << 0;
+            m |= ((ans ==  ra  + ib)        as i16) << 1;
+            m |= ((ans ==  ra  * rb)        as i16) << 2;
+            m |= ((ans ==  ra  * ib)        as i16) << 3;
+            m |= ((ans ==  ra  & rb)        as i16) << 4;
+            m |= ((ans ==  ra  & ib)        as i16) << 5;
+            m |= ((ans ==  ra  | rb)        as i16) << 6;
+            m |= ((ans ==  ra  | ib)        as i16) << 7;
+            m |= ((ans ==  ra)              as i16) << 8;
+            m |= ((ans ==  ia)              as i16) << 9;
+            m |= ((ans == (ia  > rb) as u8) as i16) << 10;
+            m |= ((ans == (ra  > ib) as u8) as i16) << 11;
+            m |= ((ans == (ra  > rb) as u8) as i16) << 12;
             m |= ((ans == (ia == rb) as u8) as i16) << 13;
             m |= ((ans == (ra == ib) as u8) as i16) << 14;
             m |= ((ans == (ra == rb) as u8) as i16) << 15;
@@ -108,19 +106,19 @@ pub unsafe fn combi_unchecked((ins, codes): &(Vec<Parsed>, Vec<Parsed>)) -> (usi
             let rb = *reg.get_unchecked(ib as usize);
             let rc = reg.get_unchecked_mut(ic as usize);
             match op {
-                 0 => *rc = ra + rb,
-                 1 => *rc = ra + ib,
-                 2 => *rc = ra * rb,
-                 3 => *rc = ra * ib,
-                 4 => *rc = ra & rb,
-                 5 => *rc = ra & ib,
-                 6 => *rc = ra | rb,
-                 7 => *rc = ra | ib,
-                 8 => *rc = ra,
-                 9 => *rc = ia,
-                10 => *rc = (ia > rb) as u16,
-                11 => *rc = (ra > ib) as u16,
-                12 => *rc = (ra > rb) as u16,
+                 0 => *rc =  ra +  rb,
+                 1 => *rc =  ra +  ib,
+                 2 => *rc =  ra *  rb,
+                 3 => *rc =  ra *  ib,
+                 4 => *rc =  ra &  rb,
+                 5 => *rc =  ra &  ib,
+                 6 => *rc =  ra |  rb,
+                 7 => *rc =  ra |  ib,
+                 8 => *rc =  ra,
+                 9 => *rc =  ia,
+                10 => *rc = (ia >  rb) as u16,
+                11 => *rc = (ra >  ib) as u16,
+                12 => *rc = (ra >  rb) as u16,
                 13 => *rc = (ia == rb) as u16,
                 14 => *rc = (ra == ib) as u16,
                 15 => *rc = (ra == rb) as u16,
@@ -149,19 +147,19 @@ pub fn combi((ins, codes): &(Vec<Parsed>, Vec<Parsed>)) -> (usize, u16) {
         let ans = aft[ins[3] as usize];
 
         let mut m = 0i16;
-        m |= ((ans ==  ra + rb)         as i16) << 0;
-        m |= ((ans ==  ra + ib)         as i16) << 1;
-        m |= ((ans ==  ra * rb)         as i16) << 2;
-        m |= ((ans ==  ra * ib)         as i16) << 3;
-        m |= ((ans ==  ra & rb)         as i16) << 4;
-        m |= ((ans ==  ra & ib)         as i16) << 5;
-        m |= ((ans ==  ra | rb)         as i16) << 6;
-        m |= ((ans ==  ra | ib)         as i16) << 7;
-        m |= ((ans ==  ra     )         as i16) << 8;
-        m |= ((ans ==  ia     )         as i16) << 9;
-        m |= ((ans == (ia > rb)  as u8) as i16) << 10;
-        m |= ((ans == (ra > ib)  as u8) as i16) << 11;
-        m |= ((ans == (ra > rb)  as u8) as i16) << 12;
+        m |= ((ans ==  ra +  rb)        as i16) <<  0;
+        m |= ((ans ==  ra +  ib)        as i16) <<  1;
+        m |= ((ans ==  ra *  rb)        as i16) <<  2;
+        m |= ((ans ==  ra *  ib)        as i16) <<  3;
+        m |= ((ans ==  ra &  rb)        as i16) <<  4;
+        m |= ((ans ==  ra &  ib)        as i16) <<  5;
+        m |= ((ans ==  ra |  rb)        as i16) <<  6;
+        m |= ((ans ==  ra |  ib)        as i16) <<  7;
+        m |= ((ans ==  ra)              as i16) <<  8;
+        m |= ((ans ==  ia)              as i16) <<  9;
+        m |= ((ans == (ia >  rb) as u8) as i16) << 10;
+        m |= ((ans == (ra >  ib) as u8) as i16) << 11;
+        m |= ((ans == (ra >  rb) as u8) as i16) << 12;
         m |= ((ans == (ia == rb) as u8) as i16) << 13;
         m |= ((ans == (ra == ib) as u8) as i16) << 14;
         m |= ((ans == (ra == rb) as u8) as i16) << 15;
@@ -177,27 +175,29 @@ pub fn combi((ins, codes): &(Vec<Parsed>, Vec<Parsed>)) -> (usize, u16) {
     let keys = match_keys(keys);
     let mut reg = [0u16;4];
     codes.chunks_exact(4).for_each(|ins| {
+        let op = keys[ins[0] as usize];
         let ia = ins[1] as u16;
         let ib = ins[2] as u16;
         let ic = ins[3] as u16;
-        let op = keys[ins[0] as usize];
+
         let ra = reg[ia as usize];
         let rb = reg[ib as usize];
         let rc = reg.get_mut(ic as usize).unwrap();
+        
         match op {
-            0  => *rc = ra + rb,
-            1  => *rc = ra + ib,
-            2  => *rc = ra * rb,
-            3  => *rc = ra * ib,
-            4  => *rc = ra & rb,
-            5  => *rc = ra & ib,
-            6  => *rc = ra | rb,
-            7  => *rc = ra | ib,
-            8  => *rc = ra,
-            9  => *rc = ia,
-            10 => *rc = (ia > rb) as u16,
-            11 => *rc = (ra > ib) as u16,
-            12 => *rc = (ra > rb) as u16,
+            0  => *rc =  ra +  rb,
+            1  => *rc =  ra +  ib,
+            2  => *rc =  ra *  rb,
+            3  => *rc =  ra *  ib,
+            4  => *rc =  ra &  rb,
+            5  => *rc =  ra &  ib,
+            6  => *rc =  ra |  rb,
+            7  => *rc =  ra |  ib,
+            8  => *rc =  ra,
+            9  => *rc =  ia,
+            10 => *rc = (ia >  rb) as u16,
+            11 => *rc = (ra >  ib) as u16,
+            12 => *rc = (ra >  rb) as u16,
             13 => *rc = (ia == rb) as u16,
             14 => *rc = (ra == ib) as u16,
             15 => *rc = (ra == rb) as u16,
