@@ -105,25 +105,25 @@ pub unsafe fn combi_unchecked((ins, codes): &(Vec<Parsed>, Vec<Parsed>)) -> (usi
             let ra = *reg.get_unchecked(ia as usize);
             let rb = *reg.get_unchecked(ib as usize);
             let rc = reg.get_unchecked_mut(ic as usize);
-            match op {
-                 0 => *rc =  ra +  rb,
-                 1 => *rc =  ra +  ib,
-                 2 => *rc =  ra *  rb,
-                 3 => *rc =  ra *  ib,
-                 4 => *rc =  ra &  rb,
-                 5 => *rc =  ra &  ib,
-                 6 => *rc =  ra |  rb,
-                 7 => *rc =  ra |  ib,
-                 8 => *rc =  ra,
-                 9 => *rc =  ia,
-                10 => *rc = (ia >  rb) as u16,
-                11 => *rc = (ra >  ib) as u16,
-                12 => *rc = (ra >  rb) as u16,
-                13 => *rc = (ia == rb) as u16,
-                14 => *rc = (ra == ib) as u16,
-                15 => *rc = (ra == rb) as u16,
+            *rc = match op {
+                 0 =>  ra +  rb,
+                 1 =>  ra +  ib,
+                 2 =>  ra *  rb,
+                 3 =>  ra *  ib,
+                 4 =>  ra &  rb,
+                 5 =>  ra &  ib,
+                 6 =>  ra |  rb,
+                 7 =>  ra |  ib,
+                 8 =>  ra,
+                 9 =>  ia,
+                10 => (ia >  rb) as u16,
+                11 => (ra >  ib) as u16,
+                12 => (ra >  rb) as u16,
+                13 => (ia == rb) as u16,
+                14 => (ra == ib) as u16,
+                15 => (ra == rb) as u16,
                 _ => unreachable!()
-            }
+            };
         }
     });
 
@@ -184,25 +184,25 @@ pub fn combi((ins, codes): &(Vec<Parsed>, Vec<Parsed>)) -> (usize, u16) {
         let rb = reg[ib as usize];
         let rc = reg.get_mut(ic as usize).unwrap();
         
-        match op {
-            0  => *rc =  ra +  rb,
-            1  => *rc =  ra +  ib,
-            2  => *rc =  ra *  rb,
-            3  => *rc =  ra *  ib,
-            4  => *rc =  ra &  rb,
-            5  => *rc =  ra &  ib,
-            6  => *rc =  ra |  rb,
-            7  => *rc =  ra |  ib,
-            8  => *rc =  ra,
-            9  => *rc =  ia,
-            10 => *rc = (ia >  rb) as u16,
-            11 => *rc = (ra >  ib) as u16,
-            12 => *rc = (ra >  rb) as u16,
-            13 => *rc = (ia == rb) as u16,
-            14 => *rc = (ra == ib) as u16,
-            15 => *rc = (ra == rb) as u16,
+        *rc = match op {
+             0 =>  ra +  rb,
+             1 =>  ra +  ib,
+             2 =>  ra *  rb,
+             3 =>  ra *  ib,
+             4 =>  ra &  rb,
+             5 =>  ra &  ib,
+             6 =>  ra |  rb,
+             7 =>  ra |  ib,
+             8 =>  ra,
+             9 =>  ia,
+            10 => (ia >  rb) as u16,
+            11 => (ra >  ib) as u16,
+            12 => (ra >  rb) as u16,
+            13 => (ia == rb) as u16,
+            14 => (ra == ib) as u16,
+            15 => (ra == rb) as u16,
             _ => unreachable!()
-        }
+        };
     });
 
     (part1, reg[0])
