@@ -1,9 +1,4 @@
-use std::{iter::once, ops::Add};
-
 use itertools::Itertools;
-use num::{integer::Roots, Integer};
-
-use crate::utils::printt;
 
 type Parsed = (usize, Vec<[u8; 4]>);
 
