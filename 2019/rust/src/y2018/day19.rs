@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use num::Integer;
 
 type Parsed = (usize, Vec<[u8; 4]>);
 
@@ -122,7 +123,7 @@ fn sum_factors(tg: u32) -> u32 {
         }
     });
 
-    let mut spacings = 0x62642424 as u32; // Spacing of numbers that not divisible by {2, 3, 5}.
+    let mut spacings = 0x62642424; // Spacing of numbers that not divisible by {2, 3, 5}.
     let mut cand = 7;
     while cand * cand <= tg {
         cand += spacings & (0xf - 1);
