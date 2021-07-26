@@ -1,15 +1,11 @@
-use std::iter::once;
+use std::{iter::once, ops::Add};
 
 use itertools::Itertools;
-use num::integer::Roots;
+use num::{integer::Roots, Integer};
 
 use crate::utils::printt;
 
 type Parsed = (usize, Vec<[u8; 4]>);
-
-fn factorize(n: u32) {
-    let mut sum = 1;
-}
 
 pub fn parse(raw: &str) -> Parsed {
     let bind = (raw.chars().nth(4).unwrap() as u8 - b'0') as usize;
@@ -51,6 +47,7 @@ pub fn parse(raw: &str) -> Parsed {
 fn run_elf((bind, inss): &Parsed, r0: u32) -> u32 {
     let mut r = [0u32; 6];
     r[0] = r0;
+
     while r[*bind] != 1 {
         let curr = inss[r[*bind] as usize];
 
@@ -59,15 +56,15 @@ fn run_elf((bind, inss): &Parsed, r0: u32) -> u32 {
         let ib = curr[2] as u32;
         let ic = curr[3] as usize;
 
-        let ra = || r[ia as usize];
-        let rb = || r[ib as usize];
+        let ra = *r.get(ia as usize).unwrap_or(&u32::MAX);
+        let rb = *r.get(ib as usize).unwrap_or(&u32::MAX);
 
         r[ic] = match op {
-            0 => ra() + rb(),
-            1 => ra() + ib,
-            2 => ra() * rb(),
-            3 => ra() * ib,
-            8 => ra(),
+            0 => ra + rb,
+            1 => ra + ib,
+            2 => ra * rb,
+            3 => ra * ib,
+            8 => ra,
             9 => ia,
             what => unreachable!("{:?}", what),
         };
@@ -76,15 +73,71 @@ fn run_elf((bind, inss): &Parsed, r0: u32) -> u32 {
     r[1]
 }
 
-fn sum_factors(n: u32) -> u32 {
-    // let primes = (1..n.sqrt()).filter(|&i| n % i == 0).collect_vec();
-    // let factors = vec![];
-    // for i in 0..primes.len() {
-    //     for j in i+1..primes.len() {
-    //         factors.push(primes[i] * primes[j]);
-    //     }
-    // }
-    (1..n + 1).filter(|&i| n % i == 0).sum()
+unsafe fn run_elf_unchecked((bind, inss): &Parsed, r0: u32) -> u32 {
+    let mut r = [0u32; 6];
+    r[0] = r0;
+    unsafe {
+        while *r.get_unchecked(*bind) != 1 {
+            let curr = *inss.get_unchecked(r[*bind] as usize);
+
+            let op = curr[0];
+            let ia = curr[1] as u32;
+            let ib = curr[2] as u32;
+            let ic = curr[3] as usize;
+
+            let ra = *r.get_unchecked(ia as usize);
+            let rb = *r.get_unchecked(ib as usize);
+
+            r[ic] = match op {
+                0 => ra + rb,
+                1 => ra + ib,
+                2 => ra * rb,
+                3 => ra * ib,
+                8 => ra,
+                9 => ia,
+                what => unreachable!("{:?}", what),
+            };
+            *r.get_unchecked_mut(*bind) += 1;
+        }
+    }
+    r[1]
+}
+
+fn sum_factors(tg: u32) -> u32 {
+    // https://math.stackexchange.com/a/22723
+    fn add_factors(curr_sum: u32, mut tg: u32, p: u32) -> u32 {
+        let mut m = 1;
+        let mut f = 1;
+        loop {
+            tg /= p;
+            f *= p;
+            m += f;
+            if tg % p != 0 {
+                break;
+            }
+        }
+        curr_sum * m
+    }
+
+    let mut out = 1;
+
+    [2u32, 3, 5].iter().for_each(|cand| {
+        if tg.is_multiple_of(cand) {
+            out = add_factors(out, tg, *cand)
+        }
+    });
+
+    let mut spacings = 0x62642424 as u32; // Spacing of numbers that not divisible by {2, 3, 5}.
+    let mut cand = 7;
+    while cand * cand <= tg {
+        cand += spacings & (0xf - 1);
+        if tg.is_multiple_of(&cand) {
+            out = add_factors(out, tg, cand)
+        }
+        spacings = spacings.rotate_right(4); // Cycle, so spacing is (4, 2, 4, 2, 4, 6...)
+    }
+
+    out
 }
 
 /// Sum of divisors of r[1] aka sum {x: ℕ | x ≤ r[1] & r[1] | x}.
