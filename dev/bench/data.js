@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1627258304022,
+  "lastUpdate": 1627259084496,
   "repoUrl": "https://github.com/chaichontat/advent-of-code",
   "entries": {
     "./2020/rust": [
@@ -7011,6 +7011,348 @@ window.BENCHMARK_DATA = {
             "name": "day16c_unchecked",
             "value": 11626,
             "range": "± 103",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "chaichontat.s@duke.edu",
+            "name": "Chaichontat Sriworarat",
+            "username": "chaichontat"
+          },
+          "committer": {
+            "email": "chaichontat.s@duke.edu",
+            "name": "Chaichontat Sriworarat",
+            "username": "chaichontat"
+          },
+          "distinct": true,
+          "id": "5de737eef5133379c2fb049da838486cea44ec72",
+          "message": "Day 19 finally.\n\nSigned-off-by: Chaichontat Sriworarat <chaichontat.s@duke.edu>",
+          "timestamp": "2021-07-25T20:08:02-04:00",
+          "tree_id": "5ce21113c484da01c5fbfdd639c0848bd2b3420e",
+          "url": "https://github.com/chaichontat/advent-of-code/commit/5de737eef5133379c2fb049da838486cea44ec72"
+        },
+        "date": 1627259083915,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "day01a",
+            "value": 89,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day01b",
+            "value": 3349,
+            "range": "± 41",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day02combi",
+            "value": 318,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day03a",
+            "value": 14049180,
+            "range": "± 155084",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day03b",
+            "value": 22469394,
+            "range": "± 559519",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day04a",
+            "value": 38915556,
+            "range": "± 280105",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day04b",
+            "value": 39847624,
+            "range": "± 335385",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day05a",
+            "value": 1791,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day05b",
+            "value": 2741,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day06a",
+            "value": 269272,
+            "range": "± 4237",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day06b",
+            "value": 283324,
+            "range": "± 2708",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day07a",
+            "value": 228406,
+            "range": "± 2545",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day07b",
+            "value": 679772,
+            "range": "± 8973",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day08a",
+            "value": 7283,
+            "range": "± 97",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day08b",
+            "value": 13709,
+            "range": "± 245",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day09a",
+            "value": 5548,
+            "range": "± 72",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day09b",
+            "value": 8293460,
+            "range": "± 67401",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day10a",
+            "value": 19220268,
+            "range": "± 176550",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day11a",
+            "value": 2588900,
+            "range": "± 27753",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day11b",
+            "value": 201706,
+            "range": "± 2727",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day12a",
+            "value": 144100,
+            "range": "± 1655",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day12b",
+            "value": 18931533,
+            "range": "± 185406",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day13a",
+            "value": 327023,
+            "range": "± 3971",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day13b",
+            "value": 14723914,
+            "range": "± 162008",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day14a",
+            "value": 43628,
+            "range": "± 800",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day14b",
+            "value": 67391,
+            "range": "± 816",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day15a",
+            "value": 1995036,
+            "range": "± 24451",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day15b",
+            "value": 1991007,
+            "range": "± 24831",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day16a",
+            "value": 650800,
+            "range": "± 6574",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day16b",
+            "value": 18551,
+            "range": "± 187",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day17a",
+            "value": 1023262,
+            "range": "± 12257",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day17b",
+            "value": 3108342,
+            "range": "± 28655",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day18a",
+            "value": 21234327,
+            "range": "± 202765",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day18b",
+            "value": 192825824,
+            "range": "± 1803253",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day19a",
+            "value": 1496453,
+            "range": "± 14380",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day19b",
+            "value": 1303875,
+            "range": "± 15434",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day20a",
+            "value": 1385755,
+            "range": "± 16648",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day20b",
+            "value": 3512746,
+            "range": "± 27379",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day21a",
+            "value": 549222,
+            "range": "± 6120",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day21b",
+            "value": 12925027,
+            "range": "± 139958",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day22a",
+            "value": 14833,
+            "range": "± 227",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day22b",
+            "value": 29120,
+            "range": "± 340",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day23a",
+            "value": 459971,
+            "range": "± 9753",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day23b",
+            "value": 5198096,
+            "range": "± 39322",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day24a",
+            "value": 22915,
+            "range": "± 284",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day24b",
+            "value": 2919736,
+            "range": "± 25331",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day25a",
+            "value": 17301017,
+            "range": "± 2626547",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day01c",
+            "value": 29393,
+            "range": "± 338",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day02a",
+            "value": 11517,
+            "range": "± 135",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day02b",
+            "value": 9274,
+            "range": "± 104",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day11c",
+            "value": 513617,
+            "range": "± 6804",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day16c",
+            "value": 20283,
+            "range": "± 227",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day16c_unchecked",
+            "value": 13994,
+            "range": "± 164",
             "unit": "ns/iter"
           }
         ]
