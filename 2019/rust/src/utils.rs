@@ -5,6 +5,7 @@ use std::hash::Hash;
 
 use ahash::{AHashMap, AHashSet};
 use ascii::{AsciiStr, AsciiString};
+use colored::*;
 use itertools::Itertools;
 use num::Signed;
 use num_complex::Complex;
@@ -74,6 +75,10 @@ pub fn str_idx(s: &str, i: usize) -> char {
 
 pub fn printt(x: &impl Debug) {
     println!("{:?}", x);
+}
+
+pub fn printc(x: &impl Debug, c: Color) {
+    println!("{}", ColoredString::from(&format!("{:?}", x)[..]).color(c));
 }
 
 pub fn gen_re(r: &str) -> Regex {
