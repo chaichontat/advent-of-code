@@ -135,11 +135,17 @@ fn bench_2018(c: &mut Criterion) {
             b.iter(|| day16::combi_unchecked(black_box(day16)))
         });
     }
+
+    let day19 = &day19::parse(&read("day19.txt"));
+    c.bench_function("day19c", |b| b.iter(|| day19::combi(black_box(day19))));
+
+    let day25 = &day25::parse(&read("day25.txt"));
+    c.bench_function("2018_day25", |b| b.iter(|| day25::part1(black_box(day25))));
 }
 
 criterion_group! {
     name = benches;
-    config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
+    config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Protobuf));
     targets = bench_2019, bench_2018
 }
 
