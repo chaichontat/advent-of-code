@@ -3,6 +3,7 @@ use std::str::FromStr;
 use ahash::{AHashMap, AHashSet};
 use num_complex::Complex;
 
+use crate::spatial::Dir;
 use crate::utils::*;
 
 type Parsed = Vec<(char, i32)>;

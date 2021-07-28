@@ -7,7 +7,7 @@ use itertools::Itertools;
 use num_complex::Complex;
 
 use super::intcode::*;
-use crate::utils::*;
+use crate::spatial::{Coord, Dir, Turn};
 
 type Board = AHashSet<Coord>;
 
@@ -238,6 +238,7 @@ pub fn part2(parsed: &[Parsed]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::read;
 
     #[test]
     fn test1() {

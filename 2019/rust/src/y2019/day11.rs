@@ -2,7 +2,7 @@ use ahash::AHashMap;
 use num_complex::Complex;
 
 use super::intcode::*;
-use crate::utils::*;
+use crate::spatial::{Dir, Turn};
 
 type Parsed = isize;
 pub fn parse(raw: &str) -> Vec<Parsed> {
@@ -114,6 +114,8 @@ pub fn part2(parsed: &[Parsed]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::read;
+
     #[test]
     fn test1() {
         assert_eq!(part1(&parse(&read(2019, "day11.txt"))), 2082);

@@ -1,6 +1,6 @@
 use num::Complex;
 
-use crate::utils::{Dir, Turn};
+use crate::spatial::{Dir, Turn};
 
 const DIM: usize = 150;
 type Pos = Complex<i16>;

@@ -6,6 +6,7 @@ extern crate jemallocator;
 #[global_allocator]
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
+pub mod spatial;
 pub mod utils;
 
 pub mod y2019 {

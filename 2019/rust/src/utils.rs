@@ -7,12 +7,8 @@ use ahash::{AHashMap, AHashSet};
 use ascii::{AsciiStr, AsciiString};
 use colored::*;
 use itertools::Itertools;
-use num::Signed;
-use num_complex::Complex;
 use regex::Regex;
-use strum_macros::EnumString;
 
-pub type Coord = Complex<isize>;
 pub type Ans = Option<(usize, usize)>;
 pub type SomeResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
@@ -77,6 +73,14 @@ pub fn printt(x: &impl Debug) {
     println!("{:?}", x);
 }
 
+pub fn printarr(x: &[impl Debug]) {
+    print!("[");
+    for i in x {
+        print!("{:3?},", i);
+    }
+    println!("]");
+}
+
 pub fn printc(x: &impl Debug, c: Color) {
     println!("{}", ColoredString::from(&format!("{:?}", x)[..]).color(c));
 }
@@ -99,70 +103,5 @@ impl<T: Clone + Eq + Hash, R> Set for AHashMap<T, R> {
 
     fn keys_to(&self) -> Self::Item {
         self.keys().cloned().collect::<Self::Item>()
-    }
-}
-
-#[derive(Debug, PartialEq, EnumString, Clone, Copy)]
-pub enum Dir {
-    U,
-    D,
-    L,
-    R,
-}
-
-impl Dir {
-    // pub fn turn(&mut self, turn: Turn) {
-    //     std::mem::swap(
-    //         self,
-    //         &mut Dir::from(Complex::from(*self) * Complex::from(turn)),
-    //     );
-    // }
-
-    pub fn turn(&self, turn: Turn) -> Self {
-        Dir::from(Complex::<i8>::from(*self) * Complex::from(turn))
-    }
-}
-
-impl<T: Signed> From<Complex<T>> for Dir {
-    fn from(x: Complex<T>) -> Self {
-        if x == Complex::new(T::zero(), T::one()) {
-            Self::U
-        } else if x == Complex::new(T::zero(), -T::one()) {
-            Self::D
-        } else if x == Complex::new(-T::one(), T::zero()) {
-            Self::L
-        } else if x == Complex::new(T::one(), T::zero()) {
-            Self::R
-        } else {
-            unreachable!("Invalid Dir");
-        }
-    }
-}
-
-impl<T: Signed> From<Dir> for Complex<T> {
-    fn from(x: Dir) -> Self {
-        match x {
-            Dir::U => Complex::new(T::zero(), T::one()),
-            Dir::D => Complex::new(T::zero(), -T::one()),
-            Dir::L => Complex::new(-T::one(), T::zero()),
-            Dir::R => Complex::new(T::one(), T::zero()),
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, EnumString, Clone, Copy)]
-pub enum Turn {
-    L,
-    R,
-    N,
-}
-
-impl<T: Signed> From<Turn> for Complex<T> {
-    fn from(x: Turn) -> Self {
-        match x {
-            Turn::L => Complex::new(T::zero(), T::one()),
-            Turn::R => Complex::new(T::zero(), -T::one()),
-            Turn::N => Complex::new(T::one(), T::zero()),
-        }
     }
 }
