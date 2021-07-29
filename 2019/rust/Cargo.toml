@@ -22,6 +22,7 @@ num-complex = "0.4"
 num-derive = "0.3.3"
 num-rational = "0.4"
 num-traits = "0.2.14"
+num_enum = "0.5.2"
 packed_simd = {version = "0.3.5", package = "packed_simd_2"}
 partitions = "0.2.4"
 pathfinding = "2.1.6"
@@ -41,5 +42,5 @@ pretty_assertions = "0.7.2"
 harness = false
 name = "criterion"
 
-# [profile.release]
+# [profile.bench]
 # debug = true
