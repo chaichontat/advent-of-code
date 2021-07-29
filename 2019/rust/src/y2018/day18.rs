@@ -179,8 +179,8 @@ fn calc_value(map: &Map) -> u32 {
     unsafe {
         let ptr = map.get_unchecked(PAD) as *const u8 as *const __m256i;
         for y in 0..N_SUM {
-            tree += _mm256_movemask_epi8(_mm256_slli_epi64(*ptr.add(y), 3)).count_ones();
-            yard += _mm256_movemask_epi8(_mm256_slli_epi64(*ptr.add(y), 7)).count_ones();
+            tree += _mm256_movemask_epi8(_mm256_slli_epi64(*ptr.add(y), 7)).count_ones();
+            yard += _mm256_movemask_epi8(_mm256_slli_epi64(*ptr.add(y), 3)).count_ones();
         }
     }
     tree * yard
