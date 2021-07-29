@@ -1,10 +1,9 @@
-use std::arch::x86_64::*;
 use std::convert::TryFrom;
-use std::mem;
 
 use ahash::AHashMap;
-use itertools::Itertools;
+use itertools::{izip, Itertools};
 use num_enum::TryFromPrimitive;
+use safe_arch::*;
 
 #[repr(u8)]
 #[derive(Debug, Copy, Clone, TryFromPrimitive)]
@@ -94,95 +93,96 @@ pub fn parse(raw: &str) -> MapAlign {
     MapAlign(out)
 }
 
-fn step(map: &mut Map) {
-    let mut sum: [__m256i; (DIM + 1) * (PAD / BATCH)];
+#[allow(unused_unsafe)]
+unsafe fn step_unchecked(map: &mut Map) {
+    let m;
     unsafe {
-        sum = mem::zeroed();
-        // Compute sum of self + L/R.
-        for (y, s) in sum.iter_mut().enumerate() {
-            let idx_c = PAD + (BATCH * y);
-            let ptr = map.get(idx_c).unwrap() as *const u8; // Shift by one u8.
-            *s = _mm256_add_epi8(
-                *(ptr as *const __m256i),
-                _mm256_add_epi8(
-                    _mm256_loadu_si256(ptr.sub(1) as *const __m256i),
-                    _mm256_loadu_si256(ptr.add(1) as *const __m256i),
+        m = &mut *(map.get_unchecked_mut(PAD) as *mut u8 as *mut [m256i; (DIM + 1) * (PAD / BATCH)]);
+        // Transmute into m256i and truncate first two "fillers".
+    }
+    let mut sum = [zeroed_m256i(); (DIM + 1) * (PAD / BATCH)];
+
+    // Compute sum of self + L/R.
+    for (y, s) in sum.iter_mut().enumerate() {
+        let idx_c = PAD + (BATCH * y);
+        unsafe {
+            let ptr = map.get_unchecked(idx_c) as *const u8; // Shift by one u8.
+            *s = add_i8_m256i(
+                *(ptr as *const m256i),
+                add_i8_m256i(
+                    load_unaligned_m256i(&*(ptr.sub(1) as *const [i8; 32])),
+                    load_unaligned_m256i(&*(ptr.add(1) as *const [i8; 32])),
                 ),
             );
         }
-
-        // Add sum of above and below and subtract self.
-        let mut prev = [_mm256_setzero_si256(), _mm256_setzero_si256()];
-        let mut curr;
-        let mut total = [sum[0], sum[1]]; // Contains curr+prev sums. Loop invariant.
-        for y in (0..N_SUM).step_by(2) {
-            // Note end range -> skip end pad.
-            curr = [sum[y], sum[y + 1]];
-            let ptr = &map[PAD + (BATCH * y)] as *const u8 as *const __m256i;
-            for i in 0..2 {
-                total[i] = _mm256_add_epi8(total[i], sum[y + 2 + i]); // Add next, now have everything.
-                sum[y + i] = _mm256_sub_epi8(total[i], *ptr.add(i)); // Remove self.
-                total[i] = _mm256_sub_epi8(total[i], prev[i]); // Remove prev-prev.
-            }
-            prev = curr;
-        }
     }
 
-    for y in 0..N_SUM {
-        let idx_c = PAD + (BATCH * y);
+    // Add sum of above and below and subtract self.
+    let mut prev = [zeroed_m256i(), zeroed_m256i()];
+    let mut curr;
+    let mut total = [sum[0], sum[1]]; // Contains curr+prev sums. Loop invariant.
+    for y in (0..N_SUM).step_by(2) {
+        // Note end range -> skip end pad.
+        curr = [sum[y], sum[y + 1]];
+        for i in 0..2 {
+            total[i] = add_i8_m256i(total[i], sum[y + 2 + i]); // _mm256_add_epi8(total[i], sum[y + 2 + i]); // Add next, now have everything.
+            sum[y + i] = sub_i8_m256i(total[i], m[y + i]); // Remove self.
+            total[i] = sub_i8_m256i(total[i], prev[i]); // Remove prev-prev.
+        }
+        prev = curr;
+    }
+
+    for (i, (&s, ori)) in izip!(&sum, m.iter_mut()).take(N_SUM).enumerate() {
+        let zero = zeroed_m256i();
+        let two = set_splat_i8_m256i(2);
+        let yard_m = set_splat_i8_m256i(YARD as i8);
+        let tree_m = set_splat_i8_m256i(TREE as i8);
 
         #[allow(overflowing_literals)]
-        unsafe {
-            let zero = _mm256_setzero_si256();
-            let two = _mm256_set1_epi8(2);
-            let yard_m = _mm256_set1_epi8(YARD as i8);
-            let tree_m = _mm256_set1_epi8(TREE as i8);
+        let tree = shr_imm_u16_m256i::<4>(bitand_m256i(s, set_splat_i8_m256i(0xf0)));
+        let yard = bitand_m256i(s, set_splat_i8_m256i(0x0f));
 
-            let s = *sum.get_unchecked(y);
-            let tree = _mm256_srli_epi16(_mm256_and_si256(s, _mm256_set1_epi8(0xf0)), 4);
-            let yard = _mm256_and_si256(s, _mm256_set1_epi8(0x0f));
+        let tree3 = cmp_gt_mask_i8_m256i(tree, two);
+        let yard3 = cmp_gt_mask_i8_m256i(yard, two);
+        let notyard = bitor_m256i(cmp_eq_mask_i8_m256i(tree, zero), cmp_eq_mask_i8_m256i(yard, zero));
 
-            let tree3 = _mm256_cmpgt_epi8(tree, two);
-            let yard3 = _mm256_cmpgt_epi8(yard, two);
-            let notyard = _mm256_or_si256(_mm256_cmpeq_epi8(tree, zero), _mm256_cmpeq_epi8(yard, zero));
+        let curr_gnd = cmp_eq_mask_i8_m256i(*ori, zero);
+        let curr_tree = cmp_eq_mask_i8_m256i(*ori, tree_m);
+        let curr_yard = cmp_eq_mask_i8_m256i(*ori, yard_m);
 
-            let mut m = *(map.get_unchecked(idx_c) as *const u8 as *const __m256i);
-            let curr_gnd = _mm256_cmpeq_epi8(m, zero);
-            let curr_tree = _mm256_cmpeq_epi8(m, tree_m);
-            let curr_yard = _mm256_cmpeq_epi8(m, yard_m);
+        // An open acre will become filled with trees if three or more adjacent acres contained trees.
+        *ori = bitxor_m256i(*ori, bitand_m256i(curr_gnd, bitand_m256i(tree3, tree_m)));
 
-            // An open acre will become filled with trees if three or more adjacent acres contained trees.
-            m = _mm256_xor_si256(m, _mm256_and_si256(curr_gnd, _mm256_and_si256(tree3, tree_m)));
+        // An acre filled with trees will become a lumberyard if three or more adjacent acres were lumberyards.
+        *ori = bitxor_m256i(
+            *ori,
+            bitand_m256i(curr_tree, bitand_m256i(yard3, set_splat_i8_m256i(0x11))),
+        );
 
-            // An acre filled with trees will become a lumberyard if three or more adjacent acres were lumberyards.
-            m = _mm256_xor_si256(
-                m,
-                _mm256_and_si256(curr_tree, _mm256_and_si256(yard3, _mm256_set1_epi8(0x11))),
-            );
+        // An acre containing a lumberyard will remain a lumberyard if it was adjacent to at least one other lumberyard and at least one acre containing trees.
+        *ori = bitxor_m256i(*ori, bitand_m256i(curr_yard, bitand_m256i(notyard, yard_m)));
 
-            // An acre containing a lumberyard will remain a lumberyard if it was adjacent to at least one other lumberyard and at least one acre containing trees.
-            m = _mm256_xor_si256(m, _mm256_and_si256(curr_yard, _mm256_and_si256(notyard, yard_m)));
-
-            if y % 2 == 1 {
-                m = _mm256_and_si256(m, _mm256_set_epi64x(0, 0x1111, -1, -1));
-            }
-
-            let out: [u8; 32] = mem::transmute(m);
-            map.get_unchecked_mut(idx_c..idx_c + BATCH).copy_from_slice(&out);
+        if i % 2 == 1 {
+            *ori = bitand_m256i(*ori, set_i64_m256i(0, 0x1111, -1, -1));
         }
     }
 }
 
-fn calc_value(map: &Map) -> u32 {
+#[allow(unused_unsafe)]
+unsafe fn calc_value_unchecked(map: &Map) -> u32 {
     let mut tree = 0;
     let mut yard = 0;
+
+    let pmap;
     unsafe {
-        let ptr = map.get_unchecked(PAD) as *const u8 as *const __m256i;
-        for y in 0..N_SUM {
-            tree += _mm256_movemask_epi8(_mm256_slli_epi64(*ptr.add(y), 7)).count_ones();
-            yard += _mm256_movemask_epi8(_mm256_slli_epi64(*ptr.add(y), 3)).count_ones();
-        }
+        pmap = (&*(map as *const u8 as *const [m256i; (DIM + 2) * 2])).get_unchecked(2..N_SUM + 2);
     }
+
+    for &y in pmap {
+        tree += move_mask_i8_m256i(shl_imm_u16_m256i::<7>(y)).count_ones();
+        yard += move_mask_i8_m256i(shl_imm_u16_m256i::<3>(y)).count_ones();
+    }
+
     tree * yard
 }
 
@@ -194,13 +194,13 @@ pub fn combi(mapal: &MapAlign) -> (u32, u32) {
     let mut value = AHashMap::with_capacity(1000);
 
     loop {
-        step(&mut mapal.0);
+        unsafe { step_unchecked(&mut mapal.0) };
         if let Some(old) = seen.insert(mapal.0, count) {
             let period = count - old;
             let idx = old + (1000000000 - old) % period;
             return (value[&10], value[&idx]);
         }
-        value.insert(count, calc_value(&mapal.0));
+        unsafe { value.insert(count, calc_value_unchecked(&mapal.0)) };
 
         count += 1;
     }

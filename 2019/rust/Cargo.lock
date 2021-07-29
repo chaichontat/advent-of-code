@@ -47,6 +47,7 @@ dependencies = [
  "rayon",
  "regex",
  "rstar",
+ "safe_arch",
  "strum",
  "strum_macros",
 ]
@@ -1331,6 +1332,12 @@ name = "ryu"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "71d301d4193d031abdd79ff7e3dd721168a9572ef3fe51a1517aba235bd8f86e"
+
+[[package]]
+name = "safe_arch"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "794821e4ccb0d9f979512f9c1973480123f9bd62a90d74ab0f9426fcf8f4a529"
 
 [[package]]
 name = "same-file"
