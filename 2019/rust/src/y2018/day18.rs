@@ -186,7 +186,7 @@ unsafe fn calc_value_unchecked(map: &Map) -> u32 {
     tree * yard
 }
 
-pub fn combi(mapal: &MapAlign) -> (u32, u32) {
+pub fn combi(mapal: &MapAlign) -> Option<(u32, u32)> {
     let mut mapal = mapal.clone();
 
     let mut count = 1u32;
@@ -198,7 +198,7 @@ pub fn combi(mapal: &MapAlign) -> (u32, u32) {
         if let Some(old) = seen.insert(mapal.0, count) {
             let period = count - old;
             let idx = old + (1000000000 - old) % period;
-            return (value[&10], value[&idx]);
+            return Some((value[&10], value[&idx]));
         }
         unsafe { value.insert(count, calc_value_unchecked(&mapal.0)) };
 
@@ -212,6 +212,6 @@ mod tests {
 
     #[test]
     fn test_combi() {
-        assert_eq!(combi(&parse(&read(2018, "day18.txt"))), (536370, 190512));
+        assert_eq!(combi(&parse(&read(2018, "day18.txt"))), Some((536370, 190512)));
     }
 }
