@@ -1,4 +1,4 @@
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use num_complex::Complex;
 
 use super::intcode::*;
@@ -16,7 +16,7 @@ enum Color {
 }
 
 struct Board {
-    board: AHashMap<Complex<isize>, Color>,
+    board: HashMap<Complex<isize>, Color>,
     pos:   Complex<isize>,
     dir:   Dir,
 }
@@ -39,7 +39,7 @@ impl Board {
 impl Default for Board {
     fn default() -> Self {
         Board {
-            board: AHashMap::new(),
+            board: HashMap::new(),
             pos:   Complex::new(0, 0),
             dir:   Dir::U,
         }
@@ -53,12 +53,7 @@ fn execute(ic: &mut IntCode, board: &mut Board) {
         if ic.done {
             break;
         }
-        board.set(
-            ic.output
-                .pop_front()
-                .and_then(num::FromPrimitive::from_isize)
-                .unwrap(),
-        ); // Color to paint.
+        board.set(ic.output.pop_front().and_then(num::FromPrimitive::from_isize).unwrap()); // Color to paint.
         ic.run_pause();
         board.step(match ic.output.pop_front() {
             Some(0) => Turn::L,
@@ -70,18 +65,14 @@ fn execute(ic: &mut IntCode, board: &mut Board) {
 
 pub fn part1(parsed: &[Parsed]) -> usize {
     let mut ic = IntCode::from(parsed);
-    let mut board = Board {
-        ..Default::default()
-    };
+    let mut board = Board { ..Default::default() };
     execute(&mut ic, &mut board);
     board.board.len()
 }
 
 pub fn part2(parsed: &[Parsed]) -> usize {
     let mut ic = IntCode::from(parsed);
-    let mut board = Board {
-        ..Default::default()
-    };
+    let mut board = Board { ..Default::default() };
     board.board.insert(Complex::new(0, 0), Color::White);
     execute(&mut ic, &mut board);
     // Get boundaries.

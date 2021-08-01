@@ -1,11 +1,11 @@
 use std::{cmp::Reverse, collections::BinaryHeap};
 
-use ahash::{AHashMap, AHashSet};
 use ascii::{AsAsciiStr, AsciiChar, AsciiString};
+use hashbrown::{HashMap, HashSet};
 use itertools::Itertools;
 use pathfinding::prelude::{bfs, dijkstra};
 
-use crate::ahashmap;
+use crate::hashmap;
 type Pos = (usize, usize);
 type Portal = (AsciiChar, AsciiChar);
 
@@ -26,19 +26,19 @@ fn scan(raw: &[AsciiString], x: usize, y: usize) -> Option<(Portal, Pos)> {
 }
 
 struct Board {
-    walkable: AHashSet<Pos>,
-    portals:  AHashMap<Pos, (Pos, i32)>,
+    walkable: HashSet<Pos>,
+    portals:  HashMap<Pos, (Pos, i32)>,
     start:    Pos,
     finish:   Pos,
-    posport:  AHashMap<Pos, Portal>,
+    posport:  HashMap<Pos, Portal>,
 }
 
 impl Board {
     fn new(raw: &[AsciiString]) -> Self {
-        let mut temp = AHashMap::new();
-        let mut portals = AHashMap::new();
-        let mut posport = AHashMap::new();
-        let mut walkable = AHashSet::new();
+        let mut temp = HashMap::new();
+        let mut portals = HashMap::new();
+        let mut posport = HashMap::new();
+        let mut walkable = HashSet::new();
 
         let (mut start, mut finish) = (None, None);
 
@@ -131,30 +131,30 @@ pub fn part1(raw: &[AsciiString]) -> Option<usize> {
     Some(result.len() - 1)
 }
 
-type Dists = AHashMap<Pos, u32>;
+type Dists = HashMap<Pos, u32>;
 
 // BFS
-fn get_reachable(board: &Board, search_points: &AHashMap<Pos, Portal>) -> AHashMap<Pos, Dists> {
+fn get_reachable(board: &Board, search_points: &HashMap<Pos, Portal>) -> HashMap<Pos, Dists> {
     // fn successors(board: &Board) -> Vec<Pos> {
     //     board.steps(pos, false)
     // }
-    // let mut res = AHashMap::new();
+    // let mut res = HashMap::new();
     // for (&start, &curr) in search_points.iter() {
     // let test = dijkstra_partial(start, successors, |p| )
     // }
 
     let mut pq = BinaryHeap::new();
-    let mut traversed = AHashSet::new();
-    let mut res = AHashMap::new();
+    let mut traversed = HashSet::new();
+    let mut res = HashMap::new();
 
-    let mut nodes = AHashMap::new();
+    let mut nodes = HashMap::new();
 
     for (&start, &curr) in search_points.iter() {
         if start == board.finish || res.contains_key(&start) {
             continue;
         }
 
-        let mut dists = AHashMap::new();
+        let mut dists = HashMap::new();
         pq.push(Reverse(ProgR {
             total_dist: 0,
             pos:        start,
@@ -203,7 +203,7 @@ fn get_reachable(board: &Board, search_points: &AHashMap<Pos, Portal>) -> AHashM
 
         if dists.len() == 1 {
             let (pos, d) = dists.iter().next().unwrap(); // Symmetrical.
-            res.insert(*pos, ahashmap![start => *d]);
+            res.insert(*pos, hashmap![start => *d]);
         } // else {
           //     let mut distsadd = dists.clone();
           //     distsadd.insert(start, 0);
@@ -212,13 +212,13 @@ fn get_reachable(board: &Board, search_points: &AHashMap<Pos, Portal>) -> AHashM
           //             continue;
           //         }
           //         if fi == start {
-          //             let m = res.entry(st).or_insert_with(AHashMap::new);
+          //             let m = res.entry(st).or_insert_with(HashMap::new);
           //             m.insert(fi, oridist);
           //             continue;
           //         }
 
         //         let t = dijkstra(&st, |p| nodes.get(p).unwrap().to_owned(), |&p| p == fi);
-        //         let m = res.entry(st).or_insert_with(AHashMap::new);
+        //         let m = res.entry(st).or_insert_with(HashMap::new);
         //         m.insert(fi, t.unwrap().1);
         //         // printt(&t.unwrap().1);
         //     }
@@ -239,12 +239,10 @@ struct Prog {
 
 type Parsed = AsciiString;
 pub fn parse(raw: &str) -> Vec<Parsed> {
-    raw.split('\n')
-        .map(|x| x.as_ascii_str().unwrap().to_owned())
-        .collect()
+    raw.split('\n').map(|x| x.as_ascii_str().unwrap().to_owned()).collect()
 }
 
-type Reachable = AHashMap<Pos, AHashMap<Pos, u32>>;
+type Reachable = HashMap<Pos, HashMap<Pos, u32>>;
 // Dijkstra
 pub fn part1a(parsed: &[Parsed]) -> Option<u32> {
     fn successors(board: &Board, reach: &Reachable, pos: Pos) -> Vec<(Pos, u32)> {
@@ -268,11 +266,7 @@ pub fn part1a(parsed: &[Parsed]) -> Option<u32> {
 }
 
 pub fn part2(parsed: &[Parsed]) -> Option<u32> {
-    fn successors(
-        board: &Board,
-        reach: &Reachable,
-        (pos, level): (Pos, i32),
-    ) -> Vec<((Pos, i32), u32)> {
+    fn successors(board: &Board, reach: &Reachable, (pos, level): (Pos, i32)) -> Vec<((Pos, i32), u32)> {
         let mut out = Vec::new();
         for (&pos_new, &new_dist) in reach.get(&pos).unwrap() {
             let (pos_new2, level_new);
@@ -326,11 +320,7 @@ pub fn bench(raw: &[AsciiString]) -> (u32, u32) {
     );
     let part1 = res.expect("No path").1;
 
-    fn successors2(
-        board: &Board,
-        reach: &Reachable,
-        (pos, level): (Pos, i32),
-    ) -> Vec<((Pos, i32), u32)> {
+    fn successors2(board: &Board, reach: &Reachable, (pos, level): (Pos, i32)) -> Vec<((Pos, i32), u32)> {
         let mut out = Vec::new();
         for (&pos_new, &new_dist) in reach.get(&pos).unwrap() {
             let (pos_new2, level_new);

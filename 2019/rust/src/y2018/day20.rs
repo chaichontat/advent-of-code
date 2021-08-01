@@ -1,4 +1,4 @@
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
 type Parsed = u8;
 
@@ -15,7 +15,7 @@ pub fn parse(raw: &str) -> Vec<u8> {
 
 pub fn combi(parsed: &[Parsed]) -> Option<(u32, u32)> {
     let mut stack = Vec::<State>::with_capacity(500);
-    let mut seen = AHashMap::with_capacity(10000);
+    let mut seen = HashMap::with_capacity(10000);
     let mut curr = State::default();
 
     let mut part1 = 0;

@@ -1,6 +1,6 @@
 use std::collections::BinaryHeap;
 
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use itertools::Itertools;
 use num::rational::Ratio;
 use num_complex::Complex;
@@ -21,17 +21,17 @@ pub fn parse(raw: &str) -> Vec<Parsed> {
         .collect_vec()
 }
 
-fn gen_set(parsed: &[Parsed]) -> AHashSet<Pos> {
-    let mut out = AHashSet::new();
+fn gen_set(parsed: &[Parsed]) -> HashSet<Pos> {
+    let mut out = HashSet::new();
     for z in parsed {
         out.insert(*z);
     }
     out
 }
 
-fn count(asteroids: &AHashSet<Pos>, ast: Pos) -> usize {
-    let mut fracs_p = AHashSet::new();
-    let mut fracs_n = AHashSet::new(); // Since division mods out negative.
+fn count(asteroids: &HashSet<Pos>, ast: Pos) -> usize {
+    let mut fracs_p = HashSet::new();
+    let mut fracs_n = HashSet::new(); // Since division mods out negative.
     let (mut top, mut bottom) = (0, 0); // Top and bottom. ∞ slope.
     for &nbh in asteroids.iter() {
         if ast == nbh {
@@ -57,7 +57,7 @@ fn count(asteroids: &AHashSet<Pos>, ast: Pos) -> usize {
 }
 
 type Neighbors = Vec<(Ratio<i32>, i32, (i32, i32))>;
-fn list_nbr(asteroids: &AHashSet<Pos>, ast: Pos) -> (Neighbors, Neighbors) {
+fn list_nbr(asteroids: &HashSet<Pos>, ast: Pos) -> (Neighbors, Neighbors) {
     let mut fracs_p = BinaryHeap::new();
     let mut fracs_n = BinaryHeap::new(); // Since division mods out negative.
     for &nbh in asteroids.iter() {

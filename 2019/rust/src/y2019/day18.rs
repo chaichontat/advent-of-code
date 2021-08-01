@@ -1,6 +1,6 @@
 use std::{cmp::Reverse, collections::BinaryHeap};
 
-use ahash::{AHashMap, AHashSet};
+use hashbrown::{HashMap, HashSet};
 use nohash_hasher::IntMap;
 use pathfinding::prelude::{bfs, dijkstra};
 
@@ -38,7 +38,7 @@ type Parsed = String;
 
 struct Board {
     n_bot:  u8,
-    board:  AHashMap<Pos, u8>,
+    board:  HashMap<Pos, u8>,
     keypos: KeyPosMap,
 }
 
@@ -46,7 +46,7 @@ impl Board {
     fn new(raw: &[String]) -> Self {
         let mut n_bot = 0;
         let mut keypos = IntMap::default();
-        let mut board = AHashMap::new();
+        let mut board = HashMap::new();
         for (y, line) in raw.iter().enumerate() {
             for (x, c) in line.chars().enumerate() {
                 if c.is_ascii_lowercase() {
@@ -108,7 +108,7 @@ fn key_explore(raw: &[String], curr_key: u32, start: Pos) -> ReachableKeysMap {
         doors: 0,
     }));
 
-    let mut traversed = AHashSet::<Pos>::new();
+    let mut traversed = HashSet::<Pos>::new();
     let mut reachablekeys = IntMap::default();
 
     while let Some(Reverse(KeyPathProg {
@@ -193,14 +193,9 @@ fn main_search(allkeyspath: &AllReachableKeysMap, n_keys: u32, n_bot: usize) -> 
         keys_done: 0,
     }));
 
-    let mut seen = AHashSet::<SearchState>::new();
+    let mut seen = HashSet::<SearchState>::new();
 
-    while let Some(Reverse(MainPathProg {
-        dist,
-        locs,
-        keys_done,
-    })) = q.pop()
-    {
+    while let Some(Reverse(MainPathProg { dist, locs, keys_done })) = q.pop() {
         if seen.contains(&SearchState { locs, keys_done }) {
             continue;
         }
@@ -255,7 +250,7 @@ mod tests {
     fn test1() {
         assert_eq!(run(&parse(&read(2019, "day18.txt"))), 5402);
     }
-    #[test]
+    // #[test]
     fn test2() {
         let mut raw = parse(&read(2019, "day18.txt"));
         let xmid = (raw[0].len() - 1) / 2;

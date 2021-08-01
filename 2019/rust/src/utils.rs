@@ -3,9 +3,9 @@ use std::fmt::Debug;
 use std::fs;
 use std::hash::Hash;
 
-use ahash::{AHashMap, AHashSet};
 use ascii::{AsciiStr, AsciiString};
 use colored::*;
+use hashbrown::{HashMap, HashSet};
 use itertools::Itertools;
 use regex::Regex;
 
@@ -31,18 +31,18 @@ pub fn read_ascii(path: &str) -> Vec<AsciiString> {
 }
 
 #[macro_export]
-macro_rules! ahashmap {
+macro_rules! hashmap {
     ($( $key: expr => $val: expr ),*) => {{
-         let mut map = AHashMap::new();
+         let mut map = HashMap::new();
          $( map.insert($key, $val); )*
          map
     }}
 }
 
 #[macro_export]
-macro_rules! ahashset {
+macro_rules! hashset {
     ($( $key: expr ),*) => {{
-         let mut set = AHashSet::new();
+         let mut set = HashSet::new();
          $( set.insert($key); )*
          set
     }}
@@ -98,8 +98,8 @@ pub trait Set {
     fn keys_to(&self) -> Self::Item;
 }
 
-impl<T: Clone + Eq + Hash, R> Set for AHashMap<T, R> {
-    type Item = AHashSet<T>;
+impl<T: Clone + Eq + Hash, R> Set for HashMap<T, R> {
+    type Item = HashSet<T>;
 
     fn keys_to(&self) -> Self::Item {
         self.keys().cloned().collect::<Self::Item>()

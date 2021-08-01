@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use itertools::{izip, Itertools};
 use num_enum::TryFromPrimitive;
 use safe_arch::*;
@@ -190,8 +190,8 @@ pub fn combi(mapal: &MapAlign) -> Option<(u32, u32)> {
     let mut mapal = mapal.clone();
 
     let mut count = 1u32;
-    let mut seen = AHashMap::with_capacity(1000);
-    let mut value = AHashMap::with_capacity(1000);
+    let mut seen = HashMap::with_capacity(1000);
+    let mut value = HashMap::with_capacity(1000);
 
     loop {
         unsafe { step_unchecked(&mut mapal.0) };

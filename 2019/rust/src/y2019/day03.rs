@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use ahash::{AHashMap, AHashSet};
+use hashbrown::{HashMap, HashSet};
 use num_complex::Complex;
 
 use crate::spatial::Dir;
@@ -18,9 +18,9 @@ pub fn parse(raw: &str) -> Vec<Parsed> {
         .collect()
 }
 
-fn gen_set(dirs: &[(char, i32)]) -> AHashSet<Complex<i32>> {
+fn gen_set(dirs: &[(char, i32)]) -> HashSet<Complex<i32>> {
     let mut curr = Complex::new(0, 0);
-    let mut out = AHashSet::new();
+    let mut out = HashSet::new();
     for (dir, mag) in dirs.iter() {
         let d = Complex::from(Dir::from_str(&String::from(*dir)).unwrap());
         for i in 0..=*mag {
@@ -32,10 +32,10 @@ fn gen_set(dirs: &[(char, i32)]) -> AHashSet<Complex<i32>> {
     out
 }
 
-fn gen_dist(dirs: &[(char, i32)]) -> AHashMap<Complex<i32>, i32> {
+fn gen_dist(dirs: &[(char, i32)]) -> HashMap<Complex<i32>, i32> {
     // HashMap is significantly slower.
     let mut curr = (Complex::new(0, 0), 0); // Location and total distance.
-    let mut out = AHashMap::new();
+    let mut out = HashMap::new();
     for (dir, mag) in dirs.iter() {
         let d = Complex::from(Dir::from_str(&String::from(*dir)).unwrap());
         for i in 0..=*mag {
@@ -60,7 +60,7 @@ pub fn part1(parsed: &[Parsed]) -> u16 {
 pub fn part2(parsed: &[Parsed]) -> u16 {
     let parsed = parsed.to_owned();
     let maps = vec![gen_dist(&parsed[0]), gen_dist(&parsed[1])];
-    let sets = vec![AHashMap::keys_to(&maps[0]), AHashMap::keys_to(&maps[1])];
+    let sets = vec![HashMap::keys_to(&maps[0]), HashMap::keys_to(&maps[1])];
     let intersect = sets[0].intersection(&sets[1]).collect::<Vec<_>>();
     intersect
         .iter()

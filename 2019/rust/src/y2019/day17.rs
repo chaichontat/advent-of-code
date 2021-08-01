@@ -2,14 +2,14 @@ use std::cmp::Ordering;
 use std::cmp::Reverse;
 use std::collections::VecDeque;
 
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use itertools::Itertools;
 use num_complex::Complex;
 
 use super::intcode::*;
 use crate::spatial::{Coord, Dir, Turn};
 
-type Board = AHashSet<Coord>;
+type Board = HashSet<Coord>;
 
 #[derive(Clone, Copy)]
 struct Pos {
@@ -27,7 +27,7 @@ impl Pos {
 }
 
 fn get_data(ic: &mut IntCode) -> (Board, Pos) {
-    let mut board = AHashSet::new();
+    let mut board = HashSet::new();
     let mut curr = Complex::new(0, 0);
 
     let mut dir: Option<Dir> = None;
@@ -144,9 +144,7 @@ fn subs_test(full: &str, cand: &[&String]) -> Option<String> {
     let res = cand
         .iter()
         .enumerate()
-        .fold(full.to_string(), |pass, (i, &this)| {
-            pass.replace(this, keys[i])
-        }); // Replace repeatedly.
+        .fold(full.to_string(), |pass, (i, &this)| pass.replace(this, keys[i])); // Replace repeatedly.
 
     if res.chars().all(|x| x != 'L' && x != 'R') {
         Some(res)
@@ -175,12 +173,7 @@ fn compress(cmds: &[String]) -> Option<VecDeque<isize>> {
                     res.next_back(); // Remove last comma.
 
                     let mut res = vec![res.collect::<String>()];
-                    res.append(
-                        &mut bundle
-                            .iter()
-                            .map(|&y| (&y[..y.len() - 1]).to_owned())
-                            .collect_vec(),
-                    );
+                    res.append(&mut bundle.iter().map(|&y| (&y[..y.len() - 1]).to_owned()).collect_vec());
 
                     let fin = res.join("\n");
                     let c = fin.chars();

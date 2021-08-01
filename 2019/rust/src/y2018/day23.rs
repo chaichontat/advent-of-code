@@ -1,6 +1,6 @@
 use std::collections::BinaryHeap;
 
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use itertools::Itertools;
 use ndarray::prelude::*;
 use ndarray::Array2;
@@ -16,9 +16,7 @@ type Parsed = i32;
 
 pub fn parse(raw: &str) -> Vec<Parsed> {
     let re = Regex::new(r"-?\d+").unwrap();
-    re.find_iter(raw)
-        .map(|x| x.as_str().parse().unwrap())
-        .collect()
+    re.find_iter(raw).map(|x| x.as_str().parse().unwrap()).collect()
 }
 
 pub fn part1(parsed: &[Parsed]) -> usize {
@@ -106,7 +104,7 @@ pub fn part2(parsed: &[i32]) -> usize {
     //     printt(&t);
     // }
     let mut curr_bound = BinaryHeap::new();
-    let mut already = AHashSet::new();
+    let mut already = HashSet::new();
     for b in &rt {
         let now = rt
             .locate_in_envelope_intersecting(&b.envelope())

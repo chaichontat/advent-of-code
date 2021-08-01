@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use itertools::Itertools;
 
 type Parsed = (usize, String);
@@ -33,7 +33,7 @@ pub fn parse(raw: &str) -> Vec<Vec<Parsed>> {
 }
 
 type Name = String;
-type Db = AHashMap<Name, Recipe>;
+type Db = HashMap<Name, Recipe>;
 
 #[derive(Debug, Clone)]
 struct NName {
@@ -49,7 +49,7 @@ struct Recipe {
 }
 
 fn gen_db(parsed: &[Vec<Parsed>]) -> Db {
-    let mut db = AHashMap::with_capacity(100);
+    let mut db = HashMap::with_capacity(100);
     for line in parsed.iter() {
         let mut ins = line
             .iter()
@@ -60,11 +60,7 @@ fn gen_db(parsed: &[Vec<Parsed>]) -> Db {
             .collect_vec();
         let out = ins.pop().unwrap();
 
-        db.insert(out.name.to_owned(), Recipe {
-            ins,
-            out,
-            dfsed: false,
-        });
+        db.insert(out.name.to_owned(), Recipe { ins, out, dfsed: false });
     }
     db
 }
@@ -105,7 +101,7 @@ struct Cost {
 
 impl Cost {
     fn cost(&self, fuel: usize) -> OreFuel {
-        let mut need = AHashMap::new();
+        let mut need = HashMap::new();
         need.insert(&self.sorted[0], fuel);
         for chem in self.sorted.iter() {
             if chem == &self.goal {

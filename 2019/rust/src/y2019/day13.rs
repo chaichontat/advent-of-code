@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use num_complex::Complex;
 
 use super::intcode::*;
@@ -21,7 +21,7 @@ enum Tile {
 }
 
 struct Game {
-    blocks: AHashSet<Complex<isize>>,
+    blocks: HashSet<Complex<isize>>,
     pad:    Complex<isize>,
     ball:   Complex<isize>,
     score:  isize,
@@ -30,7 +30,7 @@ struct Game {
 fn init(parsed: &[Parsed]) -> (IntCode, Game) {
     let ic = IntCode::from(parsed);
     let game = Game {
-        blocks: AHashSet::with_capacity(200),
+        blocks: HashSet::with_capacity(200),
         pad:    Complex::new(0, 0),
         ball:   Complex::new(0, 0),
         score:  0,
@@ -41,18 +41,11 @@ fn init(parsed: &[Parsed]) -> (IntCode, Game) {
 fn parse_game(ic: &mut IntCode, game: &mut Game) {
     ic.run_wait_input();
     while !ic.output.is_empty() {
-        let pos = Complex::new(
-            ic.output.pop_front().unwrap(),
-            ic.output.pop_front().unwrap(),
-        );
+        let pos = Complex::new(ic.output.pop_front().unwrap(), ic.output.pop_front().unwrap());
         if pos == Complex::new(-1, 0) {
             game.score = ic.output.pop_front().unwrap();
         } else {
-            let tile = ic
-                .output
-                .pop_front()
-                .and_then(num::FromPrimitive::from_isize)
-                .unwrap();
+            let tile = ic.output.pop_front().and_then(num::FromPrimitive::from_isize).unwrap();
             match tile {
                 Tile::Block => {
                     game.blocks.insert(pos);

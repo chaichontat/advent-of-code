@@ -21,7 +21,7 @@ pub fn combi(parsed: &[Parsed]) -> Option<(u32, u32)> {
 
     // Assuming that the answer is not in the first iteration.
     // Otherwise,
-    // let mut unique = AHashSet::new();
+    // let mut unique = HashSet::new();
     // if freq.iter().any(|x| !unique.insert(*x)) {
     //     panic!("Answer in first iteration.");
     // }
