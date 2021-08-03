@@ -125,6 +125,8 @@ fn bench_2018(c: &mut Criterion) {
     c.bench_function("day02a", |b| b.iter(|| day02::part1(black_box(day02))));
     c.bench_function("day02b", |b| b.iter(|| day02::part2_simd(black_box(day02))));
 
+    let day07 = &day07::parse(&read("day07.txt"));
+    c.bench_function("2018_day07", |b| b.iter(|| day07::combi(black_box(day07))));
     let day11 = &day11::parse(&read("day11.txt"));
     c.bench_function("day11c", |b| b.iter(|| day11::combi(black_box(day11))));
 
@@ -139,6 +141,8 @@ fn bench_2018(c: &mut Criterion) {
         });
     }
 
+    let day17 = &day17::parse(&read("day17.txt"));
+    c.bench_function("2018_day17", |b| b.iter(|| day17::combi(black_box(day17))));
     let day18 = &day18::parse(&read("day18.txt"));
     c.bench_function("2018_day18", |b| b.iter(|| day18::combi(black_box(day18))));
 
