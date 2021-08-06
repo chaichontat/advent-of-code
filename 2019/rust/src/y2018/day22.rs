@@ -48,7 +48,7 @@ pub fn parse(raw: &str) -> Parsed {
         .unwrap()
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Coord {
     x: u8,
     y: u16,
@@ -108,15 +108,15 @@ impl Cave {
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 struct CoordTool {
     x:    u8,
+    tool: u8,
     y:    u16,
     dist: u16,
-    tool: u8,
 }
 
 impl CoordTool {
+    #[inline(always)]
     fn successors(self, cave: &Cave, used_tools: &mut Array2<u8>) -> [Option<(Self, usize)>; 4] {
         let mut succ = [None; 4];
-        let mut succ_it = succ.iter_mut();
 
         let p = used_tools.get_mut([self.y as usize, self.x as usize]).unwrap();
         if *p & self.tool != 0 {
@@ -127,12 +127,12 @@ impl CoordTool {
         let valid_tool = 7 ^ cave.map[[self.y as usize, self.x as usize]];
 
         #[rustfmt::skip]
-        for next in [
+        for (new_coord, next) in succ.iter_mut().zip([
             (self.y + 1            , self.x                , self.y >= cave.target.y),
             (self.y.wrapping_sub(1), self.x                , self.y <= cave.target.y),
             (self.y                , self.x + 1            , self.x >= cave.target.x),
             (self.y                , self.x.wrapping_sub(1), self.x <= cave.target.x),
-        ] {
+        ]) {
             if next.0 > cave.target.y + Y_MARGIN - 1 || next.1 > cave.target.x + X_MARGIN - 1{
                 continue;
             }
@@ -154,7 +154,7 @@ impl CoordTool {
                 new_dist = 1;
             }
 
-            *succ_it.next().unwrap() = Some((
+            *new_coord = Some((
                 CoordTool {
                     x:    next.1,
                     y:    next.0,
@@ -168,7 +168,7 @@ impl CoordTool {
     }
 }
 
-pub fn combi(input: &Parsed) -> (u16, usize) {
+pub fn combi(input: &Parsed) -> Option<(u32, u32)> {
     let depth = input.0 as u32;
     let target = Coord { x: input.1 as u8, y: input.2 as u16 };
     let cave = Cave::new(depth, target);
@@ -188,12 +188,11 @@ pub fn combi(input: &Parsed) -> (u16, usize) {
             tool: Tool::Torch as u8,
         },
         |&c| c.successors(&cave, &mut used_tools),
-        |&c| c.x == target.x && c.y == target.y && c.tool == Tool::Torch as u8,
+        |&c| c.x == target.x && c.y == target.y,
         17,
     )
     .unwrap();
-
-    (part1, part2.dist.into())
+    Some((part1.into(), part2.dist.into()))
 }
 
 mod tests {
@@ -202,6 +201,6 @@ mod tests {
 
     #[test]
     fn test_combi() {
-        assert_eq!(combi(&parse(&read(2018, "day22.txt"))), (7380, 1013));
+        assert_eq!(combi(&parse(&read(2018, "day22.txt"))), Some((7380, 1013)));
     }
 }

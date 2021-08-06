@@ -31,6 +31,7 @@ impl<T: Eq + Clone, D: PrimInt> PartialEq for DistWrap<T, D> {
 
 impl<T: Eq + Clone, D: PrimInt> Eq for DistWrap<T, D> {}
 
+#[inline(always)]
 pub fn bfs_bucket<T, D, FS, FT, const N: usize>(
     start: T,
     mut successors: FS,
