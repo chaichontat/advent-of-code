@@ -1,11 +1,8 @@
-use std::mem;
-
 use itertools::Itertools;
 use ndarray::prelude::*;
-use pathfinding::prelude::{absdiff, astar};
 use regex::Regex;
 
-use crate::utils::ModAdd;
+use crate::{pathfinding::bfs_bucket, utils::ModAdd};
 
 const GEO_X: u32 = 16807;
 const GEO_Y: u32 = 48271;
@@ -42,6 +39,7 @@ struct Cave {
     depth:  u32,
     target: Coord,
     map:    Array2<u8>,
+    passed: Array2<u8>
 }
 
 impl Cave {
@@ -53,7 +51,7 @@ impl Cave {
 
         // Calculate erosion and type when y=0.
         prev_geo.iter_mut().zip(typ.iter_mut()).fold(depth, |ers, (geo, typ)| {
-            *typ = (ers % 3) as ArrT;
+            *typ = 1 << (ers % 3) as ArrT;
             let next_ers = ers.mod_add(GEO_X, ERO_MOD);
             *geo = next_ers;
             next_ers
@@ -69,10 +67,10 @@ impl Cave {
                 let mut carry = x0;
 
                 for (x, (xx, geo)) in yy.iter_mut().zip(prev_geo.iter_mut()).enumerate() {
-                    *xx = (carry % 3) as ArrT;
+                    *xx = 1 << (carry % 3) as ArrT;
                     if y == target.y as usize && x == target.x as usize {
                         carry = 0; // At target.
-                        *xx = (depth % 3) as ArrT;
+                        *xx = 1 << (depth % 3) as ArrT;
                     }
                     carry = (*geo * carry + depth) % ERO_MOD;
                     *geo = carry;
@@ -84,49 +82,19 @@ impl Cave {
         Cave {
             depth,
             target,
+            passed: Array2::<ArrT>::zeros((ymax, X_DIM)),
             map: typ,
         }
     }
 }
 
-pub fn combi(input: &Parsed) -> (u16, usize) {
-    let depth = input.0 as u32;
-    let target = Coord {
-        x: input.1 as u8,
-        y: input.2 as u16,
-    }; //Coord { x: 10, y:10}; //
-    let cave = Cave::new(depth, target);
-
-    let part1 = cave
-        .map
-        .slice(s![..target.y as usize + 1, ..target.x as usize + 1])
-        .map(|x| *x as u16)
-        .sum();
-
-    // let curr_tool = Some(Tools::Climb);
-    let part2 = astar(
-        &CoordTool::default(),
-        |c: &CoordTool| c.successors(&cave),
-        |c| absdiff(c.x as usize, target.x as usize) + absdiff(c.y as usize, target.y as usize),
-        |&c| {
-            c == CoordTool {
-                x:    target.x,
-                y:    target.y,
-                curr: Tool::Torch,
-            }
-        },
-    )
-    .unwrap();
-
-    (part1, part2.1)
-}
-
 #[allow(dead_code)]
+#[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Tool {
-    Neither = 0,
-    Torch   = 1,
-    Climb   = 2,
+    Neither = 0b001,
+    Torch   = 0b010,
+    Climb   = 0b100,
 }
 
 impl Default for Tool {
@@ -139,39 +107,84 @@ impl Default for Tool {
 struct CoordTool {
     x:    u8,
     y:    u16,
-    curr: Tool,
+    dist: u16,
+    curr: u8,
 }
 
 impl CoordTool {
     #[rustfmt::skip]
-    fn successors(&self, cave: &Cave) -> Vec<(Self, usize)> {
-        let mut out = Vec::new();
+    fn successors(self, cave: &mut Cave) -> [Option<(Self, usize)>; 4] {
+        let mut out = [None; 4];
+        let mut it = out.iter_mut();
 
+        let passed = cave.passed.get_mut([self.y as usize, self.x as usize]).unwrap();
+        if *passed & self.curr != 0  { return out; }
+        *passed |= self.curr;
 
-        // Case 1: Switch tool
-        for i in 0..3 {
-            if i != self.curr as u8 && i != cave.map[[self.y as usize, self.x as usize]] {
-                let mut new = *self;
-                new.curr = unsafe { mem::transmute(i) };
-                out.push((new, 7));
-            }
-        }
+        let valid_tool = 7 ^ cave.map[[self.y as usize, self.x as usize]];
 
-        // Case 2: Step
         for next in [
-            (self.y + 1            , self.x    ),
-            (self.y.wrapping_sub(1), self.x    ),
-            (self.y                , self.x + 1),
-            (self.y                , self.x.wrapping_sub(1))
+            (self.y + 1            , self.x                , self.y >= cave.target.y),
+            (self.y.wrapping_sub(1), self.x                , self.y <= cave.target.y),
+            (self.y                , self.x + 1            , self.x >= cave.target.x),
+            (self.y                , self.x.wrapping_sub(1), self.x <= cave.target.x)
         ] {
-            if next.0 > cave.target.y + Y_MAX_MARG - 1   { continue; }
-            if next.1 > X_MAX -1                         { continue; }
-            if cave.map[[next.0 as usize, next.1 as usize]] == self.curr as u8 { continue; } 
-            out.push((CoordTool{x: next.1, y: next.0, curr: self.curr}, 1))
+            if next.0 > cave.target.y + Y_MAX_MARG - 1 { continue; }
+            if next.1 > X_MAX -1                       { continue; }
+
+            let new_tool;
+            let new_dist;
+            let heuristic;
+
+            if cave.map[[next.0 as usize, next.1 as usize]] == self.curr as u8 {
+                let mut h = 2 * next.2 as u8;
+                new_tool = self.curr ^ valid_tool;
+                new_dist = 7 + 1;
+                if self.curr == Tool::Torch as u8  { h += 7 };
+                if new_tool  != Tool::Torch as u8  { h += 7 };
+                heuristic = h;
+            } else {
+                heuristic = 2 * next.2 as u8;
+                new_tool = self.curr;
+                new_dist = 1;
+            }
+
+            *it.next().unwrap() = Some((
+                CoordTool{x: next.1, y: next.0, dist: self.dist + new_dist, curr: new_tool}, 
+                heuristic as usize
+            ))
         }
         out
     }
 }
+
+
+pub fn combi(input: &Parsed) -> (u16, usize) {
+    let depth = input.0 as u32;
+    let target = Coord {
+        x: input.1 as u8,
+        y: input.2 as u16,
+    };
+    let mut cave = Cave::new(depth, target);
+
+    let part1 = cave
+        .map
+        .slice(s![..target.y as usize + 1, ..target.x as usize + 1])
+        .map(|x| (*x >> 1) as u16)
+        .sum();
+
+    let part2 = bfs_bucket(
+        CoordTool{x: 0, y:0, dist:0, curr: Tool::Torch as u8},
+        |&c | c.successors(&mut cave),
+        |&c| {
+            c.x == target.x && c.y == target.y && c.curr == Tool::Torch as u8
+        },
+        17
+    ).unwrap();
+
+    (part1, part2.dist.into())
+}
+
 
 mod tests {
     use super::{combi, parse};
