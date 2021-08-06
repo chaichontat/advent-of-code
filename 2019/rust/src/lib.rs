@@ -1,13 +1,11 @@
 #![feature(is_sorted)]
+#![allow(non_snake_case)]
+#![feature(stmt_expr_attributes)]
 
 #[macro_use]
 extern crate num_derive;
 
-extern crate jemallocator;
-
-#[global_allocator]
-static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
-
+pub mod pathfinding;
 pub mod spatial;
 pub mod utils;
 
