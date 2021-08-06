@@ -1,10 +1,11 @@
 #![feature(is_sorted)]
-#![allow(non_snake_case)]
 #![feature(stmt_expr_attributes)]
+#![allow(non_snake_case)]
 
 #[macro_use]
 extern crate num_derive;
 
+pub mod containers;
 pub mod pathfinding;
 pub mod spatial;
 pub mod utils;
