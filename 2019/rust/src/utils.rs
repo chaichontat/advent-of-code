@@ -7,6 +7,7 @@ use ascii::{AsciiStr, AsciiString};
 use colored::*;
 use hashbrown::{HashMap, HashSet};
 use itertools::Itertools;
+use num::PrimInt;
 use regex::Regex;
 
 pub type Ans = Option<(usize, usize)>;
@@ -105,3 +106,29 @@ impl<T: Clone + Eq + Hash, R> Set for HashMap<T, R> {
         self.keys().cloned().collect::<Self::Item>()
     }
 }
+
+pub trait ModAdd {
+    fn mod_add(self, x: Self, m: Self) -> Self;
+    fn mod_down(self, m: Self) -> Self;
+}
+
+macro_rules! impl_mod_add {
+    ( $( $t:ident)* ) => {
+        $(
+            impl ModAdd for $t {
+                fn mod_add(self, x: Self, m: Self) -> Self {
+                    (self + x).mod_down(m)
+                }
+
+                fn mod_down(self, m: Self) -> Self {
+                    if self >= m {
+                        return self - m;
+                    }
+                    return self;
+                }
+            }
+        )*
+    }
+}
+
+impl_mod_add!(u8 u16 u32 u64 usize);
