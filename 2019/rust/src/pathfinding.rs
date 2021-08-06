@@ -1,6 +1,6 @@
-use std::cmp::Reverse;
+use std::cmp::{Ordering, Reverse};
+use std::collections::BinaryHeap;
 use std::hash::Hash;
-use std::{cmp::Ordering, collections::BinaryHeap};
 
 use hashbrown::{HashMap, HashSet};
 use num::PrimInt;
@@ -38,7 +38,7 @@ pub fn bfs_bucket<T, D, FS, FT, const N: usize>(
     buc_size: usize,
 ) -> Option<T>
 where
-    T: Eq + Copy + Hash + Default,
+    T: Eq + Copy + Default,
     D: PrimInt + Into<usize>,
     FS: FnMut(&T) -> [Option<(T, D)>; N],
     FT: FnMut(&T) -> bool,
@@ -103,11 +103,7 @@ where
         t: DistWrap { d: D::zero(), t: start },
     }));
 
-    while let Some(Reverse(DistWrap {
-        d: _,
-        t: DistWrap { d, t },
-    })) = q.pop()
-    {
+    while let Some(Reverse(DistWrap { d: _, t: DistWrap { d, t } })) = q.pop() {
         if !visited.insert(t) {
             continue;
         }
