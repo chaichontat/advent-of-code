@@ -1,7 +1,7 @@
 use itertools::Itertools;
-use ndarray::prelude::*;
 use regex::Regex;
 
+use crate::containers::Vec2D;
 use crate::pathfinding::bfs_bucket;
 use crate::utils::ModAdd;
 
@@ -58,7 +58,7 @@ struct Coord {
 struct Cave {
     depth:  u32,
     target: Coord,
-    map:    Array2<u8>,
+    map:    Vec2D<u8>,
 }
 
 impl Cave {
@@ -66,13 +66,13 @@ impl Cave {
         let xmax = X_MARGIN as usize + target.x as usize;
         let ymax = Y_MARGIN as usize + target.y as usize;
 
-        let mut typ = Array2::<ArrT>::zeros((ymax, xmax));
+        let mut typ = Vec2D::<u8>::new([ymax, xmax]);
         let mut prev_geo = vec![0u32; xmax];
 
         // Calculate erosion and type when y=0.
         prev_geo
             .iter_mut()
-            .zip(typ.iter_mut())
+            .zip(typ[0].iter_mut())
             .fold(depth, |ers, (geo, typ)| {
                 *typ = 1 << (ers % 3) as ArrT;
                 let next_ers = ers.mod_add(GEO_X, ERO_MOD);
@@ -83,7 +83,8 @@ impl Cave {
         // At x=0    => f(y)    = (GEO_YMx + depth) % ERO_MOD
         // Otherwise => f(x, y) = (f(x-1, y) * f(x, y-1) + depth) % ERO_MOD
         // Then all mod 3.
-        typ.outer_iter_mut()
+        (&mut typ)
+            .into_iter()
             .enumerate()
             .skip(1) // Row-by-row. Multiplication by repeated addition.
             .fold(depth + GEO_YM, |x0, (y, mut yy)| {
@@ -115,10 +116,10 @@ struct CoordTool {
 
 impl CoordTool {
     #[inline(always)]
-    fn successors(self, cave: &Cave, used_tools: &mut Array2<u8>) -> [Option<(Self, usize)>; 4] {
+    fn successors(self, cave: &Cave, used_tools: &mut Vec2D<u8>) -> [Option<(Self, usize)>; 4] {
         let mut succ = [None; 4];
 
-        let p = used_tools.get_mut([self.y as usize, self.x as usize]).unwrap();
+        let p = used_tools[self.y as usize].get_mut(self.x as usize).unwrap();
         if *p & self.tool != 0 {
             return succ;
         }
@@ -173,13 +174,14 @@ pub fn combi(input: &Parsed) -> Option<(u32, u32)> {
     let target = Coord { x: input.1 as u8, y: input.2 as u16 };
     let cave = Cave::new(depth, target);
 
-    let part1 = cave
+    let part1: u16 = cave
         .map
-        .slice(s![..target.y as usize + 1, ..target.x as usize + 1])
-        .map(|x| (*x >> 1) as u16)
+        .into_iter()
+        .take(target.y as usize + 1)
+        .flat_map(|x| x[..target.x as usize + 1].iter().map(|x| (*x >> 1) as u16))
         .sum();
 
-    let mut used_tools = Array2::<u8>::zeros(cave.map.dim());
+    let mut used_tools = Vec2D::<u8>::new([cave.map.dim().0, cave.map.dim().1]);
     let part2 = bfs_bucket(
         CoordTool {
             x:    0,
@@ -195,6 +197,7 @@ pub fn combi(input: &Parsed) -> Option<(u32, u32)> {
     Some((part1.into(), part2.dist.into()))
 }
 
+#[cfg(test)]
 mod tests {
     use super::{combi, parse};
     use crate::utils::read;
