@@ -19,19 +19,19 @@ fn main() {
                 use advent_of_code::[<y $year>]::*;
 
                 #[allow(clippy::zero_prefixed_literal)]
-                let res = match day {
-                    $(
-                        $n => [<day$n>]::combi(&[<day$n>]::parse(&read($year, concat!(stringify!([<day$n>]), ".txt")))).unwrap(),
-                    )+
-                    _ => panic!(concat!("Invalid day for ", stringify!($year), ".")),
-                };
-                println!("{:?}", res);
-            }
-        };
+                $(
+                    if day == $n {
+                        println!("{:?}", [<day$n>]::combi(&[<day$n>]::parse(&read($year, concat!(stringify!([<day$n>]), ".txt")))));
+                        return;
+                    }
+                )+
+                panic!(concat!("Invalid day for ", stringify!($year), "."));
+            };
+        }
     }
 
     if year == 2018 {
-        gen_match! {2018; 01 18};
+        gen_match! {2018; 01 18 22};
     } else if year == 2019 {
     } else {
         panic!("Invalid year");
