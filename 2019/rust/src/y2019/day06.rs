@@ -70,9 +70,7 @@ pub fn part1(parsed: &[Parsed]) -> u32 {
 pub fn part2(parsed: &[Parsed]) -> u32 {
     let mut map = parse_map(parsed);
     let keys = map.keys().copied().collect_vec();
-    keys.iter()
-        .map(|&idx| depth(&mut map, idx).unwrap())
-        .sum::<u32>();
+    keys.iter().map(|&idx| depth(&mut map, idx).unwrap()).sum::<u32>();
 
     // Find depth of shared parent.
     // Mark all traversed nodes.

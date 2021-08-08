@@ -56,10 +56,7 @@ pub fn part2(parsed: &[Parsed]) -> usize {
     let mut delivered = IntSet::default();
     loop {
         run_ic(&mut ics, &mut nat);
-        if ics
-            .iter()
-            .all(|ic| ic.output.is_empty() && ic.input.is_empty())
-        {
+        if ics.iter().all(|ic| ic.output.is_empty() && ic.input.is_empty()) {
             ics[0].push(nat.0);
             ics[0].push(nat.1);
             if !delivered.insert(nat.1) {

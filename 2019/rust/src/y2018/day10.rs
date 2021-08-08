@@ -108,6 +108,7 @@ pub fn combi(parsed: &[Parsed]) -> Option<(String, u32)> {
 // Too painful.
 // }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::utils::*;

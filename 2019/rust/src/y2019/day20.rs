@@ -1,4 +1,5 @@
-use std::{cmp::Reverse, collections::BinaryHeap};
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
 
 use ascii::{AsAsciiStr, AsciiChar, AsciiString};
 use hashbrown::{HashMap, HashSet};
@@ -239,7 +240,9 @@ struct Prog {
 
 type Parsed = AsciiString;
 pub fn parse(raw: &str) -> Vec<Parsed> {
-    raw.split('\n').map(|x| x.as_ascii_str().unwrap().to_owned()).collect()
+    raw.split('\n')
+        .map(|x| x.as_ascii_str().unwrap().to_owned())
+        .collect()
 }
 
 type Reachable = HashMap<Pos, HashMap<Pos, u32>>;

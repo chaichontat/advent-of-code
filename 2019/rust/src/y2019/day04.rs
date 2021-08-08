@@ -21,9 +21,7 @@ fn val1(n: &str) -> bool {
 }
 
 pub fn part1(parsed: &[Parsed]) -> usize {
-    (parsed[0]..parsed[1])
-        .filter(|x| val1(&format!("{}", x)))
-        .count()
+    (parsed[0]..parsed[1]).filter(|x| val1(&format!("{}", x))).count()
 }
 
 fn val2(n: &str) -> bool {
@@ -49,9 +47,7 @@ fn val2(n: &str) -> bool {
 }
 
 pub fn part2(parsed: &[Parsed]) -> usize {
-    (parsed[0]..parsed[1])
-        .filter(|x| val2(&format!("{}", x)))
-        .count()
+    (parsed[0]..parsed[1]).filter(|x| val2(&format!("{}", x))).count()
 }
 
 #[cfg(test)]

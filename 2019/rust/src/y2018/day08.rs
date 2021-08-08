@@ -1,9 +1,7 @@
 type Parsed = u16;
 
 pub fn parse(raw: &str) -> Vec<Parsed> {
-    raw.split_ascii_whitespace()
-        .map(|x| x.parse().unwrap())
-        .collect()
+    raw.split_ascii_whitespace().map(|x| x.parse().unwrap()).collect()
 }
 
 fn recurse(p: &[u16], mut idx: usize) -> (usize, u16, u16) {
@@ -44,6 +42,7 @@ pub fn combi(parsed: &[u16]) -> (u16, u16) {
     (out.1, out.2)
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::utils::*;

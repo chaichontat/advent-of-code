@@ -50,6 +50,8 @@ pub fn match_keys(mut keys: Keys) -> [u8; 16] {
 
 // Considered using separate functions for each opcode.
 // Would be too messy.
+/// # Safety
+/// Only use official inputs. No bound checks here.
 #[rustfmt::skip]
 #[allow(clippy::identity_op)]
 pub unsafe fn combi_unchecked((ins, codes): &(Vec<Parsed>, Vec<Parsed>)) -> (usize, u16) {
@@ -208,6 +210,7 @@ pub fn combi((ins, codes): &(Vec<Parsed>, Vec<Parsed>)) -> (usize, u16) {
     (part1, reg[0])
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::utils::*;
@@ -220,10 +223,7 @@ mod tests {
     #[test]
     fn test_combi_unchecked() {
         unsafe {
-            assert_eq!(
-                combi_unchecked(&parse(&read(2018, "day16.txt"))),
-                (570, 503)
-            );
+            assert_eq!(combi_unchecked(&parse(&read(2018, "day16.txt"))), (570, 503));
         }
     }
 }

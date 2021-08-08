@@ -82,9 +82,7 @@ pub fn parse(raw: &str) -> Vec<Parsed> {
 }
 
 pub fn part1(parsed: &[Parsed]) -> usize {
-    let ic = IC {
-        mem: parsed.to_vec(),
-    };
+    let ic = IC { mem: parsed.to_vec() };
 
     let beam = ic.get_bounds(49);
     let lower = ic.search_edge((beam.0, 49), 0);
@@ -97,9 +95,7 @@ pub fn part1(parsed: &[Parsed]) -> usize {
 }
 
 pub fn part2(parsed: &[Parsed]) -> usize {
-    let ic = IC {
-        mem: parsed.to_vec(),
-    };
+    let ic = IC { mem: parsed.to_vec() };
     let beam = ic.get_bounds(100);
     let (a, b) = (100. / (beam.1 + 1) as f32, 100. / beam.0 as f32);
 

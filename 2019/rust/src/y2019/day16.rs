@@ -130,9 +130,7 @@ fn base2(cs: &[u8], off: usize, step: usize, mul: u8) -> [u8; 8] {
                 &cs[idx..idx + 8]
             };
 
-            sum.iter_mut()
-                .zip(sl.iter())
-                .for_each(|(xx, yy)| *xx ^= *yy);
+            sum.iter_mut().zip(sl.iter()).for_each(|(xx, yy)| *xx ^= *yy);
 
             idx += 4;
         }

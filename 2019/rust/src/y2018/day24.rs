@@ -1,7 +1,7 @@
-use std::{cmp::Reverse,
-          fmt::Debug,
-          mem,
-          str::{from_utf8, FromStr}};
+use std::cmp::Reverse;
+use std::fmt::Debug;
+use std::mem;
+use std::str::{from_utf8, FromStr};
 
 use itertools::Itertools;
 use rayon::prelude::*;
@@ -188,7 +188,9 @@ impl Universe {
     /// Check if invariants within the struct is broken.
     /// Check if selection order is sorted, effective power = units * dp, consistent alive state.
     fn is_sound(&self) -> bool {
-        assert!(self.select_ord.is_sorted_by_key(|x| fn_select_ord(&self.groups, x)));
+        assert!(self
+            .select_ord
+            .is_sorted_by_key(|x| fn_select_ord(&self.groups, x)));
         assert!(self.groups.iter().all(|&g| g.ep == g.calc_ep()));
         let alive = self.alive[0] | self.alive[1];
         for (u, g) in self.groups.iter().enumerate() {
@@ -378,6 +380,7 @@ pub fn combi(parsed: &Universe) -> (u32, u32) {
     (part1, part2)
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::utils::read;

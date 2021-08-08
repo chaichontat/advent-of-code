@@ -53,10 +53,7 @@ fn gen_db(parsed: &[Vec<Parsed>]) -> Db {
     for line in parsed.iter() {
         let mut ins = line
             .iter()
-            .map(|(n, name)| NName {
-                n:    *n,
-                name: name.to_owned(),
-            })
+            .map(|(n, name)| NName { n: *n, name: name.to_owned() })
             .collect_vec();
         let out = ins.pop().unwrap();
 
@@ -144,11 +141,7 @@ fn binary_search(mut lo: OreFuel, mut hi: OreFuel, avail: usize, cost: &Cost) ->
 pub fn part1(parsed: &[Vec<Parsed>]) -> usize {
     let mut db = gen_db(parsed);
     let sorted = topo_sort(&mut db, "FUEL");
-    let cost = Cost {
-        sorted,
-        db,
-        goal: "ORE".to_string(),
-    };
+    let cost = Cost { sorted, db, goal: "ORE".to_string() };
 
     cost.cost(1).ore
 }
@@ -156,11 +149,7 @@ pub fn part1(parsed: &[Vec<Parsed>]) -> usize {
 pub fn part2(parsed: &[Vec<Parsed>]) -> usize {
     let mut db = gen_db(parsed);
     let sorted = topo_sort(&mut db, "FUEL");
-    let cost = Cost {
-        sorted,
-        db,
-        goal: "ORE".to_string(),
-    };
+    let cost = Cost { sorted, db, goal: "ORE".to_string() };
     let cost_per_fuel = cost.cost(1);
 
     // Part 2: Get lower and upper bound then binary search.

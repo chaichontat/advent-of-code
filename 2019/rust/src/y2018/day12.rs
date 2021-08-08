@@ -1,4 +1,5 @@
-use std::{cmp::Ordering, str::FromStr};
+use std::cmp::Ordering;
+use std::str::FromStr;
 
 use ascii::{AsciiChar, AsciiString};
 use bitvec::prelude::*;
@@ -43,13 +44,7 @@ fn gen_bvb(raw: &[AsciiString]) -> (BitVecBase, u32) {
         }
         rules |= 1 << r; // Encode active rules by bit position.
     }
-    (
-        BitVecBase {
-            state: start,
-            base:  0,
-        },
-        rules,
-    )
+    (BitVecBase { state: start, base: 0 }, rules)
 }
 
 fn step(start: &BitVecBase, rules: u32) -> BitVecBase {
@@ -111,6 +106,7 @@ pub fn combi(raw: &[AsciiString]) -> (Option<u64>, Option<u64>) {
     (part1, part2)
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::utils::*;

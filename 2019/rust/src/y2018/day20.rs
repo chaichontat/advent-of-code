@@ -47,6 +47,7 @@ pub fn combi(parsed: &[Parsed]) -> Option<(u32, u32)> {
     Some((part1.into(), part2))
 }
 
+#[cfg(test)]
 mod tests {
     use super::{combi, parse};
     use crate::utils::read;

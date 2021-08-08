@@ -54,6 +54,7 @@ pub fn combi(parsed: &[Parsed]) -> SomeResult<(u64, u64)> {
     Ok((part1, part2 as u64))
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 

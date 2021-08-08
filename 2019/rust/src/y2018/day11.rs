@@ -83,13 +83,10 @@ fn find_max(summed: &Arr, win: usize) -> (i16, (usize, usize)) {
             // from_slice_unaligned_unchecked is bad when len(slice) < len(lane). Cannot happen from loop structure.
             // Both get_unchecked are impossible to be out-of-bound due to constraints on y and i.
             unsafe {
-                let _tl = i16x16::from_slice_unaligned_unchecked(
-                    summed.get_unchecked(y).get_unchecked(i..i + 16),
-                );
+                let _tl =
+                    i16x16::from_slice_unaligned_unchecked(summed.get_unchecked(y).get_unchecked(i..i + 16));
                 let _br = i16x16::from_slice_unaligned_unchecked(
-                    summed
-                        .get_unchecked(y + win)
-                        .get_unchecked(win + i..win + i + 16),
+                    summed.get_unchecked(y + win).get_unchecked(win + i..win + i + 16),
                 );
                 let _bl = i16x16::from_slice_unaligned_unchecked(
                     summed.get_unchecked(y + win).get_unchecked(i..i + 16),
@@ -139,6 +136,7 @@ pub fn combi(parsed: &Parsed) -> ((usize, usize), (usize, usize, usize)) {
     (part1, part2)
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::utils::*;

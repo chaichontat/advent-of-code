@@ -27,7 +27,6 @@ type Map = [u8; (DIM + 2) * (PAD)];
 #[repr(C, align(32))] // AVX
 #[derive(Debug, Clone)]
 pub struct MapAlign(Map);
-
 // impl PartialOrd for MapAlign {
 //     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
 //         unsafe {
@@ -124,17 +123,19 @@ unsafe fn step_unchecked(map: &mut Map) {
     for y in (0..N_SUM).step_by(2) {
         // Note end range -> skip end pad.
         curr = [sum[y], sum[y + 1]];
+        #[rustfmt::skip]
         for i in 0..2 {
-            total[i] = add_i8_m256i(total[i], sum[y + 2 + i]); // _mm256_add_epi8(total[i], sum[y + 2 + i]); // Add next, now have everything.
+            total[i]   = add_i8_m256i(total[i], sum[y + 2 + i]); // _mm256_add_epi8(total[i], sum[y + 2 + i]); // Add next, now have everything.
             sum[y + i] = sub_i8_m256i(total[i], m[y + i]); // Remove self.
-            total[i] = sub_i8_m256i(total[i], prev[i]); // Remove prev-prev.
+            total[i]   = sub_i8_m256i(total[i], prev[i]); // Remove prev-prev.
         }
         prev = curr;
     }
 
+    #[rustfmt::skip]
     for (i, (&s, ori)) in izip!(&sum, m.iter_mut()).take(N_SUM).enumerate() {
-        let zero = zeroed_m256i();
-        let two = set_splat_i8_m256i(2);
+        let zero   = zeroed_m256i();
+        let two    = set_splat_i8_m256i(2);
         let yard_m = set_splat_i8_m256i(YARD as i8);
         let tree_m = set_splat_i8_m256i(TREE as i8);
 
@@ -142,11 +143,11 @@ unsafe fn step_unchecked(map: &mut Map) {
         let tree = shr_imm_u16_m256i::<4>(bitand_m256i(s, set_splat_i8_m256i(0xf0)));
         let yard = bitand_m256i(s, set_splat_i8_m256i(0x0f));
 
-        let tree3 = cmp_gt_mask_i8_m256i(tree, two);
-        let yard3 = cmp_gt_mask_i8_m256i(yard, two);
+        let tree3   = cmp_gt_mask_i8_m256i(tree, two);
+        let yard3   = cmp_gt_mask_i8_m256i(yard, two);
         let notyard = bitor_m256i(cmp_eq_mask_i8_m256i(tree, zero), cmp_eq_mask_i8_m256i(yard, zero));
 
-        let curr_gnd = cmp_eq_mask_i8_m256i(*ori, zero);
+        let curr_gnd  = cmp_eq_mask_i8_m256i(*ori, zero);
         let curr_tree = cmp_eq_mask_i8_m256i(*ori, tree_m);
         let curr_yard = cmp_eq_mask_i8_m256i(*ori, yard_m);
 
@@ -206,6 +207,7 @@ pub fn combi(mapal: &MapAlign) -> Option<(u32, u32)> {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::{combi, parse};
     use crate::utils::read;

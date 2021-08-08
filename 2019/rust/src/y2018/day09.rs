@@ -3,8 +3,6 @@ use std::collections::VecDeque;
 use itertools::Itertools;
 use regex::Regex;
 
-use crate::utils::printt;
-
 type Parsed = (usize, usize); // n_player, last_marble
 
 pub fn parse(raw: &str) -> Parsed {
@@ -37,15 +35,13 @@ pub fn combi(&(n_player, n_mb): &Parsed) -> (u32, u32) {
     (rot(n_player, n_mb), rot(n_player, 100 * n_mb))
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::utils::*;
 
     #[test]
     fn test_combi() {
-        assert_eq!(
-            combi(&parse(&read(2018, "day09.txt"))),
-            (374690, 3009951158)
-        );
+        assert_eq!(combi(&parse(&read(2018, "day09.txt"))), (374690, 3009951158));
     }
 }

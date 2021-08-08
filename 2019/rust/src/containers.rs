@@ -147,6 +147,7 @@ impl<'a, T> IntoIterator for &'a mut Vec2D<T> {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::{Array2D, Vec2D};
     use crate::utils::printt;

@@ -1,4 +1,3 @@
-use std::ops::Mul;
 use std::str::from_utf8;
 
 use bytecount::count;
@@ -65,11 +64,12 @@ pub fn part2(parsed: &[Parsed]) -> Option<String> {
 
     for i in 0..hs.len() {
         for j in (i + 1)..hs.len() {
-            let mut diffs = hs[i]
-                .iter()
-                .zip(hs[j])
-                .enumerate()
-                .filter_map(|(k, (x, y))| if x != y { Some(k) } else { None });
+            let mut diffs =
+                hs[i]
+                    .iter()
+                    .zip(hs[j])
+                    .enumerate()
+                    .filter_map(|(k, (x, y))| if x != y { Some(k) } else { None });
 
             let ans = match diffs.next() {
                 Some(x) if diffs.next().is_none() => x, // Only 1 diff.
@@ -94,9 +94,7 @@ pub fn part2_simd(parsed: &[Parsed]) -> Option<String> {
     let mut buf = Line([0; 32]);
     for (storage, line) in storage.iter_mut().zip(parsed) {
         buf.0[..line.len()].copy_from_slice(line);
-        unsafe {
-            *storage = u8x32::from_slice_aligned_unchecked(&buf.0);
-        }
+        *storage = unsafe { u8x32::from_slice_aligned_unchecked(&buf.0) };
     }
 
     for (i, &a) in storage.iter().enumerate() {
@@ -116,7 +114,6 @@ pub fn part2_simd(parsed: &[Parsed]) -> Option<String> {
 }
 
 #[cfg(test)]
-
 mod tests {
     use super::*;
     use crate::utils::*;

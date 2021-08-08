@@ -53,7 +53,12 @@ fn execute(ic: &mut IntCode, board: &mut Board) {
         if ic.done {
             break;
         }
-        board.set(ic.output.pop_front().and_then(num::FromPrimitive::from_isize).unwrap()); // Color to paint.
+        board.set(
+            ic.output
+                .pop_front()
+                .and_then(num::FromPrimitive::from_isize)
+                .unwrap(),
+        ); // Color to paint.
         ic.run_pause();
         board.step(match ic.output.pop_front() {
             Some(0) => Turn::L,

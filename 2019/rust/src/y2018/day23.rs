@@ -5,10 +5,7 @@ use itertools::Itertools;
 use ndarray::prelude::*;
 use ndarray::Array2;
 use regex::Regex;
-use rstar::RTree;
-use rstar::RTreeObject;
-use rstar::AABB;
-use rstar::{Point, PointDistance};
+use rstar::{Point, PointDistance, RTree, RTreeObject, AABB};
 
 use crate::utils::*;
 
@@ -84,10 +81,7 @@ pub fn part2(parsed: &[i32]) -> usize {
 
     let points = parsed
         .chunks_exact(4)
-        .map(|x| Bot {
-            p: [x[0], x[1], x[2]],
-            r: x[3],
-        })
+        .map(|x| Bot { p: [x[0], x[1], x[2]], r: x[3] })
         .collect_vec();
 
     let rt = RTree::bulk_load(points);
@@ -146,6 +140,7 @@ pub fn part2(parsed: &[i32]) -> usize {
     0
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 

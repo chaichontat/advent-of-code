@@ -23,13 +23,7 @@ pub fn parse(raw: &str) -> Vec<Parsed> {
 }
 
 fn gen_moons(parsed: &[Parsed]) -> Vec<Moon> {
-    parsed
-        .iter()
-        .map(|p| Moon {
-            pos: *p,
-            vel: [0; 3],
-        })
-        .collect_vec()
+    parsed.iter().map(|p| Moon { pos: *p, vel: [0; 3] }).collect_vec()
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

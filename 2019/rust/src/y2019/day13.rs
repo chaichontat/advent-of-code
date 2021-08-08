@@ -45,7 +45,11 @@ fn parse_game(ic: &mut IntCode, game: &mut Game) {
         if pos == Complex::new(-1, 0) {
             game.score = ic.output.pop_front().unwrap();
         } else {
-            let tile = ic.output.pop_front().and_then(num::FromPrimitive::from_isize).unwrap();
+            let tile = ic
+                .output
+                .pop_front()
+                .and_then(num::FromPrimitive::from_isize)
+                .unwrap();
             match tile {
                 Tile::Block => {
                     game.blocks.insert(pos);

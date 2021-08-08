@@ -48,18 +48,12 @@ pub fn parse(raw: &str) -> Board {
         }
     }
 
-    Board {
-        map,
-        carts,
-        part1: None,
-        part2: None,
-    }
+    Board { map, carts, part1: None, part2: None }
 }
 
 impl Board {
     fn step(&mut self) {
-        self.carts
-            .sort_unstable_by_key(|c| (c.dead, -c.pos.im, c.pos.re));
+        self.carts.sort_unstable_by_key(|c| (c.dead, -c.pos.im, c.pos.re));
 
         // Problem: Since we're screening for death at the beginning of each inner loop, it's
         // possible for one cart to get cleared in one step and another to get cleared in the next.
@@ -158,15 +152,13 @@ pub fn combi(board: &Board) -> ((i16, i16), (i16, i16)) {
     )
 }
 
+#[cfg(test)]
 mod tests {
     use super::{combi, parse};
     use crate::utils::read;
 
     #[test]
     fn test_combi() {
-        assert_eq!(
-            combi(&parse(&read(2018, "day13.txt"))),
-            ((136, 36), (53, 111))
-        );
+        assert_eq!(combi(&parse(&read(2018, "day13.txt"))), ((136, 36), (53, 111)));
     }
 }

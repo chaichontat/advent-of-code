@@ -1,4 +1,4 @@
-use num::Signed;
+use num::{PrimInt, Signed};
 use num_complex::Complex;
 use strum_macros::EnumString;
 

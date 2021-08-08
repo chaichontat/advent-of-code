@@ -1,4 +1,6 @@
-use std::{cmp::Reverse, collections::BinaryHeap, str::from_utf8};
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
+use std::str::from_utf8;
 
 use itertools::Itertools;
 use regex::Regex;
@@ -62,9 +64,9 @@ pub fn combi(nodes: &[(u8, u8)]) -> (String, u32) {
 
     // Each vector represents "from" node
     // Big-endian so that A-Z corresponds to the first 26 bytes, but Intel is little-endian, so mask needs to be at the front.
-    let indeg = outdeg
-        .iter()
-        .fold(set_i64_m256i(0xffff_0000, 0, 0, 0), |acc, c| add_i8_m256i(acc, *c));
+    let indeg = outdeg.iter().fold(set_i64_m256i(0xffff_0000, 0, 0, 0), |acc, c| {
+        add_i8_m256i(acc, *c)
+    });
 
     let sorted = topological_sort(&outdeg, indeg);
 
@@ -107,6 +109,7 @@ pub fn combi(nodes: &[(u8, u8)]) -> (String, u32) {
     (from_utf8(&sorted).unwrap().to_string(), t)
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::utils::*;

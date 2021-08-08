@@ -138,12 +138,10 @@ fn sum_factors(tg: u32) -> u32 {
 
 /// Sum of divisors of r[1] aka sum {x: ℕ | x ≤ r[1] & r[1] | x}.
 pub fn combi(parsed: &Parsed) -> (u32, u32) {
-    (
-        sum_factors(run_elf(parsed, 0)),
-        sum_factors(run_elf(parsed, 1)),
-    )
+    (sum_factors(run_elf(parsed, 0)), sum_factors(run_elf(parsed, 1)))
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::utils::*;

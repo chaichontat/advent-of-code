@@ -1,8 +1,8 @@
-use std::{cmp::Reverse, collections::BinaryHeap};
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
 
 use hashbrown::{HashMap, HashSet};
 use nohash_hasher::IntMap;
-use pathfinding::prelude::{bfs, dijkstra};
 
 #[derive(Debug)]
 struct KeyDistDoors {
@@ -61,11 +61,7 @@ impl Board {
                 }
             }
         }
-        Board {
-            n_bot: n_bot as u8,
-            board,
-            keypos,
-        }
+        Board { n_bot: n_bot as u8, board, keypos }
     }
 }
 
@@ -102,21 +98,12 @@ fn key_explore(raw: &[String], curr_key: u32, start: Pos) -> ReachableKeysMap {
 
     let bound = (raw[0].len(), raw.len());
     let mut q = BinaryHeap::new();
-    q.push(Reverse(KeyPathProg {
-        dist:  0,
-        pos:   start,
-        doors: 0,
-    }));
+    q.push(Reverse(KeyPathProg { dist: 0, pos: start, doors: 0 }));
 
     let mut traversed = HashSet::<Pos>::new();
     let mut reachablekeys = IntMap::default();
 
-    while let Some(Reverse(KeyPathProg {
-        dist,
-        pos: (xc, yc),
-        mut doors,
-    })) = q.pop()
-    {
+    while let Some(Reverse(KeyPathProg { dist, pos: (xc, yc), mut doors })) = q.pop() {
         match raw[yc as usize].chars().nth(xc as usize).unwrap() {
             c if c.is_ascii_lowercase() => {
                 if c.int_lower() != curr_key {
@@ -205,13 +192,8 @@ fn main_search(allkeyspath: &AllReachableKeysMap, n_keys: u32, n_bot: usize) -> 
         seen.insert(SearchState { locs, keys_done });
 
         for n in 0..n_bot {
-            for (
-                loc_next,
-                KeyDistDoors {
-                    dist: dist_to_next,
-                    doors,
-                },
-            ) in allkeyspath.get(&locs[n]).unwrap().iter()
+            for (loc_next, KeyDistDoors { dist: dist_to_next, doors }) in
+                allkeyspath.get(&locs[n]).unwrap().iter()
             {
                 let mut locs_new = locs;
                 locs_new[n] = *loc_next;

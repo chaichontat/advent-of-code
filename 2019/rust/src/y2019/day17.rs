@@ -1,5 +1,4 @@
-use std::cmp::Ordering;
-use std::cmp::Reverse;
+use std::cmp::{Ordering, Reverse};
 use std::collections::VecDeque;
 
 use hashbrown::HashSet;
@@ -68,10 +67,7 @@ fn get_data(ic: &mut IntCode) -> (Board, Pos) {
             curr += Complex::new(1, 0);
         }
     }
-    (board, Pos {
-        dir: dir.unwrap(),
-        loc: loc.unwrap(),
-    })
+    (board, Pos { dir: dir.unwrap(), loc: loc.unwrap() })
 }
 
 /// Part 2
@@ -173,7 +169,12 @@ fn compress(cmds: &[String]) -> Option<VecDeque<isize>> {
                     res.next_back(); // Remove last comma.
 
                     let mut res = vec![res.collect::<String>()];
-                    res.append(&mut bundle.iter().map(|&y| (&y[..y.len() - 1]).to_owned()).collect_vec());
+                    res.append(
+                        &mut bundle
+                            .iter()
+                            .map(|&y| (&y[..y.len() - 1]).to_owned())
+                            .collect_vec(),
+                    );
 
                     let fin = res.join("\n");
                     let c = fin.chars();

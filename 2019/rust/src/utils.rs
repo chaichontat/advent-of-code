@@ -1,13 +1,11 @@
-use std::error;
 use std::fmt::Debug;
-use std::fs;
 use std::hash::Hash;
+use std::{error, fs};
 
 use ascii::{AsciiStr, AsciiString};
 use colored::*;
 use hashbrown::{HashMap, HashSet};
 use itertools::Itertools;
-use num::PrimInt;
 use regex::Regex;
 
 pub type Ans = Option<(usize, usize)>;

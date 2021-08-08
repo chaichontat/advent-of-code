@@ -39,7 +39,8 @@ impl Map {
         let ymin = walls.iter().map(|c| c.ymin).min().unwrap();
         let ymax = walls.iter().map(|c| c.ymax).max().unwrap();
 
-        let mut arr: Array<Elem, _> = Array::from_elem((ymax as usize + 2, (xmax - xmin) as usize + 2), Elem::Void);
+        let mut arr: Array<Elem, _> =
+            Array::from_elem((ymax as usize + 2, (xmax - xmin) as usize + 2), Elem::Void);
         for w in walls {
             arr.slice_mut(s![
                 w.ymin as usize..w.ymax as usize,
@@ -188,6 +189,7 @@ pub fn combi(walls: &[Parsed]) -> Option<(usize, usize)> {
     Some((flow + pool, pool))
 }
 
+#[cfg(test)]
 mod tests {
     use super::{combi, parse};
     use crate::utils::read;

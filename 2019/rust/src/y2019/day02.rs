@@ -28,6 +28,38 @@ fn simple_intcode(mem: &[Parsed], noun: usize, verb: usize) -> usize {
     mem[0]
 }
 
+unsafe fn simple_intcode_unchecked(mem: &[Parsed], noun: usize, verb: usize) -> usize {
+    let mut mem = mem.to_owned();
+    let mut ptr = 0;
+
+    mem[2] = verb;
+    mem[1] = noun;
+
+    loop {
+        unsafe {
+            let op = *mem.get_unchecked(ptr);
+            if op == 99 {
+                break;
+            }
+
+            let ops = (
+                *mem.get_unchecked(*mem.get_unchecked(ptr + 1)),
+                *mem.get_unchecked(*mem.get_unchecked(ptr + 2)),
+                *mem.get_unchecked(ptr + 3),
+            );
+
+            *mem.get_unchecked_mut(ops.2) = match op {
+                1 => ops.0 + ops.1,
+                2 => ops.0 * ops.1,
+                _ => unreachable!(),
+            };
+        }
+
+        ptr += 4;
+    }
+    mem[0]
+}
+
 pub fn run(parsed: &[Parsed]) -> Ans {
     // f(x) = ax₁ + b + x₂
     // Solve for a, b.
