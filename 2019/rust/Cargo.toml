@@ -45,5 +45,5 @@ pretty_assertions = "^0.7.2"
 harness = false
 name = "criterion"
 
-# [profile.release]
-# debug = true
+[profile.bench]
+lto = true
