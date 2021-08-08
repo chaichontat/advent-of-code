@@ -2,7 +2,7 @@ use std::str::from_utf8;
 
 use bytecount::count;
 use crc32fast::Hasher;
-use itertools::{izip, Itertools};
+use itertools::Itertools;
 use packed_simd::u8x32;
 
 type Parsed = Vec<u8>;
