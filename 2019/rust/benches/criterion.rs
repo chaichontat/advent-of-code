@@ -150,6 +150,8 @@ fn bench_2018(c: &mut Criterion) {
     c.bench_function("day19c", |b| b.iter(|| day19::combi(black_box(day19))));
     let day20 = &day20::parse(&read("day20.txt"));
     c.bench_function("2018_day20", |b| b.iter(|| day20::combi(black_box(day20))));
+    let day22 = &day22::parse(&read("day22.txt"));
+    c.bench_function("2018_day22", |b| b.iter(|| day22::combi(black_box(day22))));
 
     let day24 = &day24::parse(&read("day24.txt"));
     c.bench_function("2018_day24", |b| b.iter(|| day24::combi(black_box(day24))));
