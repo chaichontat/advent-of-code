@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1628452108087,
+  "lastUpdate": 1628533778180,
   "repoUrl": "https://github.com/chaichontat/advent-of-code",
   "entries": {
     "./2020/rust": [
@@ -3197,6 +3197,84 @@ window.BENCHMARK_DATA = {
             "name": "day05b",
             "value": 175886,
             "range": "± 12877",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "chaichontat.s@duke.edu",
+            "name": "Chaichontat Sriworarat",
+            "username": "chaichontat"
+          },
+          "committer": {
+            "email": "chaichontat.s@duke.edu",
+            "name": "Chaichontat Sriworarat",
+            "username": "chaichontat"
+          },
+          "distinct": true,
+          "id": "43bfa98c7004f82588e5f81dedba900ad5cfc607",
+          "message": "Day 22 bench.\n\nSigned-off-by: Chaichontat Sriworarat <chaichontat.s@duke.edu>",
+          "timestamp": "2021-08-08T15:40:05-04:00",
+          "tree_id": "58823584cf0d496f11f07ff6793ba5638d084747",
+          "url": "https://github.com/chaichontat/advent-of-code/commit/43bfa98c7004f82588e5f81dedba900ad5cfc607"
+        },
+        "date": 1628533777204,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "day01combi",
+            "value": 3366,
+            "range": "± 27",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day02a",
+            "value": 619819,
+            "range": "± 6455",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day02b",
+            "value": 549119,
+            "range": "± 4604",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day03a",
+            "value": 58426,
+            "range": "± 310",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day03b",
+            "value": 92224,
+            "range": "± 929",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day04a",
+            "value": 26557280,
+            "range": "± 386148",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day04b",
+            "value": 30443891,
+            "range": "± 302615",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day05a",
+            "value": 179115,
+            "range": "± 1313",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "day05b",
+            "value": 228250,
+            "range": "± 1836",
             "unit": "ns/iter"
           }
         ]
