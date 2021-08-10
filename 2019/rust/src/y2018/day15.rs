@@ -3,6 +3,7 @@ use std::convert::TryFrom;
 use std::fmt::Display;
 use std::ops::{BitAnd, Not};
 use std::str::from_utf8;
+use std::thread;
 
 use bitvec::prelude::*;
 use enum_map::{enum_map, Enum, EnumMap};
@@ -243,20 +244,17 @@ pub enum Directive {
     Meh,
 }
 
-pub fn run(game: &Game, elf_dp: u8, mode: Directive) -> Option<(u16, Vec<Unit>)> {
+/// # Safety
+/// See `combi` below.
+unsafe fn run(game: &Game, elf_dp: u8, mode: Directive) -> Option<(u16, Vec<Unit>)> {
     let mut game = game.to_owned();
     let mut round = 0u16;
 
     loop {
-        let db = &game.units;
-        game.idxs.sort_unstable_by_key(|&i| db[i].pos);
-        while game.units[*game.idxs.last().unwrap() as usize].pos.is_none() {
-            game.idxs.pop();
-        }
-
+        game.unqueue_dead();
         for j in 0..game.idxs.len() {
-            let idx = game.idxs[j];
-            let mut u = game.units[idx];
+            let idx = *game.idxs.get_unchecked(j);
+            let mut u = *game.units.get_unchecked(idx);
 
             if u.hp == 0 {
                 continue; // Killed.
@@ -264,12 +262,11 @@ pub fn run(game: &Game, elf_dp: u8, mode: Directive) -> Option<(u16, Vec<Unit>)>
             let u_map = Map::from_pos(u.pos.unwrap());
             // Only place that we do NOT automatically remove unwalkable tiles.
             let mut enemy_adj = game.maps[!u.team]._adjacent();
-
             if (&u_map & &enemy_adj).is_zero() {
                 enemy_adj = &enemy_adj & &game.can_walk; // Remove unwalkable tile.
                 if let Some(pos_new) = game.move_it(&u_map, &enemy_adj) {
-                    unsafe { game.swap_pos(u, pos_new) };
-                    game.units[idx].pos = Some(pos_new);
+                    game.swap_pos(u, pos_new);
+                    game.units.get_unchecked_mut(idx).pos = Some(pos_new);
                     u.pos = Some(pos_new);
                 }
             }
@@ -277,16 +274,15 @@ pub fn run(game: &Game, elf_dp: u8, mode: Directive) -> Option<(u16, Vec<Unit>)>
             // Attack
             if let Some((idx_tg, tg)) = game.choose_attack_target(u) {
                 let dp = if u.team == Team::Elf { elf_dp } else { 3 };
-
                 if tg.hp > dp {
-                    game.units[idx_tg as usize].hp -= dp;
+                    game.units.get_unchecked_mut(idx_tg as usize).hp -= dp;
                 } else {
                     // Die.
-                    game.units[idx_tg as usize].hp = 0;
+                    game.units.get_unchecked_mut(idx_tg as usize).hp = 0;
                     if tg.team == Team::Elf && mode == Directive::StopWhenElfDies {
                         return None;
                     }
-                    unsafe { game.finish_it(u, idx_tg, tg) };
+                    game.finish_it(u, idx_tg, tg);
                     if game.cnts[!u.team] == 0 {
                         let round = if j == game.idxs.len() - 1 { round + 1 } else { round };
                         return Some((round, game.units));
@@ -372,14 +368,14 @@ impl Game {
 
     unsafe fn finish_it(&mut self, killer: Unit, idx_tg: Idx, mut tg: Unit) {
         tg.hp = 0;
-        self.pos_idx[tg.pos.unwrap() as usize] = None;
+        *self.pos_idx.get_unchecked_mut(tg.pos.unwrap() as usize) = None;
 
         self.maps[!killer.team].toggle(tg.pos.unwrap());
         self.can_walk.toggle(tg.pos.unwrap());
 
         tg.pos = None;
         self.cnts[!killer.team] -= 1;
-        self.units[idx_tg as usize] = tg;
+        *self.units.get_unchecked_mut(idx_tg as usize) = tg;
     }
 
     fn move_it(&self, ori: &Map, e_adj: &Map) -> Option<Pos> {
@@ -391,18 +387,19 @@ impl Game {
         None
     }
 
-    fn choose_attack_target(&self, u: Unit) -> Option<(Idx, Unit)> {
+    unsafe fn choose_attack_target(&self, u: Unit) -> Option<(Idx, Unit)> {
         let adjs = [
             u.pos.unwrap().wrapping_sub(DIM as u16),
             u.pos.unwrap() + DIM as u16,
             u.pos.unwrap().wrapping_sub(1),
             u.pos.unwrap() + 1,
         ];
+
         adjs.iter()
             .filter_map(|&p| {
-                if p < 1024 && self.pos_idx[p as usize].is_some() {
-                    let idx = self.pos_idx[p as usize].unwrap();
-                    let target = self.units[idx as usize];
+                if p < 1024 && self.pos_idx.get_unchecked(p as usize).is_some() {
+                    let idx = self.pos_idx.get_unchecked(p as usize).unwrap();
+                    let target = *self.units.get_unchecked(idx as usize);
                     if target.team != u.team {
                         return Some((idx, target));
                     }
@@ -411,19 +408,38 @@ impl Game {
             })
             .min_by_key(|&(_, u)| (u.hp, u.pos))
     }
+
+    unsafe fn unqueue_dead(&mut self) {
+        let db = &self.units;
+        self.idxs.sort_unstable_by_key(|&idx| db.get_unchecked(idx).pos);
+        while self
+            .units
+            .get_unchecked(*self.idxs.last().unwrap() as usize)
+            .pos
+            .is_none()
+        {
+            self.idxs.pop();
+        }
+    }
 }
 
 fn score((round, units): (u16, Vec<Unit>)) -> u32 {
     round as u32 * units.iter().map(|&x| x.hp as u32).sum::<u32>()
 }
 
-pub fn combi(game: &Game) -> (u32, u32) {
-    let part1 = run(game, 3, Directive::Meh).unwrap();
+/// # Safety
+/// Game must be internally consistent.
+/// No bounds-checking at indices with use of pointer arithmetics for shifting.
+pub unsafe fn combi(game: &Game) -> (u32, u32) {
+    let game1 = game.to_owned();
+    let thr = thread::spawn(move || run(&game1, 3, Directive::Meh).unwrap());
 
     let part2 = (4u8..50)
         .into_par_iter()
         .find_map_first(|dp| run(game, dp, Directive::StopWhenElfDies))
         .unwrap();
+
+    let part1 = thr.join().unwrap();
 
     (score(part1), score(part2))
 }
@@ -435,6 +451,6 @@ mod tests {
 
     #[test]
     fn test_combi() {
-        assert_eq!(combi(&parse(&read(2018, "day15.txt"))), (213692, 52688));
+        unsafe { assert_eq!(combi(&parse(&read(2018, "day15.txt"))), (213692, 52688)) };
     }
 }
