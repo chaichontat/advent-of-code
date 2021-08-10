@@ -8,10 +8,11 @@ use bitvec::prelude::*;
 use enum_map::{enum_map, Enum, EnumMap};
 use itertools::{izip, Itertools};
 use num::Integer;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use safe_arch::*;
 
 const DIM: usize = 32;
-const DIM_SHOW: usize = 7;
+const DIM_SHOW: usize = 32;
 
 #[repr(C, align(32))]
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -42,10 +43,7 @@ impl Display for Map {
 
 impl Map {
     fn new(seq: &[u8], c: u8) -> Self {
-        // let out = bitarr![Msb0, u8; 0, 32]
-
         let mask = set_splat_i8_m256i(c as i8);
-
         let mut ms = [m256i::default(); 4];
         for (m, chunk) in ms.iter_mut().zip(seq.chunks_exact(32 * 8)) {
             let mut packed = [0i32; 8];
@@ -61,7 +59,7 @@ impl Map {
     }
 
     fn from_pos(pos: u16) -> Self {
-        debug_assert!(pos < 1024);
+        debug_assert!(pos < (DIM * DIM) as u16);
 
         let (which_vec, r) = pos.div_rem(&256);
         let (which_i32, r) = r.div_rem(&32);
@@ -104,31 +102,29 @@ impl Map {
     fn get_first(&self) -> Option<u16> {
         for (i, x) in self.m.iter().enumerate() {
             let mask = !move_mask_i8_m256i(cmp_eq_mask_i8_m256i(*x, zeroed_m256i()));
-            if mask != 0 {
-                let idx = mask.trailing_zeros();
-                unsafe {
-                    return Some(
-                        256 * i as u16
-                            + 8 * idx as u16
-                            + <[u8; 32]>::from(*x).get_unchecked(idx as usize).trailing_zeros() as u16,
-                    );
-                }
+            if mask == 0 {
+                continue;
             }
+            let idx = mask.trailing_zeros();
+            return Some(
+                256 * i as u16
+                    + 8 * idx as u16
+                    + unsafe { <[u8; 32]>::from(*x).get_unchecked(idx as usize).trailing_zeros() as u16 }, // Always safe.
+            );
         }
         None
     }
 
-    fn swap(&mut self, pos: u16, pos_new: u16) {
+    unsafe fn swap(&mut self, pos: u16, pos_new: u16) {
         self.toggle(pos);
         self.toggle(pos_new);
     }
 
-    fn toggle(&mut self, pos: u16) {
+    unsafe fn toggle(&mut self, pos: u16) {
+        debug_assert!(pos < (DIM * DIM) as u16);
         let ptr = self.m.as_mut_ptr() as *mut i32;
         let (r, c) = pos.div_rem(&(DIM as u16));
-        unsafe {
-            *ptr.add(r as usize) ^= 1 << c;
-        }
+        *ptr.add(r as usize) ^= 1 << c;
     }
 }
 
@@ -146,48 +142,55 @@ impl BitAnd for &Map {
 
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Enum)]
-enum Id {
+enum Team {
     Elf,
     Gob,
 }
 
-impl Not for Id {
+impl Not for Team {
     type Output = Self;
 
     fn not(self) -> Self::Output {
         match self {
-            Id::Elf => Id::Gob,
-            Id::Gob => Id::Elf,
+            Team::Elf => Team::Gob,
+            Team::Gob => Team::Elf,
         }
     }
 }
 
+type Idx = u16;
+type Pos = u16;
+
 #[derive(Debug, Clone, Copy)]
-struct Unit {
-    id:  Id,
-    hp:  u8,
-    pos: u16,
+pub struct Unit {
+    team: Team,
+    hp:   u8,
+    pos:  Option<Pos>, // Double as marker for dead/alive when sorting by pos.
 }
 
 #[derive(Debug, Clone)]
 pub struct Game {
-    maps:     EnumMap<Id, Map>,
-    cnts:     EnumMap<Id, u8>,
+    maps:     EnumMap<Team, Map>,
+    cnts:     EnumMap<Team, u8>,
     can_walk: Map,
     idxs:     Vec<usize>,
     units:    Vec<Unit>,
-    pos_idx:  [u16; DIM * DIM],
+    pos_idx:  [Option<Idx>; DIM * DIM],
 }
 
 pub fn parse(raw: &str) -> Game {
+    // Pad in case len  32.
     let raw = raw.split('\n').collect_vec();
     let len = raw[0].len();
     let raw = raw
         .iter()
         .map(|&x| format!("{}{}", x, (0..32 - len).map(|_| "#").collect::<String>()))
         .collect_vec();
-    let raw = raw.concat();
-    let raw = format!("{}{}", raw, (0..32 * 32 - len).map(|_| "#").collect::<String>());
+    let raw = format!(
+        "{}{}",
+        raw.concat(),
+        (0..32 * 32 - len).map(|_| "#").collect::<String>()
+    );
 
     let raw = raw
         .as_bytes()
@@ -197,36 +200,29 @@ pub fn parse(raw: &str) -> Game {
         .collect_vec();
 
     let maps = enum_map! {
-        Id::Gob     => Map::new(&raw, b'G'),
-        Id::Elf     => Map::new(&raw, b'E'),
+        Team::Gob     => Map::new(&raw, b'G'),
+        Team::Elf     => Map::new(&raw, b'E'),
     };
-
-    let mut cnts = enum_map! {
-        Id::Gob     => 0u8,
-        Id::Elf     => 0,
-    };
-
     let can_walk = Map::new(&raw, b'.');
 
-    let mut units = Vec::new();
-    // let mut hp = Vec::new();
-    // let mut pos = Vec::new();
-    let mut idxs = Vec::new();
-    let mut pos_idx = [u16::MAX; DIM * DIM];
+    let mut cnts = enum_map! {
+        Team::Gob     => 0u8,
+        Team::Elf     => 0,
+    };
 
-    for (p, x) in IntoIterator::into_iter(raw).enumerate() {
-        let id = match x {
-            b'E' => Id::Elf,
-            b'G' => Id::Gob,
+    let mut units = Vec::new();
+    let mut idxs = Vec::new();
+    let mut pos_idx = [None; DIM * DIM];
+
+    for (pos, x) in IntoIterator::into_iter(raw).enumerate() {
+        let team = match x {
+            b'E' => Team::Elf,
+            b'G' => Team::Gob,
             _ => continue,
         };
-        let n = units.len() as u16;
-        pos_idx[p] = n;
-        units.push(Unit { hp: 200, pos: p as u16, id });
-        // hp.push(200);
-        // pos.push(p as u16);
-        // ids.push(id);
-        cnts[id] += 1;
+        pos_idx[pos] = Some(units.len() as Idx);
+        cnts[team] += 1;
+        units.push(Unit { hp: 200, pos: Some(pos as Pos), team });
     }
 
     (0..units.len()).for_each(|x| idxs.push(x));
@@ -241,90 +237,72 @@ pub fn parse(raw: &str) -> Game {
     }
 }
 
-pub fn combi(game: &Game) -> (u32, u32) {
-    let mut game = game.to_owned();
-    let dp = 3;
-    let mut round = 0;
+#[derive(PartialEq)]
+pub enum Directive {
+    StopWhenElfDies,
+    Meh,
+}
 
-    'outer: loop {
+pub fn run(game: &Game, elf_dp: u8, mode: Directive) -> Option<(u16, Vec<Unit>)> {
+    let mut game = game.to_owned();
+    let mut round = 0u16;
+
+    loop {
         let db = &game.units;
         game.idxs.sort_unstable_by_key(|&i| db[i].pos);
-        while game.units[*game.idxs.last().unwrap() as usize].pos == u16::MAX {
+        while game.units[*game.idxs.last().unwrap() as usize].pos.is_none() {
             game.idxs.pop();
         }
 
-        for &i in &game.idxs {
-            let mut u = game.units[i];
+        for j in 0..game.idxs.len() {
+            let idx = game.idxs[j];
+            let mut u = game.units[idx];
+
             if u.hp == 0 {
                 continue; // Killed.
             }
-
-            let u_map = Map::from_pos(u.pos);
-            let mut enemy_adj = game.maps[!u.id]._adjacent();
+            let u_map = Map::from_pos(u.pos.unwrap());
+            // Only place that we do NOT automatically remove unwalkable tiles.
+            let mut enemy_adj = game.maps[!u.team]._adjacent();
 
             if (&u_map & &enemy_adj).is_zero() {
-                enemy_adj = &enemy_adj & &game.can_walk;
+                enemy_adj = &enemy_adj & &game.can_walk; // Remove unwalkable tile.
                 if let Some(pos_new) = game.move_it(&u_map, &enemy_adj) {
-                    game.pos_idx.swap(u.pos as usize, pos_new as usize);
-                    game.maps[u.id].swap(u.pos, pos_new);
-                    game.can_walk.swap(pos_new, u.pos);
-                    u.pos = pos_new;
+                    unsafe { game.swap_pos(u, pos_new) };
+                    game.units[idx].pos = Some(pos_new);
+                    u.pos = Some(pos_new);
                 }
             }
 
             // Attack
-            // Find adjacent.
-            let adjs = [
-                u.pos.wrapping_sub(DIM as u16),
-                u.pos + DIM as u16,
-                u.pos - 1,
-                u.pos + 1,
-            ];
-            if let Some((idx, pos, mut tg)) = adjs
-                .iter()
-                .filter_map(|&p| {
-                    if p < 1024 && game.pos_idx[p as usize] < u16::MAX {
-                        let idx = game.pos_idx[p as usize];
-                        let target = game.units[idx as usize];
-                        if target.id != u.id {
-                            return Some((idx, p, target));
-                        }
-                    }
-                    None
-                })
-                .min_by_key(|&(_, _, u)| u.hp)
-            {
+            if let Some((idx_tg, tg)) = game.choose_attack_target(u) {
+                let dp = if u.team == Team::Elf { elf_dp } else { 3 };
+
                 if tg.hp > dp {
-                    tg.hp -= dp;
+                    game.units[idx_tg as usize].hp -= dp;
                 } else {
                     // Die.
-                    tg.hp = 0;
-                    tg.pos = u16::MAX;
-                    game.pos_idx[pos as usize] = u16::MAX;
-                    game.maps[!u.id].toggle(pos);
-                    game.can_walk.toggle(pos);
-                    game.cnts[!u.id] -= 1;
-                }
-                game.units[idx as usize] = tg;
-                if game.cnts[!u.id] == 0 {
-                    break 'outer;
+                    game.units[idx_tg as usize].hp = 0;
+                    if tg.team == Team::Elf && mode == Directive::StopWhenElfDies {
+                        return None;
+                    }
+                    unsafe { game.finish_it(u, idx_tg, tg) };
+                    if game.cnts[!u.team] == 0 {
+                        let round = if j == game.idxs.len() - 1 { round + 1 } else { round };
+                        return Some((round, game.units));
+                    }
                 }
             }
-            game.units[i] = u;
         }
         round += 1;
-        // game.show();
-        // printt(&game.hp);
     }
-    // printt(&round);
-    // printt(&game.units.iter().map(|&x| x.hp as u32).sum::<u32>());
-    (round * game.units.iter().map(|&x| x.hp as u32).sum::<u32>(), 0)
 }
 
 impl Game {
-    fn show(&self) {
+    #[allow(dead_code)]
+    fn show(&self, bold: Option<i16>) {
         let mut out = [b'#'; 1024];
-        let elf: &Map = &self.maps[Id::Elf];
+        let elf: &Map = &self.maps[Team::Elf];
         for (x, offset) in elf.m.iter().zip([0, 256, 512, 768]) {
             let bits: BitArray<Lsb0, _> = BitArray::new(<[u8; 32]>::from(*x));
             for b in bits.iter_ones() {
@@ -332,7 +310,7 @@ impl Game {
             }
         }
 
-        let gob: &Map = &self.maps[Id::Gob];
+        let gob: &Map = &self.maps[Team::Gob];
         for (x, offset) in gob.m.iter().zip([0, 256, 512, 768]) {
             let bits: BitArray<Lsb0, _> = BitArray::new(<[u8; 32]>::from(*x));
             for b in bits.iter_ones() {
@@ -348,6 +326,10 @@ impl Game {
                 debug_assert!(out[offset + b] == b'#');
                 out[offset + b] = b'.';
             }
+        }
+
+        if let Some(tb) = bold {
+            out[tb as usize] = b'X';
         }
 
         let s = out
@@ -381,7 +363,26 @@ impl Game {
         &map._adjacent() & &self.can_walk
     }
 
-    fn move_it(&self, ori: &Map, e_adj: &Map) -> Option<u16> {
+    unsafe fn swap_pos(&mut self, u: Unit, pos_new: Pos) {
+        let upos = u.pos.unwrap();
+        self.pos_idx.swap(upos as usize, pos_new as usize);
+        self.maps[u.team].swap(upos, pos_new);
+        self.can_walk.swap(pos_new, upos);
+    }
+
+    unsafe fn finish_it(&mut self, killer: Unit, idx_tg: Idx, mut tg: Unit) {
+        tg.hp = 0;
+        self.pos_idx[tg.pos.unwrap() as usize] = None;
+
+        self.maps[!killer.team].toggle(tg.pos.unwrap());
+        self.can_walk.toggle(tg.pos.unwrap());
+
+        tg.pos = None;
+        self.cnts[!killer.team] -= 1;
+        self.units[idx_tg as usize] = tg;
+    }
+
+    fn move_it(&self, ori: &Map, e_adj: &Map) -> Option<Pos> {
         // BFS until overlap with adjacent to enemy.
         if let Some(picked) = self.bfs(ori, e_adj) {
             let ori_adj = self.adjacent(ori);
@@ -389,6 +390,42 @@ impl Game {
         }
         None
     }
+
+    fn choose_attack_target(&self, u: Unit) -> Option<(Idx, Unit)> {
+        let adjs = [
+            u.pos.unwrap().wrapping_sub(DIM as u16),
+            u.pos.unwrap() + DIM as u16,
+            u.pos.unwrap().wrapping_sub(1),
+            u.pos.unwrap() + 1,
+        ];
+        adjs.iter()
+            .filter_map(|&p| {
+                if p < 1024 && self.pos_idx[p as usize].is_some() {
+                    let idx = self.pos_idx[p as usize].unwrap();
+                    let target = self.units[idx as usize];
+                    if target.team != u.team {
+                        return Some((idx, target));
+                    }
+                }
+                None
+            })
+            .min_by_key(|&(_, u)| (u.hp, u.pos))
+    }
+}
+
+fn score((round, units): (u16, Vec<Unit>)) -> u32 {
+    round as u32 * units.iter().map(|&x| x.hp as u32).sum::<u32>()
+}
+
+pub fn combi(game: &Game) -> (u32, u32) {
+    let part1 = run(game, 3, Directive::Meh).unwrap();
+
+    let part2 = (4u8..50)
+        .into_par_iter()
+        .find_map_first(|dp| run(game, dp, Directive::StopWhenElfDies))
+        .unwrap();
+
+    (score(part1), score(part2))
 }
 
 #[cfg(test)]
@@ -398,6 +435,6 @@ mod tests {
 
     #[test]
     fn test_combi() {
-        assert_eq!(combi(&parse(&read(2018, "day15.txt"))), (213692, 1033));
+        assert_eq!(combi(&parse(&read(2018, "day15.txt"))), (213692, 52688));
     }
 }
