@@ -3,9 +3,9 @@ use std::convert::TryFrom;
 use std::fmt::Display;
 use std::ops::{BitAnd, Not};
 use std::str::from_utf8;
-use std::thread;
 
 use bitvec::prelude::*;
+use crossbeam::thread;
 use enum_map::{enum_map, Enum, EnumMap};
 use itertools::{izip, Itertools};
 use num::Integer;
@@ -437,15 +437,17 @@ fn score((round, units): (u16, Vec<Unit>)) -> u32 {
 
 pub fn combi(game: &Game) -> (u32, u32) {
     game.is_sound();
-    let game1 = game.to_owned();
-    let thr = unsafe { thread::spawn(move || run(&game1, 3, Directive::Meh).unwrap()) };
 
-    let part2 = (4u8..50)
-        .into_par_iter()
-        .find_map_first(|dp| unsafe { run(game, dp, Directive::StopWhenElfDies) })
-        .unwrap();
+    let (part1, part2) = thread::scope(|scope| {
+        let part1 = scope.spawn(move |_| unsafe { run(game, 3, Directive::Meh).unwrap() });
+        let part2 = (4u8..50)
+            .into_par_iter()
+            .find_map_first(|dp| unsafe { run(game, dp, Directive::StopWhenElfDies) })
+            .unwrap();
 
-    let part1 = thr.join().unwrap();
+        (part1.join().unwrap(), part2)
+    })
+    .unwrap();
 
     (score(part1), score(part2))
 }
