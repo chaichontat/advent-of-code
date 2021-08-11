@@ -134,7 +134,7 @@ fn bench_2018(c: &mut Criterion) {
     c.bench_function("2018_day13", |b| b.iter(|| day13::combi(black_box(day13))));
 
     let day15 = &day15::parse(&read("day15.txt"));
-    unsafe { c.bench_function("2018_day15", |b| b.iter(|| day15::combi(black_box(day15)))) };
+    c.bench_function("2018_day15", |b| b.iter(|| day15::combi(black_box(day15))));
 
     let day16 = &day16::parse(&read("day16.txt"));
     c.bench_function("day16c", |b| b.iter(|| day16::combi(black_box(day16))));

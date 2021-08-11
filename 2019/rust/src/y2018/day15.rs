@@ -245,7 +245,8 @@ pub enum Directive {
 }
 
 /// # Safety
-/// See `combi` below.
+/// Game must be internally consistent.
+/// No bounds-checking at indices with use of pointer arithmetics for shifting.
 unsafe fn run(game: &Game, elf_dp: u8, mode: Directive) -> Option<(u16, Vec<Unit>)> {
     let mut game = game.to_owned();
     let mut round = 0u16;
@@ -295,6 +296,13 @@ unsafe fn run(game: &Game, elf_dp: u8, mode: Directive) -> Option<(u16, Vec<Unit
 }
 
 impl Game {
+    fn is_sound(&self) {
+        assert_eq!(self.idxs.len(), self.units.len());
+        assert!(*self.idxs.iter().unique().max().unwrap() < self.units.len());
+        assert!(self.units.iter().all(|u| u.pos.unwrap() < (DIM * DIM) as u16));
+        assert!(self.pos_idx.iter().flatten().all(|&x| x < self.idxs.len() as u16));
+    }
+
     #[allow(dead_code)]
     fn show(&self, bold: Option<i16>) {
         let mut out = [b'#'; 1024];
@@ -427,16 +435,14 @@ fn score((round, units): (u16, Vec<Unit>)) -> u32 {
     round as u32 * units.iter().map(|&x| x.hp as u32).sum::<u32>()
 }
 
-/// # Safety
-/// Game must be internally consistent.
-/// No bounds-checking at indices with use of pointer arithmetics for shifting.
-pub unsafe fn combi(game: &Game) -> (u32, u32) {
+pub fn combi(game: &Game) -> (u32, u32) {
+    game.is_sound();
     let game1 = game.to_owned();
-    let thr = thread::spawn(move || run(&game1, 3, Directive::Meh).unwrap());
+    let thr = unsafe { thread::spawn(move || run(&game1, 3, Directive::Meh).unwrap()) };
 
     let part2 = (4u8..50)
         .into_par_iter()
-        .find_map_first(|dp| run(game, dp, Directive::StopWhenElfDies))
+        .find_map_first(|dp| unsafe { run(game, dp, Directive::StopWhenElfDies) })
         .unwrap();
 
     let part1 = thr.join().unwrap();
@@ -451,6 +457,6 @@ mod tests {
 
     #[test]
     fn test_combi() {
-        unsafe { assert_eq!(combi(&parse(&read(2018, "day15.txt"))), (213692, 52688)) };
+        assert_eq!(combi(&parse(&read(2018, "day15.txt"))), (213692, 52688));
     }
 }
