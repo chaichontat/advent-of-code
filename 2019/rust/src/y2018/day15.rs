@@ -431,15 +431,15 @@ fn score((round, units): (u16, Vec<Unit>)) -> u32 {
 /// Game must be internally consistent.
 /// No bounds-checking at indices with use of pointer arithmetics for shifting.
 pub unsafe fn combi(game: &Game) -> (u32, u32) {
-    let game1 = game.to_owned();
-    let thr = thread::spawn(move || run(&game1, 3, Directive::Meh).unwrap());
-
+    // let game1 = game.to_owned();
+    // let thr = thread::spawn(move || run(&game1, 3, Directive::Meh).unwrap());
+    let part1 = run(game, 3, Directive::Meh).unwrap();
     let part2 = (4u8..50)
         .into_par_iter()
         .find_map_first(|dp| run(game, dp, Directive::StopWhenElfDies))
         .unwrap();
 
-    let part1 = thr.join().unwrap();
+    // let part1 = thr.join().unwrap();
 
     (score(part1), score(part2))
 }
