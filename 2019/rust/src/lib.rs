@@ -1,6 +1,8 @@
 #![feature(is_sorted)]
 #![feature(stmt_expr_attributes)]
+#![feature(unsafe_block_in_unsafe_fn)]
 #![allow(non_snake_case)]
+#![warn(unsafe_op_in_unsafe_fn)]
 
 #[macro_use]
 extern crate num_derive;

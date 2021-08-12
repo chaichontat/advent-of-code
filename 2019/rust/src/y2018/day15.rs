@@ -117,15 +117,17 @@ impl Map {
     }
 
     unsafe fn swap(&mut self, pos: u16, pos_new: u16) {
-        self.toggle(pos);
-        self.toggle(pos_new);
+        unsafe {
+            self.toggle(pos);
+            self.toggle(pos_new);
+        }
     }
 
     unsafe fn toggle(&mut self, pos: u16) {
         debug_assert!(pos < (DIM * DIM) as u16);
         let ptr = self.m.as_mut_ptr() as *mut i32;
         let (r, c) = pos.div_rem(&(DIM as u16));
-        *ptr.add(r as usize) ^= 1 << c;
+        unsafe { *ptr.add(r as usize) ^= 1 << c };
     }
 }
 
@@ -247,6 +249,7 @@ pub enum Directive {
 /// # Safety
 /// Game must be internally consistent.
 /// No bounds-checking at indices with use of pointer arithmetics for shifting.
+#[allow(unsafe_op_in_unsafe_fn)]
 unsafe fn run(game: &Game, elf_dp: u8, mode: Directive) -> Option<(u16, Vec<Unit>)> {
     let mut game = game.to_owned();
     let mut round = 0u16;
@@ -370,20 +373,24 @@ impl Game {
     unsafe fn swap_pos(&mut self, u: Unit, pos_new: Pos) {
         let upos = u.pos.unwrap();
         self.pos_idx.swap(upos as usize, pos_new as usize);
-        self.maps[u.team].swap(upos, pos_new);
-        self.can_walk.swap(pos_new, upos);
+        unsafe {
+            self.maps[u.team].swap(upos, pos_new);
+            self.can_walk.swap(pos_new, upos);
+        }
     }
 
     unsafe fn finish_it(&mut self, killer: Unit, idx_tg: Idx, mut tg: Unit) {
         tg.hp = 0;
-        *self.pos_idx.get_unchecked_mut(tg.pos.unwrap() as usize) = None;
+        unsafe {
+            *self.pos_idx.get_unchecked_mut(tg.pos.unwrap() as usize) = None;
 
-        self.maps[!killer.team].toggle(tg.pos.unwrap());
-        self.can_walk.toggle(tg.pos.unwrap());
+            self.maps[!killer.team].toggle(tg.pos.unwrap());
+            self.can_walk.toggle(tg.pos.unwrap());
 
-        tg.pos = None;
-        self.cnts[!killer.team] -= 1;
-        *self.units.get_unchecked_mut(idx_tg as usize) = tg;
+            tg.pos = None;
+            self.cnts[!killer.team] -= 1;
+            *self.units.get_unchecked_mut(idx_tg as usize) = tg;
+        }
     }
 
     fn move_it(&self, ori: &Map, e_adj: &Map) -> Option<Pos> {
@@ -404,7 +411,7 @@ impl Game {
         ];
 
         adjs.iter()
-            .filter_map(|&p| {
+            .filter_map(|&p| unsafe {
                 if p < 1024 && self.pos_idx.get_unchecked(p as usize).is_some() {
                     let idx = self.pos_idx.get_unchecked(p as usize).unwrap();
                     let target = *self.units.get_unchecked(idx as usize);
@@ -419,14 +426,16 @@ impl Game {
 
     unsafe fn unqueue_dead(&mut self) {
         let db = &self.units;
-        self.idxs.sort_unstable_by_key(|&idx| db.get_unchecked(idx).pos);
-        while self
-            .units
-            .get_unchecked(*self.idxs.last().unwrap() as usize)
-            .pos
-            .is_none()
-        {
-            self.idxs.pop();
+        unsafe {
+            self.idxs.sort_unstable_by_key(|&idx| db.get_unchecked(idx).pos);
+            while self
+                .units
+                .get_unchecked(*self.idxs.last().unwrap() as usize)
+                .pos
+                .is_none()
+            {
+                self.idxs.pop();
+            }
         }
     }
 }
