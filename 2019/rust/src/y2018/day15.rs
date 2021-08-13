@@ -1,6 +1,7 @@
 use std::arch::x86_64::{__m256i, _mm256_loadu_si256};
 use std::convert::TryFrom;
 use std::fmt::Display;
+use std::iter::once;
 use std::ops::{BitAnd, Not};
 use std::str::from_utf8;
 
@@ -309,29 +310,12 @@ impl Game {
     #[allow(dead_code)]
     fn show(&self, bold: Option<i16>) {
         let mut out = [b'#'; 1024];
-        let elf: &Map = &self.maps[Team::Elf];
-        for (x, offset) in elf.m.iter().zip([0, 256, 512, 768]) {
-            let bits: BitArray<Lsb0, _> = BitArray::new(<[u8; 32]>::from(*x));
-            for b in bits.iter_ones() {
-                out[offset + b] = b'E';
-            }
-        }
-
-        let gob: &Map = &self.maps[Team::Gob];
-        for (x, offset) in gob.m.iter().zip([0, 256, 512, 768]) {
-            let bits: BitArray<Lsb0, _> = BitArray::new(<[u8; 32]>::from(*x));
-            for b in bits.iter_ones() {
-                debug_assert!(out[offset + b] == b'#');
-                out[offset + b] = b'G';
-            }
-        }
-
-        let gob: &Map = &self.can_walk;
-        for (x, offset) in gob.m.iter().zip([0, 256, 512, 768]) {
-            let bits: BitArray<Lsb0, _> = BitArray::new(<[u8; 32]>::from(*x));
-            for b in bits.iter_ones() {
-                debug_assert!(out[offset + b] == b'#');
-                out[offset + b] = b'.';
+        for map in IntoIterator::into_iter([&self.maps[Team::Elf], &self.maps[Team::Gob]])
+            .chain(once(&self.can_walk))
+        {
+            for (x, offset, c) in izip!(map.m, (0..1024).step_by(256), b"EG.") {
+                let bits = BitArray::<Lsb0, _>::new(<[u8; 32]>::from(x));
+                bits.iter_ones().for_each(|i| out[offset + i] = *c);
             }
         }
 
@@ -366,6 +350,7 @@ impl Game {
         }
     }
 
+    #[must_use]
     fn adjacent(&self, map: &Map) -> Map {
         &map._adjacent() & &self.can_walk
     }
@@ -440,6 +425,7 @@ impl Game {
     }
 }
 
+#[must_use]
 fn score((round, units): (u16, Vec<Unit>)) -> u32 {
     round as u32 * units.iter().map(|&x| x.hp as u32).sum::<u32>()
 }
