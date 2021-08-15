@@ -10,4 +10,11 @@ snapshots:
     sha256: c632012da648385b9fa3c29f4e0afd56ead299f1c5528ee789058be410e883c0
     url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/0.yaml
     size: 585393
-packages: []
+packages:
+- original:
+    hackage: array-0.5.4.0
+  completed:
+    pantry-tree:
+      sha256: e17dfafde2f226674cffd56b1f445c332b6e5855860f79dedd9de0b6916e7ff0
+      size: 1135
+    hackage: array-0.5.4.0@sha256:2b2425e01d592c0e66594c008405ea4c6f6e4d929daeddabbd81be9bb49ebffa,1588

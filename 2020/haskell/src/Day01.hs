@@ -3,7 +3,6 @@ module Day01 where
 import           Control.Monad (guard)
 import qualified Data.IntSet   as IS
 import           Data.Maybe    (listToMaybe)
-import           Test.HUnit    (assertEqual)
 
 findPair :: Int -> IS.IntSet -> Maybe Int
 findPair goal xs =

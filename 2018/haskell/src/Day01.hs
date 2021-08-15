@@ -17,7 +17,7 @@ parseInt x | head x == '+' = (read :: String -> Int) $ drop 1 x
            | otherwise     = (read :: String -> Int) x
 
 day01a :: [String] -> Maybe Int
-day01a s = Just $ sum $ map parseInt s
+day01a s = pure $ sum $ map parseInt s
 
 cumsum :: [Int] -> (Int, [Int])
 cumsum xs = (last summed, init summed) where summed = scanl (+) 0 xs

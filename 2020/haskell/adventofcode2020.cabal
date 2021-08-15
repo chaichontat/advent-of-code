@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Day01
       Lib
   other-modules:
       Paths_adventofcode2020
@@ -52,7 +53,6 @@ test-suite haskell-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Day01
       Paths_adventofcode2020
   hs-source-dirs:
       test

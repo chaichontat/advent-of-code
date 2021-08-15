@@ -26,13 +26,15 @@ source-repository head
 library
   exposed-modules:
       Day01
+      Day02
       Lib
   other-modules:
       Paths_adventofcode2018
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , containers
   default-language: Haskell2010
 
@@ -45,6 +47,7 @@ executable haskell-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       adventofcode2018
+    , array
     , base >=4.7 && <5
     , containers
   default-language: Haskell2010
@@ -60,6 +63,7 @@ test-suite haskell-test
   build-depends:
       HUnit
     , adventofcode2018
+    , array
     , base >=4.7 && <5
     , containers
   default-language: Haskell2010
@@ -74,6 +78,7 @@ benchmark haskell-bench
   ghc-options: -O2 -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       adventofcode2018
+    , array
     , base >=4.7 && <5
     , containers
     , criterion
