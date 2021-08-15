@@ -30,7 +30,7 @@ jobs:
           working-directory: ${{ matrix.dir }}
 
       - name: Build & Test
-        run: cargo test --release # Release profile. Prevents benchmark recompilation.
+        run: cargo test
         working-directory: ${{ matrix.dir }}
 
       - name: Run benchmark
