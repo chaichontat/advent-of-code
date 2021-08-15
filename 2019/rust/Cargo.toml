@@ -46,6 +46,3 @@ pretty_assertions = "^0.7.2"
 [[bench]]
 harness = false
 name = "criterion"
-
-[profile.bench]
-lto = true
