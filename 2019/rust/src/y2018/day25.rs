@@ -11,11 +11,14 @@ pub fn parse(raw: &str) -> Vec<Parsed> {
         .collect()
 }
 
+#[repr(align(32))]
+struct AlignedVec<T>(Vec<T>);
+
 pub fn part1(parsed: &[Parsed]) -> usize {
     let len = parsed.len() / 4;
-    let mut parsed = parsed.to_vec();
-    parsed.resize((4 * len + 31) & !31, 0); // Round up to be divisible by 32.
-    let ptr = parsed.as_ptr() as *const i32; // 4 i8.
+    let mut parsed = AlignedVec(parsed.to_vec());
+    parsed.0.resize((4 * len + 31) & !31, 0); // Round up to be divisible by 32.
+    let ptr = parsed.0.as_ptr() as *const i32; // 4 i8.
 
     let mut pv = partition_vec![0u8; len];
 
