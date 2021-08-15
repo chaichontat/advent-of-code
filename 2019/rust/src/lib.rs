@@ -1,6 +1,5 @@
 #![feature(is_sorted)]
 #![feature(stmt_expr_attributes)]
-#![feature(unsafe_block_in_unsafe_fn)]
 #![allow(non_snake_case)]
 #![warn(unsafe_op_in_unsafe_fn)]
 
@@ -16,7 +15,7 @@ pub mod utils;
 pub mod y2019 {
     pub mod day01;
     pub mod day02;
-    // pub mod day03;
+    pub mod day03;
     pub mod day04;
     pub mod day05;
     pub mod day06;
@@ -34,7 +33,7 @@ pub mod y2019 {
     pub mod day18;
     pub mod day19;
     pub mod day20;
-    // pub mod day21;
+    pub mod day21;
     pub mod day22;
     pub mod day23;
     pub mod day24;
@@ -45,7 +44,7 @@ pub mod y2019 {
 pub mod y2018 {
     pub mod day01;
     pub mod day02;
-    pub mod day03;
+    // pub mod day03;
     pub mod day07;
     pub mod day08;
     pub mod day09;
@@ -60,7 +59,7 @@ pub mod y2018 {
     pub mod day18;
     pub mod day19;
     pub mod day20;
-    pub mod day21;
+    // pub mod day21;
     pub mod day22;
     pub mod day23;
     pub mod day24;
