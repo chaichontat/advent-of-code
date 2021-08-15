@@ -9,7 +9,7 @@ pub fn parse(raw: &str) -> Vec<Parsed> {
     raw.split('\n').map(|x| x.parse().unwrap()).collect()
 }
 
-pub fn combi(parsed: &[Parsed]) -> Option<(u32, u32)> {
+pub fn combi(parsed: &[Parsed]) -> (u32, u32) {
     let mut freq = iter::once(0).chain(parsed.iter().copied()).collect_vec();
 
     freq.iter_mut().fold(0, |acc, i| {
@@ -17,7 +17,7 @@ pub fn combi(parsed: &[Parsed]) -> Option<(u32, u32)> {
         *i
     });
 
-    let sum = freq.pop()?;
+    let sum = freq.pop().unwrap();
 
     // Assuming that the answer is not in the first iteration.
     // Otherwise,
@@ -60,13 +60,12 @@ pub fn combi(parsed: &[Parsed]) -> Option<(u32, u32)> {
         // (diff, idx of cumsum whose upon adding (qt × shift) = goal, idx of said goal)
         // Need to sort using idx_pursuer because the cumsum seq is not monotonic.
         // That is, idx_goal could be < idx_pursuer.
-        .filter_map(|(prev, (md, qt, idx))| match md {
-            x if x == prev.0 => Some((qt - prev.1, prev.2, idx)),
-            _ => None,
-        })
+        .filter_map(
+            |(prev, (md, qt, idx))| if md == prev.0 { Some((qt - prev.1, prev.2, idx)) } else { None },
+        )
         .min();
 
-    Some((sum as u32, freq[all_in_one?.2 as usize] as u32))
+    (sum as u32, freq[all_in_one.unwrap().2 as usize] as u32)
 }
 
 #[cfg(test)]
@@ -75,6 +74,6 @@ mod tests {
     use crate::utils::*;
     #[test]
     fn test() {
-        assert_eq!(combi(&parse(&read(2018, "day01.txt"))), Some((454, 566)));
+        assert_eq!(combi(&parse(&read(2018, "day01.txt"))), (454, 566));
     }
 }
