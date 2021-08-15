@@ -1,0 +1,62 @@
+#include <stdlib.h>
+#include <stdio.h>
+// Code added to transpiled input starts here
+#include <unordered_set>
+// Code added to transpiled input ends here
+#define badJump(line, reg) if (1) { fprintf(stderr, "Made a jump at l%d with an unsupported offset of %ld.  Transpile with -allJumps to enable full jump support.\n", (line), (reg)); abort(); }
+void printRegs(long *r) {
+	printf("%ld %ld %ld %ld %ld %ld\n", r[0], r[2], r[4], r[3], r[5], r[1]);
+}
+int main(int argc, char **argv) {
+	long r[6] = {0};
+	for (int i = 0; i < (argc > 6 ? 6 : argc - 1); i++) {
+		r[i] = atoi(argv[i+1]);
+	}
+	// Code added to transpiled input starts here
+	std::unordered_set<long> numbers;
+	long last = -1;
+	// Code added to transpiled input ends here
+	l 0: r[1] = 123;
+	l 1: r[1] = r[1] & 456;
+	l 2: r[1] = r[1] == 72 ? 1 : 0;
+	l 3: if (r[1] == 0) { goto l4; } else if (r[1] == 1) { goto l5; } else { badJump(3, r[1]); }
+	l 4: goto l1;
+	l 5: r[1] = 0;
+	l 6: r[3] = r[1] | 65536; // r5
+	l 7: r[1] = 9010242; //6780005
+	l 8: r[2] = r[3] & 255;
+	l 9: r[1] = r[1] + r[2];
+	l10: r[1] = r[1] & 16777215;
+	l11: r[1] = r[1] * 65899;
+	l12: r[1] = r[1] & 16777215;
+	l13: r[2] = 256 > r[3] ? 1 : 0; // r3 <= 256
+	l14: if (r[2] == 0) { goto l15; } else if (r[2] == 1) { goto l16; } else { badJump(14, r[2]); } // r3 <= 256
+	l15: goto l17;
+	l16: goto l28; // r5 == r0
+	l17: r[2] = 0;
+	l18: r[5] = r[2] + 1;
+	l19: r[5] = r[5] * 256;
+	l20: r[5] = r[5] > r[3] ? 1 : 0;
+	l21: if (r[5] == 0) { goto l22; } else if (r[5] == 1) { goto l23; } else { badJump(21, r[5]); }
+	l22: goto l24;
+	l23: goto l26;
+	l24: r[2] = r[2] + 1;
+	l25: goto l18;
+	l26: r[3] = r[2];
+	l27: goto l8;
+	l28: r[2] = r[1] == r[0] ? 1 : 0; // r5 == r0
+	// Code added to transpiled input starts here
+	if (last == -1) {
+		printf("Part 1: %ld\n", r[1]);
+	}
+	if (numbers.find(r[1]) != numbers.end()) {
+		printf("Part 2: %ld\n", last);
+		exit(0);
+	}
+	last = r[1];
+	numbers.insert(last);
+	// Code added to transpiled input ends here
+	l29: if (r[2] == 0) { goto l30; } else if (r[2] == 1) { r[4] = 29; printRegs(r); return 0; } else { badJump(29, r[2]); } // Exit
+	l30: goto l6;
+	r[4] = 30; printRegs(r); return 0;
+}
