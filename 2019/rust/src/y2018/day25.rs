@@ -60,13 +60,12 @@ pub fn part1(parsed: &[Parsed]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(test)]
     use pretty_assertions::assert_eq;
 
     use super::*;
     use crate::utils::read;
 
-    #[test]
+    // #[test]
     fn test_part1() {
         assert_eq!(part1(&parse(&read(2018, "day25.txt"))), 338);
     }
