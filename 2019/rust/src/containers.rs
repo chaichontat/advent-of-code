@@ -66,6 +66,7 @@ pub struct Vec2D<T> {
     x_len: usize,
 }
 
+#[allow(unsafe_op_in_unsafe_fn)]
 impl<T: Default + Clone> Vec2D<T> {
     pub fn new(dim: [usize; 2]) -> Self {
         let v = vec![T::default(); dim[0] * dim[1]];
@@ -150,10 +151,9 @@ impl<'a, T> IntoIterator for &'a mut Vec2D<T> {
 #[cfg(test)]
 mod tests {
     use super::{Array2D, Vec2D};
-    use crate::utils::printt;
 
     #[test]
-    fn test_whatamidoing() {
+    fn test_vec2d() {
         let mut x = Vec2D::<u8>::new([5, 4]);
         for u in &mut x {
             u.copy_from_slice(&[1, 2, 3, 4]);
