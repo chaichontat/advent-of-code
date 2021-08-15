@@ -97,11 +97,11 @@ mod tests {
 
     #[test]
     fn test_combi_simd() {
-        assert_eq!(combi(&parse(&read(2018, "day12.txt"))), (1253, 1278));
+        assert_eq!(combi(&parse(&read(2017, "day01.txt"))), (1253, 1278));
     }
 
     #[test]
     fn test_combi() {
-        assert_eq!(combi_ori(&parse(&read(2018, "day12.txt"))), (1253, 1278));
+        assert_eq!(combi_ori(&parse(&read(2017, "day01.txt"))), (1253, 1278));
     }
 }
