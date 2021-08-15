@@ -87,7 +87,7 @@ impl Cave {
             .into_iter()
             .enumerate()
             .skip(1) // Row-by-row. Multiplication by repeated addition.
-            .fold(depth + GEO_YM, |x0, (y, mut yy)| {
+            .fold(depth + GEO_YM, |x0, (y, yy)| {
                 let mut carry = x0;
                 for (x, (xx, geo)) in yy.iter_mut().zip(prev_geo.iter_mut()).enumerate() {
                     *xx = 1 << (carry % 3) as ArrT;
