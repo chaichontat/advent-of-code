@@ -9,6 +9,13 @@ pub fn parse(raw: &str) -> Vec<Parsed> {
     raw.split('\n').map(|x| x.parse().unwrap()).collect()
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct Div {
+    md:  i32,
+    qt:  i32,
+    idx: i16,
+}
+
 pub fn combi(parsed: &[Parsed]) -> (u32, u32) {
     let mut freq = iter::once(0).chain(parsed.iter().copied()).collect_vec();
 
@@ -46,26 +53,33 @@ pub fn combi(parsed: &[Parsed]) -> (u32, u32) {
 
     // Assuming that the sum is strictly positive. Need to reverse some sorting if not.
 
-    let all_in_one = freq
+    // Step 2
+    // (diff, idx of cumsum whose upon adding (qt × shift) = goal, idx of said goal)
+    // Need to sort using idx_pursuer because the cumsum seq is not monotonic.
+    // That is, idx_goal could be < idx_pursuer.
+
+    let divs = freq
         .iter()
         .enumerate()
         // Step 1
         .map(|(idx, &x)| {
             let (qt, md) = x.div_mod_floor(&sum);
-            (md, qt, idx as i16)
-        })
+            Div { md, qt, idx: idx as i16 }
+        });
+
+    let idx = divs
         .sorted_unstable()
         .tuple_windows::<(_, _)>()
-        // Step 2
-        // (diff, idx of cumsum whose upon adding (qt × shift) = goal, idx of said goal)
-        // Need to sort using idx_pursuer because the cumsum seq is not monotonic.
-        // That is, idx_goal could be < idx_pursuer.
-        .filter_map(
-            |(prev, (md, qt, idx))| if md == prev.0 { Some((qt - prev.1, prev.2, idx)) } else { None },
-        )
+        .filter_map(|(prev, now)| {
+            if now.md == prev.md {
+                Some((now.qt - prev.qt, prev.idx, now.idx))
+            } else {
+                None
+            }
+        })
         .min();
 
-    (sum as u32, freq[all_in_one.unwrap().2 as usize] as u32)
+    (sum as u32, freq[idx.unwrap().2 as usize] as u32)
 }
 
 #[cfg(test)]
