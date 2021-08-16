@@ -25,9 +25,9 @@ jobs:
           toolchain: nightly
           override: true
 
-      - uses: Swatinem/rust-cache@v1
-        with:
-          working-directory: ${{ matrix.dir }}
+#       - uses: Swatinem/rust-cache@v1
+#         with:
+#           working-directory: ${{ matrix.dir }}
 
       - name: Build & Test
         run: cargo test
