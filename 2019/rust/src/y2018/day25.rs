@@ -4,21 +4,28 @@ use std::arch::x86_64::*;
 use partitions::partition_vec;
 
 type Parsed = i8;
+const N_DATA: usize = 1500; // Exceeding this results in undefined behavior!
+const LEN: usize = (4 * N_DATA + 31) & !31;
 
 pub fn parse(raw: &str) -> Vec<Parsed> {
-    raw.split('\n')
+    let out = raw
+        .split('\n')
         .flat_map(|line| line.split(',').map(|s| s.parse().unwrap()))
-        .collect()
+        .collect();
+    assert!(Vec::<Parsed>::len(&out) < LEN);
+    out
 }
 
 #[repr(align(32))]
-struct AlignedVec<T>(Vec<T>);
+struct Data([i8; LEN]);
 
-pub fn part1(parsed: &[Parsed]) -> usize {
+/// # Safety
+/// Number of elements in the input file must be less than N_DATA for data alignment.
+pub unsafe fn part1(parsed: &[Parsed]) -> usize {
     let len = parsed.len() / 4;
-    let mut parsed = AlignedVec(parsed.to_vec());
-    parsed.0.resize((4 * len + 31) & !31, 0); // Round up to be divisible by 32.
-    let ptr = parsed.0.as_ptr() as *const i32; // 4 i8.
+    let mut arr = Data([0; LEN]);
+    arr.0[..4 * len].copy_from_slice(parsed);
+    let ptr = arr.0.as_ptr() as *const i32; // 4 i8.
 
     let mut pv = partition_vec![0u8; len];
 
@@ -65,8 +72,8 @@ mod tests {
     use super::*;
     use crate::utils::read;
 
-    // #[test]
+    #[test]
     fn test_part1() {
-        assert_eq!(part1(&parse(&read(2018, "day25.txt"))), 338);
+        assert_eq!(unsafe { part1(&parse(&read(2018, "day25.txt"))) }, 338);
     }
 }
