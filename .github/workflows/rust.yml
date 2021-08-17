@@ -25,26 +25,26 @@ jobs:
           toolchain: nightly
           override: true
 
-#       - uses: Swatinem/rust-cache@v1
-#         with:
-#           working-directory: ${{ matrix.dir }}
+      # - uses: Swatinem/rust-cache@v1
+      #   with:
+      #     working-directory: ${{ matrix.dir }}
 
       - name: Build & Test
         run: cargo test
         working-directory: ${{ matrix.dir }}
 
-      - name: Run benchmark
-        if: github.event_name == 'push'
-        run: cargo bench --bench criterion -- --output-format bencher | tee output.txt
-        working-directory: ${{ matrix.dir }}
+      # - name: Run benchmark
+      #   if: github.event_name == 'push'
+      #   run: cargo bench --bench criterion -- --output-format bencher | tee output.txt
+      #   working-directory: ${{ matrix.dir }}
 
-      # https://github.com/rhysd/github-action-benchmark/blob/a1914d7dcbe14d006e4b5f12c7ff303a82a411f1/examples/criterion-rs/README.md
-      - name: Store benchmark result
-        if: github.event_name == 'push'
-        uses: rhysd/github-action-benchmark@v1
-        with:
-          name: ${{ matrix.dir }}
-          tool: "cargo"
-          output-file-path: ${{ matrix.dir }}/output.txt
-          github-token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
-          auto-push: true
+      # # https://github.com/rhysd/github-action-benchmark/blob/a1914d7dcbe14d006e4b5f12c7ff303a82a411f1/examples/criterion-rs/README.md
+      # - name: Store benchmark result
+      #   if: github.event_name == 'push'
+      #   uses: rhysd/github-action-benchmark@v1
+      #   with:
+      #     name: ${{ matrix.dir }}
+      #     tool: "cargo"
+      #     output-file-path: ${{ matrix.dir }}/output.txt
+      #     github-token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+      #     auto-push: true
