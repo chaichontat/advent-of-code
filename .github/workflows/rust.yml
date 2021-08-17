@@ -12,9 +12,10 @@ env:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         dir: ["./2019/rust", "./2020/rust"]
 
     steps:
