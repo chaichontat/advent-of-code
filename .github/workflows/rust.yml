@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dir: ["./2019/rust", "./2020/rust"]
+        dir: ["./rust"]
 
     steps:
       - uses: actions/checkout@v2

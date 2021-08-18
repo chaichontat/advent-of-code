@@ -12,7 +12,7 @@ pub type Ans = Option<(usize, usize)>;
 pub type SomeResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 pub fn read(year: u16, path: &str) -> String {
-    let p = format!("../data/{}/{}", year, path);
+    let p = format!("./data/{}/{}", year, path);
     let mut res = fs::read_to_string(p).unwrap();
     res.pop();
     res
