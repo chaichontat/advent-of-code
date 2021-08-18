@@ -23,9 +23,9 @@ jobs:
       - name: Install dependencies
         run: |
           conda config --add channels conda-forge 
-          conda env update --file environment.yml --name base
+          conda env update --file python/environment.yml --name base
       - name: Test with pytest
         run: |
           conda install pytest
           # pytest 2019/python
-          pytest 2020/python
+          pytest python/y2020
