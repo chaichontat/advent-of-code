@@ -1,7 +1,7 @@
 use bitvec::prelude::*;
 use itertools::Itertools;
 
-pub fn parse(raw: String) -> Vec<usize> {
+pub fn parse(raw: &str) -> Vec<usize> {
     raw.split('\n')
         .map(|line| line.parse::<usize>().unwrap())
         .collect_vec()
@@ -53,7 +53,7 @@ mod tests {
     #[test]
     fn test_combi() {
         assert_eq!(
-            combi(&parse(read_nosep("day01.txt"))),
+            combi(&parse(&read(2020, "day01.txt"))),
             (Some(605364), Some(128397680))
         );
     }

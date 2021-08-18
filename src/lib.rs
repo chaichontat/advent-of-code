@@ -12,6 +12,14 @@ pub mod pathfinding;
 pub mod spatial;
 pub mod utils;
 
+pub mod y2020 {
+    pub mod day01;
+    pub mod day02;
+    pub mod day03;
+    pub mod day04;
+    pub mod day05;
+}
+
 pub mod y2019 {
     pub mod day01;
     pub mod day02;
