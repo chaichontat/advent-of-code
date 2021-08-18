@@ -13,10 +13,6 @@ env:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dir: ["./rust"]
-
     steps:
       - uses: actions/checkout@v2
 
@@ -31,7 +27,6 @@ jobs:
 
       - name: Build & Test
         run: cargo test
-        working-directory: ${{ matrix.dir }}
 
       # - name: Run benchmark
       #   if: github.event_name == 'push'
