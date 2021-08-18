@@ -14,5 +14,5 @@ ENV PATH=/root/.cargo/bin:$PATH
 ARG CACHEBUST=1
 RUN cd /root && git clone https://github.com/chaichontat/advent-of-code
 
-WORKDIR /root/advent-of-code/2019/rust
+WORKDIR /root/advent-of-code
 ENTRYPOINT ["sh", "-c", "cargo test"]
