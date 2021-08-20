@@ -9,24 +9,33 @@ const BASE: usize = 32;
 type Base = u32;
 const ARR: usize = DIM / BASE;
 
+#[allow(dead_code)]
+#[derive(Debug, Clone, Copy)]
+enum Overlap {
+    Yes,
+    No,
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct Claim {
-    y:     u16,
-    h:     u16,
-    idx:   u16,
-    masks: [Base; 2], // Claims never exceed 29.
+    y:      u16,
+    h:      u16,
+    id:     u16,
+    m_slot: u16,
+    masks:  [Base; 2], // Claims never exceed 29.
+    ol:     Option<Overlap>,
 }
 
 impl Claim {
     #[allow(clippy::many_single_char_names)]
-    fn new(a: [u16; 4]) -> Claim {
-        let (x, y, w, h) = (a[0], a[1], a[2], a[3]);
-        let (idx, shift) = x.div_rem(&(BASE as u16));
+    fn new(a: [u16; 5]) -> Claim {
+        let (id, x, y, w, h) = (a[0], a[1], a[2], a[3], a[4]);
+        let (m_slot, shift) = x.div_rem(&(BASE as u16));
 
         let m = (1 << w) - 1;
         let masks = [m << shift, if shift > 0 { m >> (BASE as u16 - shift) } else { 0 }];
 
-        Claim { y, h, idx, masks }
+        Claim { y, h, id, m_slot, masks, ol: None }
     }
 }
 
@@ -34,8 +43,8 @@ pub fn parse(raw: &str) -> Vec<Claim> {
     let re = Regex::new(r"\d+").unwrap();
     raw.split('\n')
         .map(|line| {
-            let mut temp = [0u16; 4];
-            let matches = re.find_iter(line).skip(1);
+            let mut temp = [0u16; 5];
+            let matches = re.find_iter(line);
             temp.iter_mut()
                 .zip(matches)
                 .for_each(|(o, x)| *o = x.as_str().parse::<u16>().unwrap());
@@ -44,40 +53,55 @@ pub fn parse(raw: &str) -> Vec<Claim> {
         .collect_vec()
 }
 
-pub fn combi(cs: &[Claim]) -> u32 {
+pub fn combi(cs: &[Claim]) -> (u32, u32) {
     let mut cs = cs.to_owned();
     // Sort by row in descending order to enable efficient vector pop.
     cs.sort_unstable_by_key(|c| Reverse(c.y));
-    let mut part1 = 0;
 
-    assert!(cs.iter().all(|c| c.idx <= ARR as u16)); // Safety check.
+    let mut part1 = 0;
+    let mut part2 = None;
+
+    assert!(cs.iter().all(|c| c.m_slot <= ARR as u16)); // Safety check.
     while !cs.is_empty() {
+        // Iteration corresponds to row.
         let curr_row = cs.last().unwrap().y;
-        part1 += unsafe { count_overlap(&cs, curr_row) };
+        let overlap = unsafe { get_overlap(&cs, curr_row) };
+        part1 += overlap.iter().map(|x| x.count_ones()).sum::<u32>();
 
         for i in (0..cs.len()).rev() {
             if cs[i].y != curr_row {
                 break;
             }
+
+            if part2.is_none() {
+                // Check if current claim overlaps.
+                let idx = cs[i].m_slot as usize;
+                if overlap[idx] & cs[i].masks[0] != 0 || overlap[idx + 1] & cs[i].masks[1] != 0 {
+                    cs[i].ol = Some(Overlap::Yes);
+                }
+            }
+
             cs[i].y += 1;
             cs[i].h -= 1;
 
             if cs[i].h == 0 {
+                if part2.is_none() && cs[i].ol.is_none() {
+                    part2 = Some(cs[i].id);
+                }
                 cs.swap_remove(i);
             }
         }
     }
-    part1
+    (part1, part2.unwrap() as u32)
 }
 
-// TODO: Finish docs and part 2.
 /// # Safety
 /// Expects all `Claim::idx` to be within bounds of the temp array.
 ///
 /// Expects `cs` to be sorted by `y` in descending order.
 /// Create two storage bitvecs, one lagging by a claim and one current.
 /// If there are more than one claims,
-unsafe fn count_overlap(cs: &[Claim], y: u16) -> Base {
+unsafe fn get_overlap(cs: &[Claim], y: u16) -> [u32; ARR + 1] {
     let mut temp = [0; ARR + 1];
     let mut overlap = temp;
 
@@ -87,7 +111,7 @@ unsafe fn count_overlap(cs: &[Claim], y: u16) -> Base {
             break;
         }
 
-        let idx = c.idx as usize;
+        let idx = c.m_slot as usize;
         #[rustfmt::skip]
         unsafe {
             *overlap.get_unchecked_mut(idx)     |= temp.get_unchecked(idx)     & c.masks[0];
@@ -96,7 +120,7 @@ unsafe fn count_overlap(cs: &[Claim], y: u16) -> Base {
             *temp   .get_unchecked_mut(idx + 1) |= c.masks[1];
         }
     }
-    overlap.iter().map(|x| x.count_ones()).sum::<Base>()
+    overlap
 }
 
 #[cfg(test)]
@@ -106,6 +130,6 @@ mod tests {
 
     #[test]
     fn test() {
-        assert_eq!(combi(&parse(&read(2018, "day03.txt"))), 104126);
+        assert_eq!(combi(&parse(&read(2018, "day03.txt"))), (104126, 695));
     }
 }
