@@ -36,6 +36,7 @@ safe_arch = "^0.6.0"
 smallvec = "^1.6.1"
 strum = "^0.21"
 strum_macros = "^0.21"
+thiserror = "^1.0.26"
 
 [dev-dependencies]
 criterion = "^0.3"
