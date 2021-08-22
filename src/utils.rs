@@ -9,7 +9,7 @@ use itertools::Itertools;
 use regex::Regex;
 
 pub type Ans = Option<(usize, usize)>;
-pub type SomeResult<T> = std::result::Result<T, Box<dyn error::Error>>;
+pub type GenericResult<T> = std::result::Result<T, Box<dyn error::Error + Send + Sync + 'static>>;
 
 pub fn read(year: u16, path: &str) -> String {
     let p = format!("./data/{}/{}", year, path);

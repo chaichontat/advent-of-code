@@ -10,7 +10,7 @@ pub fn parse(raw: &str) -> Vec<Parsed> {
     raw.as_bytes().iter().map(|&x| x as usize).collect()
 }
 
-pub fn combi(parsed: &[Parsed]) -> SomeResult<(u64, u64)> {
+pub fn combi(parsed: &[Parsed]) -> GenericResult<(u64, u64)> {
     let target = parsed[0];
     let mut elfs = (0, 1);
     let mut rgened = 0;
