@@ -1,12 +1,12 @@
-use std::iter;
+use std::{iter, num::ParseIntError};
 
 use itertools::Itertools;
 use num::Integer;
 
 type Parsed = i32;
 
-pub fn parse(raw: &str) -> Vec<Parsed> {
-    raw.split('\n').map(|x| x.parse().unwrap()).collect()
+pub fn parse(raw: &str) -> Result<Vec<Parsed>, ParseIntError> {
+    raw.split('\n').map(|x| x.parse()).try_collect()
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -16,7 +16,7 @@ struct Div {
     idx: i16,
 }
 
-pub fn combi(parsed: &[Parsed]) -> (u32, u32) {
+pub fn combi(parsed: &[Parsed]) -> Option<(u32, u32)> {
     let mut freq = iter::once(0).chain(parsed.iter().copied()).collect_vec();
 
     freq.iter_mut().fold(0, |acc, i| {
@@ -24,7 +24,7 @@ pub fn combi(parsed: &[Parsed]) -> (u32, u32) {
         *i
     });
 
-    let sum = freq.pop().unwrap();
+    let sum = freq.pop()?;
 
     // Assuming that the answer is not in the first iteration.
     // Otherwise,
@@ -77,9 +77,9 @@ pub fn combi(parsed: &[Parsed]) -> (u32, u32) {
                 None
             }
         })
-        .min();
+        .min()?;
 
-    (sum as u32, freq[idx.unwrap().2 as usize] as u32)
+    Some((sum as u32, freq[idx.2 as usize] as u32))
 }
 
 #[cfg(test)]
@@ -87,7 +87,8 @@ mod tests {
     use super::*;
     use crate::utils::*;
     #[test]
-    fn test() {
-        assert_eq!(combi(&parse(&read(2018, "day01.txt"))), (454, 566));
+    fn test() -> GenericResult<()> {
+        assert_eq!(combi(&parse(&read(2018, "day01.txt"))?), Some((454, 566)));
+        Ok(())
     }
 }
