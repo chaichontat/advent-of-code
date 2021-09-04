@@ -1,16 +1,31 @@
+from __future__ import annotations  # Until Python 3.10
+
 from pathlib import Path
+from typing import Literal, Optional, overload
 
 
-def load(path: str, **kwargs) -> list:
+@overload
+def load(path: Path | str, *, parseint: Literal[True], split: Optional[str] = ...) -> list[int]:
+    ...
+
+
+@overload
+def load(path: Path | str, *, parseint: bool = False, split: None) -> str:
+    ...
+
+
+@overload
+def load(path: Path | str, *, parseint: bool = False, split: str = ...) -> list[str]:
+    ...
+
+
+def load(path: Path | str, *, parseint: bool = False, split: Optional[str] = "\n"):
     if not Path(path).is_absolute():
         path = Path(__file__).parent.parent.parent / "data" / "2020" / path
-    return _load(Path(path).read_text(), **kwargs)
 
-
-def _load(raw, parseint=False, split="\n"):
-    raw = raw.strip()
+    out = Path(path).read_text().strip()
     if split is not None:
-        raw = raw.split(split)
+        out = out.split(split)
     if parseint:
-        return [int(x) for x in raw]
-    return raw
+        return [int(x) for x in out]
+    return out
