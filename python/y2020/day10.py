@@ -10,14 +10,14 @@ raw.append(max(raw) + 3)
 s = sorted(raw)
 
 
-def test1():
+def test1() -> None:
     count = Counter([s[i + 1] - s[i] for i in range(len(s) - 1)])
     assert count[1] * count[3] == 1755
 
 
 # %%
 @lru_cache
-def recurse(curr_max, idx):
+def recurse(curr_max: int, idx: int) -> int:
     if idx == len(s) - 1:
         return 1
 
@@ -30,7 +30,7 @@ def recurse(curr_max, idx):
     return out
 
 
-def test2():
+def test2() -> None:
     assert recurse(s[0], 1) == 4049565169664
 
 

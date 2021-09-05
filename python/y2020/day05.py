@@ -24,7 +24,7 @@ def process(x: str) -> Tuple[int, int]:
     return (binary(x[:7], 0, 127, "F", "B"), binary(x[-3:], 0, 7, "L", "R"))
 
 
-def test1():
+def test1() -> int:
     out = 0
     for seat in raw:
         row, col = process(seat)
@@ -35,7 +35,7 @@ def test1():
 
 
 # %%
-def test2():
+def test2() -> None:
     arr = np.zeros(test1() + 1)
     for seat in raw:
         row, col = process(seat)

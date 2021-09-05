@@ -1,13 +1,14 @@
 #%%
 import re
+from typing import Callable
 
 from utils import load
 
 raw = load("day04.txt", split="\n\n")
 
 # %%
-def test1():
-    valid = list()
+def test1() -> list[str]:
+    valid: list[str] = list()
     for line in raw:
         test = (
             len(re.findall("[bie]yr", line)) == 3,
@@ -23,7 +24,7 @@ def test1():
 
 
 # %%
-def proc_hgt(x: str):
+def proc_hgt(x: str) -> bool:
     if x.endswith("cm"):
         return 150 <= int(x[:-2]) <= 193
     elif x.endswith("in"):
@@ -31,19 +32,19 @@ def proc_hgt(x: str):
     return False
 
 
-criteria = {
+criteria: dict[str, Callable[[str], bool]] = {
     "byr": lambda x: 1920 <= int(x) <= 2002,
     "iyr": lambda x: 2010 <= int(x) <= 2020,
     "eyr": lambda x: 2020 <= int(x) <= 2030,
     "hgt": proc_hgt,
-    "hcl": lambda x: re.match("#[0-9a-f]{6}", x),
+    "hcl": lambda x: bool(re.match("#[0-9a-f]{6}", x)),
     "ecl": lambda x: x in "amb blu brn gry grn hzl oth".split(),
     "pid": lambda x: x.isnumeric() and len(x) == 9,
-    "cid": lambda x: x,
+    "cid": lambda x: bool(x),
 }
 
 
-def test2():
+def test2() -> None:
     valid2 = 0
     for line in test1():
         fields = line.split()

@@ -4,7 +4,7 @@ from utils import load
 raw = load("day09.txt", parseint=True)
 
 # %%
-def run_test(idx):
+def run_test(idx: int) -> bool:
     for i in range(idx - 25, idx):
         for j in range(i + 1, idx):
             if raw[idx] == raw[i] + raw[j]:
@@ -19,12 +19,12 @@ for idx in range(25, len(raw)):
         break
 
 
-def test1():
+def test1() -> None:
     assert raw[target] == 1038347917
 
 
 # %%
-def test2():
+def test2() -> None:
     cumsum = dict()  # Sum: index.
     curr_sum = 0
 

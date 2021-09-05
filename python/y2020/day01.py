@@ -4,7 +4,7 @@ from utils import load
 data = load("day01.txt", parseint=True)
 
 # %%
-def test1():
+def test1() -> None:
     for i in range(len(data)):
         for j in range(i, len(data)):
             if data[i] + data[j] == 2020:
@@ -15,7 +15,7 @@ def test1():
 
 
 # %%
-def test2():
+def test2() -> None:
     for i in range(len(data)):
         for j in range(i, len(data)):
             for k in range(j, len(data)):
