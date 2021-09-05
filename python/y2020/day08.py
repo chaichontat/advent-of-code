@@ -4,10 +4,12 @@ import copy
 from utils import load
 
 raw = load("day08.txt", split="\n")
-proc = [[(u := x.split())[0], int(u[1])] for x in raw]
+
+Proc = list[tuple[str, int]]
+proc: Proc = [((u := x.split())[0], int(u[1])) for x in raw]
 
 # %%
-def execute(program, acc, curr):
+def execute(program: Proc, acc: int, curr: int) -> tuple[int, int]:
     cmd, n = program[curr]
     if cmd == "acc":
         acc += n
@@ -21,7 +23,7 @@ def execute(program, acc, curr):
     return acc, curr
 
 
-def run(program, acc=0, curr=0):
+def run(program: Proc, acc: int = 0, curr: int = 0) -> tuple[int, bool]:
     passed = set()
     while True:
         if curr in passed:
@@ -35,23 +37,23 @@ def run(program, acc=0, curr=0):
     return acc, False
 
 
-def test1():
+def test1() -> None:
     assert run(proc)[0] == 1684
 
 
 # %%
 
 
-def swap(test, loc):
+def swap(test: Proc, loc: int) -> None:
     if test[loc][0] == "jmp":
-        test[loc][0] = "nop"
+        test[loc] = ("nop", test[loc][1])
     elif test[loc][0] == "nop":
-        test[loc][0] = "jmp"
+        test[loc] = ("jmp", test[loc][1])
     else:
         raise ValueError
 
 
-def test2():
+def test2() -> None:
     passed = set()
     test = copy.deepcopy(proc)
     acc = 0

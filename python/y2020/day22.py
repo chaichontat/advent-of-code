@@ -5,9 +5,9 @@ from utils import load
 
 raw = load("day22.txt", split="\n\n")
 players = {i: list(map(int, x.split(":\n")[1].split("\n"))) for i, x in enumerate(raw, start=1)}
-
+Stacks = dict[int, list[int]]
 # %%
-def run(stacks):
+def run(stacks: Stacks) -> tuple[Stacks, int]:
     stacks = deepcopy(stacks)
     while stacks[1] and stacks[2]:
         x, y = [x.pop(0) for x in stacks.values()]
@@ -21,17 +21,17 @@ def run(stacks):
 
 
 # %%
-def score(cards):
+def score(cards: list[int]) -> int:
     return sum(v * s for v, s in zip(cards, range(len(cards), 0, -1)))
 
 
-def test1():
+def test1() -> None:
     res, winner = run(players)
     assert score(res[winner]) == 32677
 
 
 # %%
-def check_already(already, stacks):
+def check_already(already: set[tuple[tuple[int, ...], ...]], stacks: Stacks) -> bool:
     curr = tuple(tuple(cards) for cards in stacks.values())
     if curr in already:
         return True
@@ -39,7 +39,7 @@ def check_already(already, stacks):
     return False
 
 
-def modify_stack(stacks, winner, x, y) -> int:
+def modify_stack(stacks: Stacks, winner: int, x: int, y: int) -> None:
     if winner == 1:
         stacks[1].extend((x, y))
     elif winner == 2:
@@ -48,9 +48,9 @@ def modify_stack(stacks, winner, x, y) -> int:
         raise ValueError
 
 
-def recurse(stacks):
+def recurse(stacks: Stacks) -> tuple[Stacks, int]:
     stacks = deepcopy(stacks)
-    already = set()
+    already: set[tuple[tuple[int, ...], ...]] = set()
     while stacks[1] and stacks[2]:
         if check_already(already, stacks):
             return stacks, 1
@@ -66,7 +66,7 @@ def recurse(stacks):
     return stacks, int(bool(stacks[2])) + 1
 
 
-def test2():
+def test2() -> None:
     res, winner = recurse(players)
     assert score(res[winner]) == 33661
 

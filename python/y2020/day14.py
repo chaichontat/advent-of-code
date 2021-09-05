@@ -8,7 +8,7 @@ raw = load("day14.txt", split=None)
 cmds = re.sub(r"[^\w\s]", " ", raw).split()
 
 # %%
-def test1():
+def test1() -> None:
     words = iter(cmds)
     mem: dict[int, int] = dict()
     ones, zeros = -1, -1
@@ -28,7 +28,7 @@ def test1():
 
 
 #%%
-def test2():
+def test2() -> None:
     words = iter(cmds)
     mem: dict[int, int] = dict()
     mask_1 = -1

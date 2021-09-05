@@ -4,7 +4,7 @@ from utils import load
 raw = load("day15.txt", split=",", parseint=True)
 
 # %%
-def run(stps):
+def run(stps: int) -> int:
     if stps <= len(raw):
         return raw[stps - 1]
     elif stps < 1:
@@ -19,11 +19,11 @@ def run(stps):
     return speaking
 
 
-def test1():
+def test1() -> None:
     assert run(2020) == 1015
 
 
-def test2():
+def test2() -> None:
     assert run(int(3e7)) == 201
 
 

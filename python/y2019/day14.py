@@ -62,14 +62,14 @@ def ore_from_fuel(n_fuel=1):
     return ore_needed
 
 
-def test1():
+def test1() -> None:
     assert ore_from_fuel(1) == 892207
 
 
 # %%
 
 
-def test2():
+def test2() -> None:
     lo = 1e12 // ore_from_fuel(1)
     hi = 5 * lo
     mid = (lo + hi) // 2

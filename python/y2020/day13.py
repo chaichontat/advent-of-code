@@ -4,7 +4,7 @@ from utils import load
 raw = load("day13.txt")
 
 # %%
-def test1():
+def test1() -> None:
     t = int(raw[0])
     buses = [int(x) for x in raw[1].split(",") if x != "x"]
 
@@ -40,13 +40,15 @@ def bezout(a: int, b: int) -> tuple[int, int, int]:
     return (u1, v1, r1)
 
 
-def crt(*congs: list[tuple[int, int]]) -> tuple[int, int]:
+Pair = tuple[int, int]
+
+
+def crt(congs: list[Pair]) -> Pair:
     """
     Chinese Remainder Theorem. Iteratively solve pair-wise.
     """
-    congs = list(congs)
 
-    def pair(cong1, cong2):
+    def pair(cong1: Pair, cong2: Pair) -> Pair:
         a1, b1 = cong1
         a2, b2 = cong2
         m1, m2, g = bezout(b1, b2)
@@ -66,9 +68,9 @@ def crt(*congs: list[tuple[int, int]]) -> tuple[int, int]:
 
 
 # %%
-def test2():
+def test2() -> None:
     buses = [(int(x) - i, int(x)) for i, x in enumerate(raw[1].split(",")) if x != "x"]
-    assert crt(*buses)[0] == 487905974205117
+    assert crt(buses)[0] == 487905974205117
 
 
 # %%
