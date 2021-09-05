@@ -29,5 +29,6 @@ jobs:
       - name: Test with pytest
         run: |
           conda install pytest
+          pip install pytest-xdist[psutil]
           # pytest 2019/python
           pytest python/y2020
