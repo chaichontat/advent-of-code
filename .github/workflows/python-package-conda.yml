@@ -31,10 +31,15 @@ jobs:
           conda env update --file environment.yml --name base
         working-directory: ${{ env.working-directory }}
 
+      - name: Run Black
+        run: |
+          conda install black
+          black --check y2020/
+        working-directory: ${{ env.working-directory }}
+
       - name: Run Mypy
         run: |
           conda install mypy
-          mypy --install-types
           mypy y2020/
         working-directory: ${{ env.working-directory }}
 
