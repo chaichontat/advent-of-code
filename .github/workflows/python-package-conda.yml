@@ -11,6 +11,8 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    env:
+      working-directory: python/
 
     steps:
       - uses: actions/checkout@v2
@@ -22,13 +24,24 @@ jobs:
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
           echo $CONDA/bin >> $GITHUB_PATH
+
       - name: Install dependencies
         run: |
           conda config --add channels conda-forge 
-          conda env update --file python/environment.yml --name base
+          conda env update --file environment.yml --name base
+        working-directory: ${{ env.working-directory }}
+
+      - name: Run Mypy
+        run: |
+          conda install mypy
+          mypy --install-types
+          mypy y2020/
+        working-directory: ${{ env.working-directory }}
+
       - name: Test with pytest
         run: |
           conda install pytest
           pip install pytest-xdist[psutil]
           # pytest 2019/python
-          pytest python/y2020
+          pytest y2020
+        working-directory: ${{ env.working-directory }}
