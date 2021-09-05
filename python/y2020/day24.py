@@ -15,25 +15,25 @@ direction = {
 }
 
 
-def run_init():
+def run_init() -> set[complex]:
     # black: 0 white: 1
-    locs = set()
+    locs: set[complex] = set()
     for line in raw:
         locs ^= {sum(direction[step] for step in re.findall(r"([ns]?[ew])", line))}
     return locs
 
 
-def test1():
+def test1() -> None:
     locs = run_init()
     assert len(locs) == 528
 
 
 # %%
-def neighbors(x: complex):
+def neighbors(x: complex) -> set[complex]:
     return {x + d for d in direction.values()}
 
 
-def test2():
+def test2() -> None:
     locs = run_init()
     for _ in range(100):
         locs = set(

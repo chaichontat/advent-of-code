@@ -7,8 +7,10 @@ from utils import load
 
 raw = load("day21.txt")
 
+Plates = list[set[str]]
 
-def parse():
+
+def parse() -> tuple[Plates, Plates]:
     plates, algs = zip(*[x[:-1].split(" (contains ") for x in raw])
     plates = [set(x.split(" ")) for x in plates]
     plates_algs = [set(x.split(", ")) for x in algs]
@@ -26,12 +28,12 @@ for alg in set.union(*plates_algs):  # All allergens.
 ing_al = set.union(*alg_candidates.values())  # Ingredients w/ potential allergens.
 
 
-def test1():
+def test1() -> None:
     assert sum(len(x - ing_al) for x in plates) == 2410
 
 
 # %%
-def test2():
+def test2() -> None:
     ingr, algs = list(ing_al), list(alg_candidates)  # Keys
 
     adj = np.zeros((len(ingr), len(algs)), dtype=bool)
@@ -42,4 +44,4 @@ def test2():
     matches = maximum_bipartite_matching(csr_matrix(adj))
     x = {ingr[m]: algs[i] for i, m in enumerate(matches)}
 
-    assert ",".join(sorted(x, key=x.get)) == "tmp,pdpgm,cdslv,zrvtg,ttkn,mkpmkx,vxzpfp,flnhl"
+    assert ",".join(sorted(x, key=x.get)) == "tmp,pdpgm,cdslv,zrvtg,ttkn,mkpmkx,vxzpfp,flnhl"  # type: ignore [arg-type]

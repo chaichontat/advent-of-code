@@ -29,7 +29,7 @@ def fft(arr: np.ndarray):
     return arr
 
 
-def test1():
+def test1() -> None:
     assert "".join(map(str, fft(parsed)[:8])) == "27229269"
 
 
@@ -51,7 +51,7 @@ seq = (raw[0] * 10000)[thr:]
 assert thr > len(raw[0]) * 10000 / 2
 
 
-def test2():
+def test2() -> None:
     res = find_hidden(parse(seq))
     assert "".join(map(str, res[:8])) == "26857164"
 

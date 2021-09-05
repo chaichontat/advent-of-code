@@ -89,9 +89,9 @@ def find_farthest(source, mapp, target=None):
     return curr_dist - 2
 
 
-def test1():
+def test1() -> None:
     assert find_farthest(0 + 0j, mapp, target) == 216
 
 
-def test2():
+def test2() -> None:
     assert find_farthest(target, mapp) == 326

@@ -7,9 +7,9 @@ turns = {"L": 1j, "R": -1j}
 moves = {"N": 1j, "S": -1j, "E": 1, "W": -1}
 
 
-def test1():
+def test1() -> None:
     pos = 0 + 0j
-    heading = 1
+    heading = 1 + 0j
     for cmds in raw:
         cmd, amt = cmds[0], int(cmds[1:])
         if cmd == "F":
@@ -23,7 +23,7 @@ def test1():
 # %%
 
 
-def test2():
+def test2() -> None:
     pos = 0 + 0j
     wp = 10 + 1j
     for cmds in raw:
