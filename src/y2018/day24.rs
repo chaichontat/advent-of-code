@@ -6,7 +6,13 @@ use std::str::{from_utf8, FromStr};
 use itertools::Itertools;
 use rayon::prelude::*;
 use regex::Regex;
+#[cfg(target_arch = "x86_64")]
 use safe_arch::bit_lowest_set_reset_u32;
+
+#[cfg(target_arch = "aarch64")]
+fn bit_lowest_set_reset_u32(x: u32) -> u32 {
+    x & (x - 1)
+}
 use strum_macros::EnumString;
 
 const N_UNITS: usize = 20;

@@ -4,6 +4,7 @@ use std::str::from_utf8;
 
 use itertools::Itertools;
 use regex::Regex;
+#[cfg(target_arch = "x86_64")]
 use safe_arch::*;
 
 type Parsed = (u8, u8);
@@ -22,6 +23,7 @@ pub fn parse(raw: &str) -> Vec<Parsed> {
 }
 
 /// Build adjacency matrix with `m256i`s.
+#[cfg(target_arch = "x86_64")]
 fn build_adj_matrix(nodes: &[Parsed]) -> [m256i; 26] {
     let mut temp = [[0u8; 32]; 26];
     for &node in nodes {
@@ -37,6 +39,7 @@ fn build_adj_matrix(nodes: &[Parsed]) -> [m256i; 26] {
     outdeg
 }
 
+#[cfg(target_arch = "x86_64")]
 fn topological_sort(outdeg: &[m256i; 26], indeg: m256i) -> [u8; 26] {
     // Find node with cumulative in-degree == 0, pop out in alphabetical order and subtract their
     // contributions to other nodes' in-degrees.
@@ -59,6 +62,7 @@ fn topological_sort(outdeg: &[m256i; 26], indeg: m256i) -> [u8; 26] {
     sorted
 }
 
+#[cfg(target_arch = "x86_64")]
 pub fn combi(nodes: &[(u8, u8)]) -> (String, u32) {
     let outdeg = build_adj_matrix(nodes);
 
@@ -109,11 +113,17 @@ pub fn combi(nodes: &[(u8, u8)]) -> (String, u32) {
     (from_utf8(&sorted).unwrap().to_string(), t)
 }
 
+#[cfg(target_arch = "aarch64")]
+pub fn combi(nodes: &[(u8, u8)]) -> (String, u32) {
+    (String::from("o"), 0)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::utils::*;
 
+    #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_combi() {
         assert_eq!(

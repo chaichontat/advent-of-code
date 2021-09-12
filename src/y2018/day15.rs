@@ -1,3 +1,4 @@
+#[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::{__m256i, _mm256_loadu_si256};
 use std::convert::TryFrom;
 use std::fmt::Display;
@@ -16,6 +17,7 @@ use safe_arch::*;
 const DIM: usize = 32;
 const DIM_SHOW: usize = 32;
 
+#[cfg(target_arch = "x86_64")]
 #[repr(C, align(32))]
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Map {
@@ -24,6 +26,27 @@ pub struct Map {
     padb: u32,
 }
 
+#[cfg(target_arch = "aarch64")]
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Map {
+    padf: [u8; 32],
+    m:    [[u8; 32]; 4],
+    padb: u32,
+}
+
+#[cfg(target_arch = "aarch64")]
+impl Map {
+    // TODO: Fill
+    fn new(seq: &[u8], c: u8) -> Map {
+        Map {
+            padf: [0; 32],
+            m:    [[0; 32]; 4],
+            padb: 0,
+        }
+    }
+}
+
+#[cfg(target_arch = "x86_64")]
 impl Display for Map {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = [b'.'; 1024];
@@ -43,6 +66,7 @@ impl Display for Map {
     }
 }
 
+#[cfg(target_arch = "x86_64")]
 impl Map {
     fn new(seq: &[u8], c: u8) -> Self {
         let mask = set_splat_i8_m256i(c as i8);
@@ -132,6 +156,7 @@ impl Map {
     }
 }
 
+#[cfg(target_arch = "x86_64")]
 impl BitAnd for &Map {
     type Output = Map;
 
@@ -250,6 +275,7 @@ pub enum Directive {
 /// # Safety
 /// Game must be internally consistent.
 /// No bounds-checking at indices with use of pointer arithmetics for shifting.
+#[cfg(target_arch = "x86_64")]
 #[allow(unsafe_op_in_unsafe_fn)]
 unsafe fn run(game: &Game, elf_dp: u8, mode: Directive) -> Option<(u16, Vec<Unit>)> {
     let mut game = game.to_owned();
@@ -299,6 +325,7 @@ unsafe fn run(game: &Game, elf_dp: u8, mode: Directive) -> Option<(u16, Vec<Unit
     }
 }
 
+#[cfg(target_arch = "x86_64")]
 impl Game {
     fn is_sound(&self) {
         assert_eq!(self.idxs.len(), self.units.len());
@@ -430,6 +457,7 @@ fn score((round, units): (u16, Vec<Unit>)) -> u32 {
     round as u32 * units.iter().map(|&x| x.hp as u32).sum::<u32>()
 }
 
+#[cfg(target_arch = "x86_64")]
 pub fn combi(game: &Game) -> (u32, u32) {
     game.is_sound();
 
@@ -447,11 +475,17 @@ pub fn combi(game: &Game) -> (u32, u32) {
     (score(part1), score(part2))
 }
 
+#[cfg(target_arch = "aarch64")]
+pub fn combi(game: &Game) -> (u32, u32) {
+    (0, 0)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::utils::read;
 
+    #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_combi() {
         assert_eq!(combi(&parse(&read(2018, "day15.txt"))), (213692, 52688));

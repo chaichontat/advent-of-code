@@ -21,6 +21,7 @@ struct Data([i8; LEN]);
 
 /// # Safety
 /// Number of elements in the input file must be less than N_DATA for data alignment.
+#[cfg(target_arch = "x86_64")]
 pub unsafe fn part1(parsed: &[Parsed]) -> usize {
     let len = parsed.len() / 4;
     let mut arr = Data([0; LEN]);
@@ -65,6 +66,11 @@ pub unsafe fn part1(parsed: &[Parsed]) -> usize {
     pv.amount_of_sets()
 }
 
+#[cfg(target_arch = "aarch64")]
+pub fn part1(parsed: &[Parsed]) -> usize {
+    0
+}
+
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
@@ -72,6 +78,7 @@ mod tests {
     use super::*;
     use crate::utils::read;
 
+    #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_part1() {
         assert_eq!(unsafe { part1(&parse(&read(2018, "day25.txt"))) }, 338);
