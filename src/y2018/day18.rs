@@ -3,6 +3,7 @@ use std::convert::TryFrom;
 use hashbrown::HashMap;
 use itertools::{izip, Itertools};
 use num_enum::TryFromPrimitive;
+#[cfg(target_arch = "x86_64")]
 use safe_arch::*;
 
 #[repr(u8)]
@@ -92,6 +93,7 @@ pub fn parse(raw: &str) -> MapAlign {
     MapAlign(out)
 }
 
+#[cfg(target_arch = "x86_64")]
 #[allow(unused_unsafe)]
 unsafe fn step_unchecked(map: &mut Map) {
     let m;
@@ -169,6 +171,7 @@ unsafe fn step_unchecked(map: &mut Map) {
     }
 }
 
+#[cfg(target_arch = "x86_64")]
 #[allow(unused_unsafe)]
 unsafe fn calc_value_unchecked(map: &Map) -> u32 {
     let mut tree = 0;
@@ -187,6 +190,7 @@ unsafe fn calc_value_unchecked(map: &Map) -> u32 {
     tree * yard
 }
 
+#[cfg(target_arch = "x86_64")]
 pub fn combi(mapal: &MapAlign) -> Option<(u32, u32)> {
     let mut mapal = mapal.clone();
 
@@ -207,11 +211,17 @@ pub fn combi(mapal: &MapAlign) -> Option<(u32, u32)> {
     }
 }
 
+#[cfg(target_arch = "aarch64")]
+pub fn combi(mapal: &MapAlign) -> Option<(u32, u32)> {
+    Some((0, 0))
+}
+
 #[cfg(test)]
 mod tests {
     use super::{combi, parse};
     use crate::utils::read;
 
+    #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_combi() {
         assert_eq!(combi(&parse(&read(2018, "day18.txt"))), Some((536370, 190512)));

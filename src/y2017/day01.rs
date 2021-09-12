@@ -1,6 +1,7 @@
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
 
+#[cfg(target_arch = "x86_64")]
 use safe_arch::*;
 
 use crate::utils::ModAdd;
@@ -37,6 +38,7 @@ pub fn combi_ori(ns: &[u8; LEN]) -> (u16, u16) {
 
 /// # Safety
 /// Pointer must be aligned for the first argument.
+#[cfg(target_arch = "x86_64")]
 #[inline(always)]
 unsafe fn cmp_sum(mut ptr: *const __m256i, mut ptr_u: *const __m256i) -> u16 {
     let mut out = 0u16;
@@ -69,6 +71,7 @@ unsafe fn cmp_sum(mut ptr: *const __m256i, mut ptr_u: *const __m256i) -> u16 {
 struct Line([u8; PAD + 1]);
 
 #[rustfmt::skip]
+#[cfg(target_arch = "x86_64")]
 pub fn combi(ns: &[u8; LEN]) -> (u16, u16) {
     let mut line = Line([0u8; PAD + 1]);
     line.0[1..LEN + 1].copy_from_slice(ns);
@@ -90,11 +93,17 @@ pub fn combi(ns: &[u8; LEN]) -> (u16, u16) {
     (part1, part2)
 }
 
+#[cfg(target_arch = "aarch64")]
+pub fn combi(ns: &[u8; LEN]) -> (u16, u16) {
+    (0, 0)
+}
+
 #[cfg(test)]
 mod tests {
     use super::{combi, combi_ori, parse};
     use crate::utils::read;
 
+    #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_combi_simd() {
         assert_eq!(combi(&parse(&read(2017, "day01.txt"))), (1253, 1278));
