@@ -93,11 +93,6 @@ pub fn combi(ns: &[u8; LEN]) -> (u16, u16) {
     (part1, part2)
 }
 
-#[cfg(target_arch = "aarch64")]
-pub fn combi(ns: &[u8; LEN]) -> (u16, u16) {
-    (0, 0)
-}
-
 #[cfg(test)]
 mod tests {
     use super::{combi, combi_ori, parse};
