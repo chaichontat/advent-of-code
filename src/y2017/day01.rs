@@ -95,7 +95,9 @@ pub fn combi(ns: &[u8; LEN]) -> (u16, u16) {
 
 #[cfg(test)]
 mod tests {
-    use super::{combi, combi_ori, parse};
+    #[cfg(target_arch = "x86_64")]
+    use super::combi;
+    use super::{combi_ori, parse};
     use crate::utils::read;
 
     #[cfg(target_arch = "x86_64")]
