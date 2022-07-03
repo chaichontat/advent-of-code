@@ -1,28 +1,28 @@
 from pathlib import Path
-from typing import Literal, overload
+from typing import Callable, Literal, TypeVar, overload
 
-import numpy as np
+T = TypeVar("T")
 
 
 @overload
-def read(path: str, *, raw: Literal[True] = ...) -> str:
+def read(path: str) -> list[str]:
     ...
 
 
 @overload
-def read(path: str, *, parse: Literal[True] = ...) -> np.ndarray:
+def read(path: str, *, raw: Literal[True]) -> str:
     ...
 
 
 @overload
-def read(path: str, *, parse: Literal[False] = ...) -> list[str]:
+def read(path: str, *, parse: Callable[[str], T]) -> list[T]:
     ...
 
 
-def read(path, raw: bool = False, parse: bool = False) -> np.ndarray | list[str] | str:
+def read(path, raw: bool = False, parse: Callable[[str], T] | None = None) -> list[T] | list[str] | str:
     lines = (r := Path(path).read_text()).splitlines()
     if raw:
         return r
     if parse:
-        return np.array(list(map(int, lines)))
+        return list(map(parse, lines))
     return lines
