@@ -68,6 +68,12 @@ def decode(x: str, code: str) -> int:
     return int("".join(map(segs.get, nums)))
 
 
-print(sum(decode(*x.split(" | ")) for x in raw))
+def fast_decode(x: str, code: str):
+    # Repeated counts instead of Counter.
+    ns = ("4725360918"[sum(map(x.count, r)) // 2 % 15 % 11] for r in code.split())
+    return int("".join(ns))
+
+
+print(sum(fast_decode(*x.split(" | ")) for x in raw))
 
 # %%
