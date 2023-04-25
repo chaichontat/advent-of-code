@@ -64,7 +64,7 @@ pub fn part2(parsed: &[Parsed]) -> u16 {
     let intersect = sets[0].intersection(&sets[1]).collect::<Vec<_>>();
     intersect
         .iter()
-        .map(|pos| maps[0].get(pos).unwrap() + maps[1].get(pos).unwrap())
+        .map(|pos| maps[0].get(*pos).unwrap() + maps[1].get(*pos).unwrap())
         .min()
         .unwrap() as u16
 }

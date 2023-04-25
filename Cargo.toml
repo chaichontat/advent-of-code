@@ -1,5 +1,5 @@
 [package]
-authors = ["Chaichontat Sriworarat <chaichontat.s@duke.edu>"]
+authors = ["Chaichontat Sriworarat <csriwor1@jh.edu>"]
 edition = "2021"
 name = "advent-of-code"
 version = "0.1.0"
@@ -9,13 +9,13 @@ version = "0.1.0"
 [dependencies]
 anyhow = "^1.0.43"
 ascii = "^1.0.0"
-bitvec = "^0.22.3"
+bitvec = "1.0.1"
 bytecount = "^0.6.2"
 colored = "^2.0.0"
 crc32fast = "^1.2.1"
 crossbeam = "0.8.1"
-enum-map = "^1.1.1"
-hashbrown = "^0.11.2"
+enum-map = "2.5.0"
+hashbrown = "0.13.2"
 itertools = "^0.10.1"
 ndarray = "^0.15.3"
 nohash-hasher = "^0.2.0"
@@ -28,22 +28,22 @@ num_enum = "^0.5.4"
 packed_simd = {version = "^0.3.5", package = "packed_simd_2"}
 partitions = "^0.2.4"
 paste = "^1.0.5"
-pathfinding = "^2.1.6"
+pathfinding = "^4.2.1"
 priority-queue = "^1.1.1"
 rayon = "^1.5.1"
 regex = "^1.5"
-rstar = "^0.9.0"
+rstar = "^0.10.0"
 safe_arch = "^0.6.0"
 smallvec = "^1.6.1"
-strum = "^0.21"
-strum_macros = "^0.21"
+strum = "^0.24"
+strum_macros = "^0.24"
 thiserror = "^1.0.26"
 
 [dev-dependencies]
-criterion = "^0.3"
-criterion-macro = "^0.3"
-pprof = {version = "^0.5.0", features = ["criterion", "flamegraph", "protobuf"]}
-pretty_assertions = "^0.7.2"
+criterion = "^0.4"
+criterion-macro = "^0.4"
+pprof = {version = "^0.11.1", features = ["criterion", "flamegraph", "protobuf"]}
+pretty_assertions = "^1.3.0"
 
 [[bench]]
 harness = false

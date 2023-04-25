@@ -78,4 +78,6 @@ pub mod y2018 {
 pub mod y2017 {
     pub mod day01;
     pub mod day02;
+    pub mod day04;
+    pub mod day05;
 }

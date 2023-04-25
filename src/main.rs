@@ -30,7 +30,9 @@ fn main() {
         }
     }
 
-    if year == 2018 {
+    if year == 2017 {
+        gen_match! {2017; 01}
+    } else if year == 2018 {
         gen_match! {2018; 01 18 22};
     } else if year == 2019 {
     } else {

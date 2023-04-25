@@ -45,13 +45,13 @@ impl Board {
 
         let dim = (raw.len(), raw[0].len());
         for (y, line) in raw.iter().enumerate() {
-            for (x, c) in line.into_iter().enumerate() {
-                match c {
+            for (x, cc) in line.into_iter().enumerate() {
+                match cc {
                     AsciiChar::Dot => {
                         walkable.insert((x, y));
                         continue;
                     }
-                    d if d.is_uppercase() => (),
+                    dd if dd.is_uppercase() => (),
                     _ => continue,
                 }
 
@@ -96,7 +96,7 @@ impl Board {
         let mut c = None;
         [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
             .iter()
-            .filter(|p| self.walkable.contains(p))
+            .filter(|p| self.walkable.contains(*p))
             .for_each(|&p| v.push(p));
 
         if let Some(&(u, _)) = self.portals.get(&(x, y)) {

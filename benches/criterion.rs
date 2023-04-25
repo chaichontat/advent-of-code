@@ -172,9 +172,11 @@ fn bench_2017(c: &mut Criterion) {
     let read = |p| utils::read(2017, p);
 
     let day01 = &day01::parse(&read("day01.txt"));
-    c.bench_function("2017_day01", |b| b.iter(|| day01::combi_ori(black_box(day01))));
+    c.bench_function("2017_day01", |b| b.iter(|| day01::combi(black_box(day01))));
     let day02 = &day02::parse(&read("day02.txt")).unwrap();
     c.bench_function("2017_day02", |b| b.iter(|| day02::combi(black_box(day02))));
+    let day04 = &day04::parse(&read("day04.txt")).unwrap();
+    c.bench_function("2017_day04", |b| b.iter(|| day04::combi(black_box(day04))));
 }
 
 criterion_group! {

@@ -18,7 +18,7 @@ pub fn parse(raw: &str) -> [u8; LEN] {
     out
 }
 
-pub fn combi_ori(ns: &[u8; LEN]) -> (u16, u16) {
+pub fn combi(ns: &[u8; LEN]) -> (u16, u16) {
     let part1 = {
         let p1: u16 = ns
             .windows(2)
@@ -72,7 +72,7 @@ struct Line([u8; PAD + 1]);
 
 #[rustfmt::skip]
 #[cfg(target_arch = "x86_64")]
-pub fn combi(ns: &[u8; LEN]) -> (u16, u16) {
+pub fn combi_simd(ns: &[u8; LEN]) -> (u16, u16) {
     let mut line = Line([0u8; PAD + 1]);
     line.0[1..LEN + 1].copy_from_slice(ns);
     line.0[LEN + 1] = ns[0];
@@ -96,18 +96,18 @@ pub fn combi(ns: &[u8; LEN]) -> (u16, u16) {
 #[cfg(test)]
 mod tests {
     #[cfg(target_arch = "x86_64")]
-    use super::combi;
-    use super::{combi_ori, parse};
+    use super::combi_simd;
+    use super::{combi, parse};
     use crate::utils::read;
 
     #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_combi_simd() {
-        assert_eq!(combi(&parse(&read(2017, "day01.txt"))), (1253, 1278));
+        assert_eq!(combi_simd(&parse(&read(2017, "day01.txt"))), (1253, 1278));
     }
 
     #[test]
     fn test_combi() {
-        assert_eq!(combi_ori(&parse(&read(2017, "day01.txt"))), (1253, 1278));
+        assert_eq!(combi(&parse(&read(2017, "day01.txt"))), (1253, 1278));
     }
 }

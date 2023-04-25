@@ -7,7 +7,7 @@ pub fn parse(raw: &str) -> Vec<usize> {
         .collect_vec()
 }
 
-fn build_bit(parsed: &[usize]) -> BitArray<Lsb0, [usize; 32]> {
+fn build_bit(parsed: &[usize]) -> BitArray<[usize; 32]> {
     let mut s = bitarr![0; 2048];
     for &n in parsed {
         s.set(n, true);
