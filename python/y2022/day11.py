@@ -65,6 +65,7 @@ def run(rounds: int, reduction: int):
         for curr in range(len(processed)):
             while items := processed[curr]["items"]:
                 old = processed[curr]["ops"](items.popleft())
+                # n**2 mod m = (n mod m)**2 mod m
                 new = (old % normalizer) // reduction
                 if new % processed[curr]["test"] == 0:
                     processed[processed[curr]["true"]]["items"].append(new)
