@@ -1,13 +1,12 @@
 # %%
 import collections
 import operator as op
-import re
 from itertools import islice
 from pathlib import Path
 from typing import Iterable, Iterator, TypeVar
 
 import networkx as nx
-from utils import fmap
+from utils import fmap, sliding_window
 
 raw = (
     Path("data/2022/" + __file__.split("/")[-1].split(".")[0] + ".txt")
@@ -32,17 +31,6 @@ raw = (
 # hmdt: 32""".splitlines()
 
 T = TypeVar("T")
-
-
-def sliding_window(iterable: Iterable[T], n: int) -> Iterator[tuple[T, ...]]:
-    # sliding_window('ABCDEFG', 4) --> ABCD BCDE CDEF DEFG
-    it = iter(iterable)
-    window = collections.deque(islice(it, n), maxlen=n)
-    if len(window) == n:
-        yield tuple(window)
-    for x in it:
-        window.append(x)
-        yield tuple(window)
 
 
 G = nx.DiGraph()
