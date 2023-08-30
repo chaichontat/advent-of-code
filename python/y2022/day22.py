@@ -1,12 +1,8 @@
 # %%
-import collections
-import operator as op
 import re
-from itertools import chain, islice
+from itertools import chain
 from pathlib import Path
-from typing import Iterable, Iterator, TypeVar
 
-import networkx as nx
 import numpy as np
 from utils import fmap
 
@@ -37,8 +33,6 @@ raw = (
 mapp_str = raw[0].splitlines()
 max_width = max(map(len, mapp_str))
 mapp_str = fmap(lambda x: x + " " * (max_width - len(x)), mapp_str)
-# start = [re.search(r"([\.#])", l).start(0) for l in mapp]
-# end = [len(l) - re.search(r"([\.#])", l[::-1]).start(0) for l in mapp]
 
 # %%
 mapp = np.array([list(iter(x)) for x in mapp_str])
@@ -63,7 +57,7 @@ def traverse(ij: tuple[int, int] | np.ndarray, mode: tuple[int, int] | np.ndarra
             return ori
 
 
-G = nx.Graph()
+nodes = {}
 
 for i in range(mapp.shape[0]):
     for j in range(mapp.shape[1]):
@@ -71,17 +65,13 @@ for i in range(mapp.shape[0]):
             case " " | "#":
                 continue
             case ".":
-                G.add_node((i, j))
+                nodes[(i, j)] = {}
             case _:
                 raise ValueError(f"Unknown character {mapp[i, j]}")
 
-        node = G.nodes[(i, j)]
         # look around and wrap around
         for di, dj in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-            res = traverse((i, j), (di, dj))
-            # print((i, j), res, (di, dj))
-            G.add_edge((i, j), res)
-            node[(di, dj)] = res
+            nodes[(i, j)][(di, dj)] = traverse((i, j), (di, dj))
 
 # %%
 DIR = {"L": (0, -1), "R": (0, 1), "U": (-1, 0), "D": (1, 0)}
@@ -96,10 +86,9 @@ if raw[-1][-1].isnumeric():
     inss.append(re.findall(r"(\d)+", raw[1])[-1])
 
 for ins in inss:
-    # print(ins, heading, pos)
     if ins.isnumeric():
         for _ in range(int(ins)):
-            pos = G.nodes[pos][DIR[heading]]
+            pos = nodes[pos][DIR[heading]]
         continue
 
     if ins == "L":
