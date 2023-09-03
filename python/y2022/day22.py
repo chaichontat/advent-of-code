@@ -2,8 +2,10 @@
 import re
 from itertools import chain
 from pathlib import Path
+from typing import Callable
 
 import numpy as np
+import numpy.typing as npt
 from utils import fmap
 
 raw = (
@@ -11,32 +13,47 @@ raw = (
     .read_text()[:-1]
     .split("\n\n")
 )
+Coord = tuple[int, int]
+DEBUG = False
 
-# raw = """        ...#
-#         .#..
-#         #...
-#         ....
-# ...#.......#
-# ........#...
-# ..#....#....
-# ..........#.
-#         ...#....
-#         .....#..
-#         .#......
-#         ......#.
+raw = (
+    raw
+    if not DEBUG
+    else """        ...#
+        .#..
+        #...
+        ....
+...#.......#
+........#...
+..#....#....
+..........#.
+        ...#....
+        .....#..
+        .#......
+        ......#.
 
-# 10R5L5R10L4R5L5""".split(
-#     "\n\n"
-# )
+10R5L5R10L4R5L5""".split(
+        "\n\n"
+    )
+)
+
+initial_mapping = (
+    dict(U="ABAD", L="BCF", R="EDE", D="GFGC")
+    if DEBUG
+    else dict(U="EAB", L="CECA", R="DFDG", D="BGF")
+)
+SIDE_WIDTH = 4 if DEBUG else 50
+NOT_INVERTED = "B" if DEBUG else "ABEFG"
 
 
 mapp_str = raw[0].splitlines()
 max_width = max(map(len, mapp_str))
 mapp_str = fmap(lambda x: x + " " * (max_width - len(x)), mapp_str)
 
-DIR = {"L": (0, -1), "R": (0, 1), "U": (-1, 0), "D": (1, 0)}
+DIR = {"U": (-1, 0), "R": (0, 1), "D": (1, 0), "L": (0, -1)}
 OPPOSITE = {"L": "R", "R": "L", "U": "D", "D": "U"}
 dirs = "URDL"
+HEADINGS = [DIR[d] for d in dirs]
 
 # %%
 mapp = np.array([list(iter(x)) for x in mapp_str])
@@ -62,16 +79,10 @@ def gen_mapping(initial_mapping: dict[str, str]):
     return m_
 
 
-def new_coord(ij: tuple[int, int] | np.ndarray, new_side: str):
-    if new_side == "L":
-        return
-
-
 # %%
-mapping = gen_mapping(dict(U="EAB", L="CECA", R="DFDG", B="BGF"))
-SIDE_WIDTH = 50
+mapping = gen_mapping(initial_mapping)
 
-NEW_SIDE_COORD = {
+NEW_SIDE_COORD: dict[str, Callable[[int, int], Coord]] = {
     "L": lambda q, rem: (SIDE_WIDTH * q + rem, 0),
     "R": lambda q, rem: (SIDE_WIDTH * q + rem, mapp.shape[1] - 1),
     "U": lambda q, rem: (0, SIDE_WIDTH * q + rem),
@@ -79,7 +90,7 @@ NEW_SIDE_COORD = {
 }
 
 
-def transform(ij: tuple[int, int] | np.ndarray, mode: tuple[int, int] | np.ndarray):
+def transform(ij: Coord | np.ndarray, mode: Coord | np.ndarray):
     i, j = ij
     if i < 0 or i > mapp.shape[0] - 1:
         q, rem = divmod(j, SIDE_WIDTH)
@@ -90,111 +101,79 @@ def transform(ij: tuple[int, int] | np.ndarray, mode: tuple[int, int] | np.ndarr
     else:
         raise ValueError(f"{ij} not at edge.")
 
+    if initial_mapping[new_side][n] in NOT_INVERTED:
+        new_ij = NEW_SIDE_COORD[new_side](n, rem)
+    else:
+        new_ij = NEW_SIDE_COORD[new_side](n, SIDE_WIDTH - rem - 1)
     new_mode = DIR[OPPOSITE[new_side]]
-    new_ij = NEW_SIDE_COORD[new_side](n, rem)
-    return new_ij, new_mode
+    return np.array(new_ij), np.array(new_mode)
 
 
-def traverse_cube(ij: tuple[int, int] | np.ndarray, mode: tuple[int, int] | np.ndarray):
-    ori = ij
-    ij = np.array(ij)
-    mode = np.array(mode)
+def traverse(
+    ij_: Coord | np.ndarray,
+    mode_: Coord | np.ndarray,
+    transformer: Callable[[npt.NDArray, npt.NDArray], tuple[npt.NDArray, npt.NDArray]],
+) -> tuple[npt.NDArray, npt.NDArray]:
+    ori = np.array(ij_)
+    ij = np.array(ij_)
+    old_mode = mode = np.array(mode_)
 
-    while True:
+    while True:  # traverse through empty space
         ij += mode
         if not 0 <= ij[0] < mapp.shape[0] or not 0 <= ij[1] < mapp.shape[1]:
-            ij, mode = transform(ij, mode)
+            ij, mode = transformer(ij, mode)
         i, j = ij
         curr = mapp[i, j]
+        if curr == "#":  # don't change heading if hit wall
+            return ori, old_mode
         if curr == ".":
-            return (i, j)
-        if curr == "#":
-            return ori
+            return ij, mode
 
 
-def traverse(ij: tuple[int, int] | np.ndarray, mode: tuple[int, int] | np.ndarray):
-    ori = ij
-    ij = np.array(ij)
-    mode = np.array(mode)
-
-    while True:
-        ij += mode
-        if not 0 <= ij[0] < mapp.shape[0]:
-            ij[0] %= mapp.shape[0]
-        if not 0 <= ij[1] < mapp.shape[1]:
-            ij[1] %= mapp.shape[1]
-        i, j = ij
-        curr = mapp[i, j]
-        if curr == ".":
-            return (i, j)
-        if curr == "#":
-            return ori
+def show(m_s: list[Coord]):
+    m_ = np.array(list(map(list, mapp_str)))
+    for i, j in m_s:
+        m_[i, j] = "o"
+    return "\n".join(map("".join, m_)) + "\n"
 
 
-def build_nodes():
-    nodes = {}
-    for i in range(mapp.shape[0]):
-        for j in range(mapp.shape[1]):
-            match mapp[i, j]:
-                case " " | "#":
-                    continue
-                case ".":
-                    nodes[(i, j)] = {}
-                case _:
-                    raise ValueError(f"Unknown character {mapp[i, j]}")
+def run(
+    transformer: Callable[[npt.NDArray, npt.NDArray], tuple[npt.NDArray, npt.NDArray]]
+):
+    pos = (0, re.search(r"([\.#])", mapp_str[0]).start(0))
+    heading = (0, 1)
 
-            # look around and wrap around
-            for di, dj in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-                nodes[(i, j)][(di, dj)] = traverse((i, j), (di, dj))
-    return nodes
+    inss: list[str] = list(chain.from_iterable(re.findall(r"(\d+)([LR])", raw[1])))
+    if raw[-1][-1].isnumeric():
+        inss.append(re.findall(r"(\d+)", raw[1])[-1])
 
+    visited = set()
+    for ins in inss:
+        if ins.isnumeric():
+            for _ in range(int(ins)):
+                visited.add(tuple(pos))
+                pos, heading = traverse(pos, heading, transformer)
+            continue
+
+        if ins == "L":
+            heading = HEADINGS[(HEADINGS.index(tuple(heading)) - 1) % len(dirs)]
+        elif ins == "R":
+            heading = HEADINGS[(HEADINGS.index(tuple(heading)) + 1) % len(dirs)]
+        else:
+            raise ValueError(f"Unknown instruction {ins}")
+
+    ans = {"L": 2, "R": 0, "U": 3, "D": 1}
+    # The final password is the sum of 1000 times the row, 4 times the column, and the facing.
+    return (
+        1000 * (pos[0] + 1)
+        + 4 * (pos[1] + 1)
+        + ans[dirs[HEADINGS.index(tuple(heading))]]
+    )
+
+
+part1 = run(transformer=lambda ij, mode: (ij % mapp.shape, mode))
+print("Part 1:", part1)
+part2 = run(transformer=transform)
+print("Part 2:", part2)
 
 # %%
-pos = (0, re.search(r"([\.#])", mapp_str[0]).start(0))
-heading = "R"
-nodes = build_nodes()
-
-inss: list[str] = list(chain.from_iterable(re.findall(r"(\d+)([LR])", raw[1])))
-if raw[-1][-1].isnumeric():
-    inss.append(re.findall(r"(\d)+", raw[1])[-1])
-
-for ins in inss:
-    if ins.isnumeric():
-        for _ in range(int(ins)):
-            pos = nodes[pos][DIR[heading]]
-        continue
-
-    if ins == "L":
-        heading = dirs[(dirs.index(heading) - 1) % len(dirs)]
-    elif ins == "R":
-        heading = dirs[(dirs.index(heading) + 1) % len(dirs)]
-    else:
-        raise ValueError(f"Unknown instruction {ins}")
-
-ans = {"L": 2, "R": 0, "U": 3, "D": 1}
-print(pos, heading)
-# The final password is the sum of 1000 times the row, 4 times the column, and the facing.
-print(1000 * (pos[0] + 1) + 4 * (pos[1] + 1) + ans[heading])
-
-
-# %%
-pos = (0, re.search(r"([\.#])", mapp_str[0]).start(0))
-heading = "R"
-
-
-inss: list[str] = list(chain.from_iterable(re.findall(r"(\d+)([LR])", raw[1])))
-if raw[-1][-1].isnumeric():
-    inss.append(re.findall(r"(\d)+", raw[1])[-1])
-
-for ins in inss:
-    if ins.isnumeric():
-        for _ in range(int(ins)):
-            pos = nodes[pos][DIR[heading]]
-        continue
-
-    if ins == "L":
-        heading = dirs[(dirs.index(heading) - 1) % len(dirs)]
-    elif ins == "R":
-        heading = dirs[(dirs.index(heading) + 1) % len(dirs)]
-    else:
-        raise ValueError(f"Unknown instruction {ins}")
