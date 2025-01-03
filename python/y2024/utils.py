@@ -1,5 +1,6 @@
 import collections
 from itertools import islice
+from pathlib import Path
 from typing import Callable, Iterable, Iterator, ParamSpec, TypeVar
 
 P, R = ParamSpec("P"), TypeVar("R")
@@ -26,3 +27,9 @@ def sliding_window(iterable: Iterable[T], n: int) -> Iterator[tuple[T, ...]]:
     for x in it:
         window.append(x)
         yield tuple(window)
+
+
+def load(file: str) -> str:
+    return Path(
+        "../../data/2024/" + file.split("/")[-1].split(".")[0] + ".txt"
+    ).read_text()[:-1]
